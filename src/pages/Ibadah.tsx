@@ -6,6 +6,7 @@ import { id } from 'date-fns/locale';
 import { Check, Clock, Heart } from 'lucide-react';
 import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
 import { formatTimeString } from '../lib/utils';
+import { vibrateSuccess } from '../lib/audio';
 
 export default function Ibadah() {
   const [user, setUser] = useState<User | null>(null);
@@ -32,9 +33,13 @@ export default function Ibadah() {
   }, [selectedDate]);
 
   const handleToggle = (prayer: PrayerName) => {
+    const isCompleted = !log.prayers[prayer];
+    if (isCompleted && user?.soundEnabled !== false) {
+      vibrateSuccess();
+    }
     const newLog = {
       ...log,
-      prayers: { ...log.prayers, [prayer]: !log.prayers[prayer] }
+      prayers: { ...log.prayers, [prayer]: isCompleted }
     };
     setLog(newLog);
     storage.updatePrayerLog(newLog);

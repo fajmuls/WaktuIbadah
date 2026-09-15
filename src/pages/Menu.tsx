@@ -1,12 +1,14 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight } from 'lucide-react';
+import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight, Compass, Calendar } from 'lucide-react';
 import { storage } from '../lib/storage';
 
 export default function Menu() {
   const user = storage.getUser();
 
     const menuItems = [
+    { label: 'Kalender', icon: Calendar, path: '/kalender', desc: 'Kalender Hijriah & Google', color: 'text-rose-500', bg: 'bg-rose-50' },
+    { label: 'Arah Kiblat', icon: Compass, path: '/qibla', desc: 'Penunjuk arah Kakbah', color: 'text-teal-500', bg: 'bg-teal-50' },
     { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk belajar', color: 'text-blue-500', bg: 'bg-blue-50' },
     { label: 'Kumpulan Hadis', icon: BookOpen, path: '/hadis', desc: 'Baca 50 hadis pilihan', color: 'text-green-500', bg: 'bg-green-50' },
     { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi hari ini', color: 'text-purple-500', bg: 'bg-purple-50' },

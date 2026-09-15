@@ -40,6 +40,29 @@ export default function Settings() {
     }
   };
 
+  const [stopAlarmFn, setStopAlarmFn] = useState<(() => void) | null>(null);
+
+  const handleTestAlarm = async () => {
+    const { playAlarmSound } = await import('../lib/audio');
+    
+    if (stopAlarmFn) {
+      stopAlarmFn();
+      setStopAlarmFn(null);
+    } else {
+      if ('Notification' in window && Notification.permission !== 'granted') {
+        Notification.requestPermission();
+      }
+      
+      if (navigator.vibrate) {
+         // Attempt vibrate request if not allowed by default
+         // Mostly mobile browsers only vibrate on user gesture (which this is).
+      }
+      
+      const stop = playAlarmSound();
+      setStopAlarmFn(() => stop);
+    }
+  };
+
   const handleClearData = () => {
     if (confirm('PERINGATAN: Apakah kamu yakin ingin menghapus seluruh data? Tindakan ini tidak dapat dibatalkan.')) {
       storage.clearAll();
@@ -99,6 +122,12 @@ export default function Settings() {
             <div>
               <h3 className="font-bold text-text-main">Pengingat</h3>
               <p className="text-sm text-text-muted">Notifikasi salat dan deadline</p>
+              <button 
+                onClick={handleTestAlarm}
+                className="mt-2 text-xs font-bold px-3 py-1 bg-amber-100 text-amber-700 rounded-full hover:bg-amber-200 transition-colors"
+              >
+                {stopAlarmFn ? 'Hentikan Alarm' : 'Tes Alarm & Izin'}
+              </button>
             </div>
           </div>
           <button 

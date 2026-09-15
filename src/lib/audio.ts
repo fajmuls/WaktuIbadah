@@ -1,9 +1,28 @@
 // Simple Web Audio API synthetic sounds
 // No external dependencies needed
 
+let audioCtx: AudioContext | null = null;
+
+const getAudioContext = () => {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch (e) {
+      console.warn('AudioContext not supported');
+    }
+  }
+  // Resume context if suspended (common browser policy)
+  if (audioCtx && audioCtx.state === 'suspended') {
+    audioCtx.resume();
+  }
+  return audioCtx;
+};
+
 export const playClickSound = () => {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  
   try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     
@@ -20,33 +39,74 @@ export const playClickSound = () => {
     osc.start();
     osc.stop(ctx.currentTime + 0.1);
   } catch (e) {
-    // ignore if browser blocks audio
+    // ignore
   }
 };
 
+let currentAlarmInterval: number | null = null;
+
 export const playAlarmSound = () => {
-  try {
-    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    
-    // Play a sequence of beeps
-    for (let i = 0; i < 5; i++) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      
-      osc.type = 'square';
-      osc.frequency.setValueAtTime(800, ctx.currentTime + i * 0.5);
-      
-      gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.5);
-      gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.5 + 0.05);
-      gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.5 + 0.4);
-      
-      osc.start(ctx.currentTime + i * 0.5);
-      osc.stop(ctx.currentTime + i * 0.5 + 0.4);
+  const ctx = getAudioContext();
+  if (!ctx) return () => {};
+  
+  if (navigator.vibrate) {
+    // Vibrate intensely
+    navigator.vibrate([500, 250, 500, 250, 500, 250, 500]);
+  }
+  
+  const playBeep = () => {
+    try {
+      for (let i = 0; i < 3; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        
+        osc.type = 'square';
+        osc.frequency.setValueAtTime(800, ctx.currentTime + i * 0.2);
+        
+        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.2);
+        gain.gain.linearRampToValueAtTime(0.2, ctx.currentTime + i * 0.2 + 0.05);
+        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.2 + 0.15);
+        
+        osc.start(ctx.currentTime + i * 0.2);
+        osc.stop(ctx.currentTime + i * 0.2 + 0.15);
+      }
+    } catch (e) {
+      // ignore
     }
-  } catch (e) {
-    // ignore if browser blocks audio
+  };
+
+  playBeep(); // Play immediately
+  // Loop the beep every 2 seconds
+  currentAlarmInterval = window.setInterval(playBeep, 2000);
+
+  // Return a stop function
+  return () => {
+    if (currentAlarmInterval) {
+      window.clearInterval(currentAlarmInterval);
+      currentAlarmInterval = null;
+    }
+    if (navigator.vibrate) {
+      navigator.vibrate(0); // stop vibration
+    }
+  };
+};
+
+export const stopAlarmSound = () => {
+  if (currentAlarmInterval) {
+    window.clearInterval(currentAlarmInterval);
+    currentAlarmInterval = null;
+  }
+  if (navigator.vibrate) {
+    navigator.vibrate(0);
   }
 };
+
+export const vibrateSuccess = () => {
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100]); // Short double vibration for success (like logging ibadah)
+  }
+};
+

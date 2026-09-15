@@ -3,7 +3,7 @@ import { storage } from '../lib/storage';
 import { User, Task, Schedule, PrayerName } from '../types';
 import { format, differenceInMinutes, parse } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { getNextPrayer, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
+import { getPrayerStatus, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
 import { MapPin, Sun, Sunrise, Sunset, Moon, Circle, AlertCircle, Calendar, RefreshCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -22,6 +22,7 @@ export default function Dashboard() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [prayerData, setPrayerData] = useState<PrayerData | null>(null);
+  const [currentPrayer, setCurrentPrayer] = useState<{ prayer: PrayerName, time: string } | null>(null);
   const [nextPrayer, setNextPrayer] = useState<{ prayer: PrayerName, time: string, isTomorrow: boolean } | null>(null);
   const [minutesToNext, setMinutesToNext] = useState<number>(0);
   const [prayerLogs, setPrayerLogs] = useState(storage.getPrayerLog(format(new Date(), 'yyyy-MM-dd')));
@@ -82,14 +83,17 @@ export default function Dashboard() {
   };
 
   const updateNextPrayer = (data: PrayerData) => {
-    const next = getNextPrayer(data.times);
-    setNextPrayer(next);
+    const { currentPrayer, nextPrayer } = getPrayerStatus(data.times);
+    setCurrentPrayer(currentPrayer);
+    setNextPrayer(nextPrayer);
     
-    const now = new Date();
-    const nextTime = parse(next.time, 'HH:mm', new Date());
-    if (next.isTomorrow) nextTime.setDate(nextTime.getDate() + 1);
-    
-    setMinutesToNext(differenceInMinutes(nextTime, now));
+    if (nextPrayer) {
+      const now = new Date();
+      const nextTime = parse(nextPrayer.time, 'HH:mm', new Date());
+      if (nextPrayer.isTomorrow) nextTime.setDate(nextTime.getDate() + 1);
+      
+      setMinutesToNext(differenceInMinutes(nextTime, now));
+    }
   };
 
   const handleRefreshLocation = () => {
@@ -171,6 +175,15 @@ export default function Dashboard() {
           )}
         </div>
 
+        {currentPrayer && (
+          <div className="text-center mb-2">
+            <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-1.5 rounded-full mb-4">
+               <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+               <span className="text-sm font-medium">Sekarang: <strong>{currentPrayer.prayer}</strong></span>
+            </div>
+          </div>
+        )}
+
         {nextPrayer && (
           <div className="text-center mb-6">
             <h2 className="text-primary-light font-medium text-sm mb-2">Salat Berikutnya</h2>
@@ -193,7 +206,8 @@ export default function Dashboard() {
         <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 hide-scrollbar snap-x">
           {prayerData && prayersList.map((p) => {
             const isNext = nextPrayer?.prayer === p && !nextPrayer?.isTomorrow;
-            const isPassed = nextPrayer?.prayer !== p && parse(prayerData.times[p], 'HH:mm', new Date()) < new Date();
+            const isCurrent = currentPrayer?.prayer === p;
+            const isPassed = !isNext && !isCurrent && parse(prayerData.times[p], 'HH:mm', new Date()) < new Date();
             
             return (
               <motion.div 
@@ -201,16 +215,18 @@ export default function Dashboard() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 className={`snap-center flex flex-col items-center justify-center min-w-[70px] p-2 rounded-xl border transition-all ${
-                  isNext 
-                    ? 'bg-white text-primary border-white shadow-lg' 
-                    : isPassed
-                      ? 'bg-white/5 border-white/10 text-white/50'
-                      : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                  isCurrent
+                    ? 'bg-green-500 text-white border-green-400 shadow-lg'
+                    : isNext 
+                      ? 'bg-white text-primary border-white shadow-lg' 
+                      : isPassed
+                        ? 'bg-white/5 border-white/10 text-white/50'
+                        : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                 }`}
               >
                 <div className="mb-1 opacity-80">{prayerIcons[p]}</div>
                 <span className="text-[10px] font-bold">{p}</span>
-                <span className={`text-xs mt-0.5 ${isNext ? 'font-bold' : 'font-medium'}`}>{formatTimeString(prayerData.times[p], user?.timeFormat || '24h')}</span>
+                <span className={`text-xs mt-0.5 ${isNext || isCurrent ? 'font-bold' : 'font-medium'}`}>{formatTimeString(prayerData.times[p], user?.timeFormat || '24h')}</span>
               </motion.div>
             );
           })}

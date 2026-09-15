@@ -21,6 +21,9 @@ import Settings from './pages/Settings';
 import Tips from './pages/Tips';
 import Hadis from './pages/Hadis';
 
+import Kalender from './pages/Kalender';
+import Qibla from './pages/Qibla';
+
 const SplashScreen = () => (
   <motion.div 
     initial={{ opacity: 1 }}
@@ -142,6 +145,8 @@ export default function App() {
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/tips" element={<Tips />} />
                 <Route path="/hadis" element={<Hadis />} />
+                <Route path="/kalender" element={<Kalender />} />
+                <Route path="/qibla" element={<Qibla />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             )}

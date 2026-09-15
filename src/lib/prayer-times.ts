@@ -33,7 +33,9 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number): Pro
   }
 
   try {
-    const response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
+    // Determine timezone from browser if possible
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta';
+    const response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20&timezone=${tz}`);
     if (!response.ok) {
       throw new Error('Failed to fetch prayer times');
     }
@@ -41,15 +43,17 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number): Pro
     const data = jsonResponse.data;
     
     // Attempt reverse geocoding to get city name using a free API
-    let cityName = "Lokasi Saat Ini";
-    try {
-        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
-        if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            cityName = geoData.city || geoData.locality || geoData.principalSubdivision || "Lokasi Saat Ini";
-        }
-    } catch (e) {
-        console.warn("Reverse geocoding failed");
+    let cityName = "Jakarta, Indonesia";
+    if (latitude !== -6.2088 || longitude !== 106.8456) {
+      try {
+          const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
+          if (geoRes.ok) {
+              const geoData = await geoRes.json();
+              cityName = geoData.city || geoData.locality || geoData.principalSubdivision || "Lokasi Saat Ini";
+          }
+      } catch (e) {
+          console.warn("Reverse geocoding failed");
+      }
     }
 
     const prayerData: PrayerData = {
@@ -90,19 +94,29 @@ export const getPrayerTimesForToday = () => {
   return DEFAULT_TIMES; // Sync fallback
 };
 
-export const getNextPrayer = (times: Record<PrayerName, string> = getPrayerTimesForToday()) => {
+export const getPrayerStatus = (times: Record<PrayerName, string> = getPrayerTimesForToday()) => {
   const now = new Date();
   const currentTimeStr = format(now, "HH:mm");
 
   const prayerOrder: PrayerName[] = ["Subuh", "Zuhur", "Asar", "Magrib", "Isya"];
   
-  for (const prayer of prayerOrder) {
-    if (currentTimeStr < times[prayer]) {
-      return { prayer, time: times[prayer], isTomorrow: false };
+  let currentPrayer: { prayer: PrayerName, time: string } | null = null;
+  let nextPrayer: { prayer: PrayerName, time: string, isTomorrow: boolean } | null = null;
+
+  for (let i = 0; i < prayerOrder.length; i++) {
+    const prayer = prayerOrder[i];
+    if (currentTimeStr >= times[prayer]) {
+      currentPrayer = { prayer, time: times[prayer] };
+    } else if (!nextPrayer) {
+      nextPrayer = { prayer, time: times[prayer], isTomorrow: false };
     }
   }
 
-  // If all prayers today have passed, return Subuh for tomorrow
-  return { prayer: "Subuh" as PrayerName, time: times["Subuh"], isTomorrow: true };
+  // If all prayers today have passed
+  if (!nextPrayer) {
+    nextPrayer = { prayer: "Subuh" as PrayerName, time: times["Subuh"], isTomorrow: true };
+  }
+
+  return { currentPrayer, nextPrayer };
 };
 
