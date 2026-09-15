@@ -1,0 +1,6 @@
+{
+  "name": "WaktuIbadah",
+  "description": "Aplikasi manajemen waktu dan ibadah untuk mahasiswa Muslim.",
+  "requestFramePermissions": ["notifications"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
