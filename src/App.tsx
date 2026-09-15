@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } from './lib/prayer-times';
 import { format, addDays } from 'date-fns';
 import { playAlarmSound, vibratePrayerAlarm } from './lib/audio';
+import { showPWANotification } from './lib/pwa-service';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -105,12 +106,10 @@ export default function App() {
           if (prayerTime === currentHHMM && !notifiedTimes.current.has(`prayer-${prayer}-${today}`)) {
             notifiedTimes.current.add(`prayer-${prayer}-${today}`);
             triggerAlarmEffect();
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(`Waktu Salat ${prayer} Tiba`, {
-                body: `Allahu Akbar! Saatnya menunaikan ibadah salat ${prayer}.`,
-                icon: 'https://files.catbox.moe/3b6dqo.png'
-              });
-            }
+            showPWANotification(`Waktu Salat ${prayer} Tiba`, {
+              body: `Allahu Akbar! Saatnya menunaikan ibadah salat ${prayer}.`,
+              tag: `prayer-${prayer}-${today}`,
+            });
           }
         }
       }
@@ -120,12 +119,10 @@ export default function App() {
         if (times['Imsak'] === currentHHMM && !notifiedTimes.current.has(`imsak-${today}`)) {
           notifiedTimes.current.add(`imsak-${today}`);
           triggerAlarmEffect();
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`Waktu Imsak Telah Tiba`, {
-              body: `Waktu Imsak (${times['Imsak']}). Segera selesaikan santap sahur sebelum adzan Subuh.`,
-              icon: 'https://files.catbox.moe/3b6dqo.png'
-            });
-          }
+          showPWANotification(`Waktu Imsak Telah Tiba`, {
+            body: `Waktu Imsak (${times['Imsak']}). Segera selesaikan santap sahur sebelum adzan Subuh.`,
+            tag: `imsak-${today}`,
+          });
         }
       }
 
@@ -134,12 +131,10 @@ export default function App() {
         notifiedTimes.current.add(`puasa-${today}`);
         const fastingInfo = getSunnahFastingInfo(cached?.hijri?.day || "1", now);
         if (fastingInfo && fastingInfo.isPuasaTomorrow) {
-          if ('Notification' in window && Notification.permission === 'granted') {
-            new Notification(`Pengingat Puasa Sunnah`, {
-              body: `${fastingInfo.name}. ${fastingInfo.desc}`,
-              icon: 'https://files.catbox.moe/3b6dqo.png'
-            });
-          }
+          showPWANotification(`Pengingat Puasa Sunnah`, {
+            body: `${fastingInfo.name}. ${fastingInfo.desc}`,
+            tag: `puasa-${today}`,
+          });
         }
       }
 
@@ -150,18 +145,26 @@ export default function App() {
           if (s.startTime === currentHHMM && !notifiedTimes.current.has(`schedule-${s.id}`)) {
             notifiedTimes.current.add(`schedule-${s.id}`);
             triggerAlarmEffect();
-            if ('Notification' in window && Notification.permission === 'granted') {
-              new Notification(`Jadwal: ${s.title}`, {
-                body: `Aktivitas ${s.title} dimulai sekarang.`,
-                icon: 'https://files.catbox.moe/3b6dqo.png'
-              });
-            }
+            showPWANotification(`Jadwal: ${s.title}`, {
+              body: `Aktivitas ${s.title} dimulai sekarang.`,
+              tag: `schedule-${s.id}`,
+            });
           }
         }
       }
     };
 
     const alarmInterval = setInterval(checkAlarms, 25000); // Check every 25s
+    
+    // Check immediately when user switches tabs or wakes device from lock screen
+    const handleVisibilityWake = () => {
+      if (document.visibilityState === 'visible') {
+        checkAlarms();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityWake);
+    window.addEventListener('focus', handleVisibilityWake);
+
     if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
       Notification.requestPermission();
     }
@@ -169,6 +172,8 @@ export default function App() {
     return () => {
       clearTimeout(timer);
       clearInterval(alarmInterval);
+      document.removeEventListener('visibilitychange', handleVisibilityWake);
+      window.removeEventListener('focus', handleVisibilityWake);
     };
   }, []);
 
@@ -195,6 +200,7 @@ export default function App() {
                 <Route path="/ibadah" element={<Ibadah />} />
                 <Route path="/progress" element={<Progress />} />
                 <Route path="/menu" element={<Menu />} />
+                <Route path="/quran" element={<QuranHadis />} />
                 <Route path="/quran-hadis" element={<QuranHadis />} />
                 <Route path="/tools" element={<Tools />} />
                 <Route path="/focus" element={<FocusMode />} />

@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { playAlarmSound, vibratePrayerAlarm } from '../lib/audio';
+import { showPWANotification, requestNotificationPermission } from '../lib/pwa-service';
 
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null);
@@ -257,13 +258,27 @@ export default function Settings() {
             </div>
 
             {/* Test Alarm & Haptic Button */}
-            <div className="pt-2">
+            <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
               <button 
                 onClick={handleTestAlarm}
                 className="w-full py-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs font-bold hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-colors flex items-center justify-center gap-2"
               >
                 <Vibrate className="w-3.5 h-3.5" />
-                <span>{stopAlarmFn ? 'Hentikan Uji Alarm' : 'Uji Alarm & Getaran HP Sekarang'}</span>
+                <span>{stopAlarmFn ? 'Hentikan Uji Alarm' : 'Uji Alarm & Getaran HP'}</span>
+              </button>
+
+              <button 
+                onClick={async () => {
+                  await requestNotificationPermission();
+                  showPWANotification('Uji Notifikasi PWA Latar Belakang', {
+                    body: 'Notifikasi Service Worker WaktuIbadah aktif & siap memicu adzan saat layar mati/terkunci.',
+                    tag: 'test-pwa-notification'
+                  });
+                }}
+                className="w-full py-2 bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-200 rounded-xl text-xs font-bold hover:bg-teal-200 dark:hover:bg-teal-900 transition-colors flex items-center justify-center gap-2"
+              >
+                <Bell className="w-3.5 h-3.5" />
+                <span>Uji Notifikasi PWA Latar</span>
               </button>
             </div>
           </div>
@@ -330,19 +345,17 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Changelog Card for Version 1.4.0 */}
+          {/* Changelog Card for Version 1.6.0 */}
           <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-xs space-y-1.5 text-gray-600 dark:text-gray-300">
             <p className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Catatan Pembaruan v{CURRENT_VERSION}:
             </p>
             <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-500 dark:text-gray-400 pl-1">
-              <li>Penomoran ayat Al-Qur'an dengan lingkaran angka Arab otentik di ujung setiap ayat.</li>
-              <li>Kalender Ibadah terintegrasi pelacakan salat 5 waktu dan ayat bacaan (start & end).</li>
-              <li>Penyimpanan Ayat & Hadits Favorit, serta unduhan surat Al-Qur'an offline.</li>
-              <li>Pilihan sinyal pengingat: getar HP (haptic vibration) atau nada alarm (Azan/Chime/Beep).</li>
-              <li>Peringatan waktu Imsak & pengingat puasa sunnah (Senin-Kamis & Ayyamul Bidh).</li>
-              <li>Pencarian manual kota jadwal sholat Kemenag (MyQuran).</li>
+              <li><strong>Perbaikan Navigasi Menu Al-Qur'an</strong>: Mengatasi masalah routing menu yang sebelumnya kembali ke halaman utama.</li>
+              <li><strong>Widget Pemutar Audio Murottal Latar Belakang & Sleep Timer</strong>: Pemutar audio murottal 30 Juz lengkap (pilihan qari Syaikh Mishary Rasyid, As-Sudais, Al-Ghamidi, Al-Hussary, Al-Ajmy) dengan timer otomatis mati (15/30/45/60/90 menit / Akhir Surat) dan fade-out halus saat tidur/menjelang Subuh.</li>
+              <li><strong>Sinkronisasi Deteksi Bentrok Jadwal Kuliah & Waktu Salat</strong>: Sistem pintar otomatis mendeteksi ketika jadwal kuliah/tugas bertabrakan dengan waktu salat fardhu (Dzuhur, Asar, Maghrib, Isya, Subuh) disertai rekomendasi cerdas jeda ibadah.</li>
+              <li>Widget mini-player mengambang persisten di seluruh halaman aplikasi.</li>
             </ul>
           </div>
 
@@ -350,12 +363,12 @@ export default function Settings() {
           <div className="mt-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/40 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-xs space-y-1.5">
             <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              Saran Update yang Bermanfaat untuk Rilis Selanjutnya:
+              Saran Update Bermanfaat untuk Rilis Berikutnya:
             </p>
             <ul className="space-y-1 text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
-              <li>• <strong>Ekspor Riwayat ke PDF/Excel</strong>: Untuk laporan tilawah dan kedisiplinan salat mingguan/bulanan.</li>
-              <li>• <strong>Widget Audio Murottal Latar Belakang</strong>: Pemutar audio per surah dengan timer tidur (sleep timer).</li>
-              <li>• <strong>Pencatat Target Khatam Qur'an</strong>: Kalkulator otomatis target berapa lembar per hari untuk khatam dalam waktu tertentu.</li>
+              <li>• <strong>Pengaturan Kecepatan Pemutaran Audio (0.75x, 1x, 1.25x, 1.5x)</strong>: Membantu mahasiswa menyimak dan menghafal surat dengan tempo yang dapat disesuaikan.</li>
+              <li>• <strong>Ekspor Jadwal Kuliah & Ibadah ke Google Calendar (.ics)</strong>: Sinkronisasi satu-klik jadwal kuliah bebas bentrok salat ke kalender HP.</li>
+              <li>• <strong>Mode Tadabbur & Bookmark Multi-Warna</strong>: Memberikan catatan refleksi pribadi dan warna penanda khusus per ayat saat tadarus di kampus.</li>
             </ul>
           </div>
         </div>

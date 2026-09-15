@@ -8,14 +8,17 @@ import {
 import { id } from 'date-fns/locale';
 import { 
   Target, CheckCircle2, Heart, Clock, BookOpen, Calendar, 
-  ChevronLeft, ChevronRight, Check, Award, Sparkles, Filter 
+  ChevronLeft, ChevronRight, Check, Award, Sparkles, Filter,
+  Printer, FileSpreadsheet 
 } from 'lucide-react';
 import { QuranLog, PrayerLog } from '../types';
+import { ExportReportModal } from '../components/ExportReportModal';
 
 export default function Progress() {
   const [filterMode, setFilterMode] = useState<'harian' | 'mingguan' | 'bulanan' | 'kalender'>('kalender');
   const [currentCalendarMonth, setCurrentCalendarMonth] = useState<Date>(new Date());
   const [selectedCalendarDate, setSelectedCalendarDate] = useState<string>(format(new Date(), 'yyyy-MM-dd'));
+  const [isExportModalOpen, setIsExportModalOpen] = useState(false);
 
   // Data states
   const [prayerLogs, setPrayerLogs] = useState<PrayerLog[]>([]);
@@ -128,51 +131,94 @@ export default function Progress() {
           </p>
         </div>
 
-        {/* View Filter Pill */}
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl self-start sm:self-auto overflow-x-auto max-w-full">
+        {/* View Filter Pill and Export Button */}
+        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl overflow-x-auto max-w-full">
+            <button
+              onClick={() => setFilterMode('kalender')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+                filterMode === 'kalender'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+              }`}
+            >
+              <Calendar className="w-3.5 h-3.5" />
+              <span>Kalender Ibadah</span>
+            </button>
+            <button
+              onClick={() => setFilterMode('mingguan')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                filterMode === 'mingguan'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+              }`}
+            >
+              Mingguan
+            </button>
+            <button
+              onClick={() => setFilterMode('bulanan')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                filterMode === 'bulanan'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+              }`}
+            >
+              Bulanan
+            </button>
+            <button
+              onClick={() => setFilterMode('harian')}
+              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+                filterMode === 'harian'
+                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
+                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+              }`}
+            >
+              Ringkasan
+            </button>
+          </div>
+
+          {/* Export PAI Button */}
           <button
-            onClick={() => setFilterMode('kalender')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
-              filterMode === 'kalender'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
-            }`}
+            onClick={() => setIsExportModalOpen(true)}
+            className="px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs shrink-0"
+            title="Ekspor rekap salat & tilawah untuk tugas mata kuliah PAI"
           >
-            <Calendar className="w-3.5 h-3.5" />
-            <span>Kalender Ibadah</span>
-          </button>
-          <button
-            onClick={() => setFilterMode('mingguan')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              filterMode === 'mingguan'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
-            }`}
-          >
-            Mingguan
-          </button>
-          <button
-            onClick={() => setFilterMode('bulanan')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              filterMode === 'bulanan'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
-            }`}
-          >
-            Bulanan
-          </button>
-          <button
-            onClick={() => setFilterMode('harian')}
-            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
-              filterMode === 'harian'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
-            }`}
-          >
-            Ringkasan
+            <Printer className="w-3.5 h-3.5" />
+            <span>Ekspor Laporan PAI (PDF/CSV)</span>
           </button>
         </div>
       </div>
+
+      {/* Target Khatam Quick Status if Active */}
+      {(() => {
+        const khatam = storage.getKhatamTarget();
+        if (!khatam) return null;
+        const relevantLogs = quranLogs.filter(q => q.date >= khatam.startDate);
+        const totalAyatRead = relevantLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
+        const pct = Math.min(100, Math.round((totalAyatRead / 6236) * 100));
+        return (
+          <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/40 dark:to-emerald-950/40 rounded-2xl p-3.5 border border-teal-200 dark:border-teal-800 flex items-center justify-between gap-3 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0">
+                <BookOpen className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-gray-900 dark:text-white">
+                    {khatam.title}
+                  </span>
+                  <span className="text-[10px] font-bold bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-300 px-1.5 py-0.5 rounded">
+                    {pct}%
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                  Telah membaca {totalAyatRead} dari 6.236 Ayat • Target {khatam.dailyTargetUnits} ayat/hari
+                </p>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
@@ -555,6 +601,12 @@ export default function Progress() {
           </p>
         </div>
       </div>
+
+      {/* Export Report Modal for PAI */}
+      <ExportReportModal
+        isOpen={isExportModalOpen}
+        onClose={() => setIsExportModalOpen(false)}
+      />
     </div>
   );
 }

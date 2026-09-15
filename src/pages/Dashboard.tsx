@@ -4,11 +4,12 @@ import { User, Task, Schedule, PrayerName } from '../types';
 import { format, differenceInMinutes, parse } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { getPrayerStatus, fetchPrayerTimes, PrayerData, getCachedPrayerData, getSunnahFastingInfo } from '../lib/prayer-times';
-import { MapPin, Sun, Sunrise, Sunset, Moon, Circle, AlertCircle, Calendar, RefreshCcw, Sparkles, BookOpen, ChevronRight, Compass } from 'lucide-react';
+import { MapPin, Sun, Sunrise, Sunset, Moon, Circle, AlertCircle, Calendar, RefreshCcw, Sparkles, BookOpen, ChevronRight, Compass, AlertTriangle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { formatTimeString } from '../lib/utils';
 import { CitySelectorModal } from '../components/CitySelectorModal';
+import { checkSchedulePrayerConflicts } from '../lib/schedule-prayer-conflict';
 
 const DAILY_WISDOM = [
   { text: "Waktu Bagaikan Pedang. Jika kamu tidak memotongnya, maka ia yang akan memotongmu.", source: "Imam Syafi'i" },
@@ -369,20 +370,36 @@ export default function Dashboard() {
           
           {schedules.length > 0 ? (
             <div className="space-y-3">
-              {schedules.map(schedule => (
-                <div key={schedule.id} className="flex gap-4 items-center p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
-                  <div className="text-center min-w-[60px]">
-                    <div className="text-sm font-bold text-text-main">{schedule.startTime}</div>
-                  </div>
-                  <div className="w-1 bg-gray-200 h-10 rounded-full" />
-                  <div>
-                    <div className="font-semibold text-text-main">{schedule.title}</div>
-                    <div className="text-xs text-primary bg-primary/10 inline-block px-2 py-0.5 rounded-full mt-1">
-                      {schedule.category}
+              {schedules.map(schedule => {
+                const conflicts = prayerData?.times 
+                  ? checkSchedulePrayerConflicts(schedule, prayerData.times)
+                  : [];
+                const hasConflict = conflicts.length > 0;
+
+                return (
+                  <div key={schedule.id} className="flex gap-3.5 items-start p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700/60">
+                    <div className="text-center min-w-[54px] pt-0.5">
+                      <div className="text-sm font-bold text-text-main">{schedule.startTime}</div>
+                      <div className="text-[10px] text-text-muted">{schedule.endTime}</div>
+                    </div>
+                    <div className="w-1 bg-gray-200 dark:bg-gray-700 h-10 rounded-full shrink-0" />
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-text-main truncate">{schedule.title}</div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                          {schedule.category}
+                        </span>
+                        {hasConflict && (
+                          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 px-1.5 py-0.5 rounded flex items-center gap-1">
+                            <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
+                            Bentrok {conflicts[0].prayerName}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-4 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">

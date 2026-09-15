@@ -1,4 +1,4 @@
-import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem } from "../types";
+import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget } from "../types";
 
 const KEYS = {
   USER: "wi_user",
@@ -14,9 +14,10 @@ const KEYS = {
   FAVORITE_HADITHS: "wi_favorite_hadiths",
   OFFLINE_SURAHS: "wi_offline_surahs",
   REMINDER_SETTINGS: "wi_reminder_settings",
+  KHATAM_TARGET: "wi_khatam_target",
 };
 
-export const CURRENT_VERSION = "1.4.0";
+export const CURRENT_VERSION = "1.6.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -176,6 +177,10 @@ export const storage = {
   // Reminder Settings
   getReminderSettings: () => getItem<ReminderSettings>(KEYS.REMINDER_SETTINGS, DEFAULT_REMINDER_SETTINGS),
   setReminderSettings: (settings: ReminderSettings) => setItem(KEYS.REMINDER_SETTINGS, settings),
+
+  // Khatam Target
+  getKhatamTarget: () => getItem<QuranKhatamTarget | null>(KEYS.KHATAM_TARGET, null),
+  setKhatamTarget: (target: QuranKhatamTarget | null) => setItem(KEYS.KHATAM_TARGET, target),
 
   clearAll: () => localStorage.clear(),
 };

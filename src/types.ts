@@ -156,3 +156,48 @@ export interface HadithPerawiInfo {
   total: number;
 }
 
+export interface QuranKhatamTarget {
+  id: string;
+  title: string;
+  startDate: string; // YYYY-MM-DD
+  targetDays: number;
+  targetType: 'ayat' | 'halaman' | 'juz';
+  totalUnits: number; // 6236 (ayat) or 604 (halaman) or 30 (juz)
+  targetEndDate: string; // YYYY-MM-DD
+  dailyTargetUnits: number;
+  notes?: string;
+  isCompleted?: boolean;
+  createdAt: string;
+}
+
+export interface ReciterOption {
+  id: string;
+  name: string;
+  arabicName: string;
+  style: string;
+}
+
+export interface MurottalState {
+  surahNumber: number;
+  surahName: string;
+  surahArabic: string;
+  reciterId: string;
+  isPlaying: boolean;
+  currentTime: number;
+  duration: number;
+  autoplayNext: boolean;
+  sleepTimerMinutes: number | null; // null if off, or remaining seconds
+  sleepTimerTarget: number | null; // timestamp when it should stop
+  sleepTimerMode: 'none' | '15' | '30' | '45' | '60' | 'surah_end' | 'custom';
+}
+
+export interface PrayerConflictInfo {
+  prayerName: string;
+  prayerTime: string;
+  scheduleTitle: string;
+  scheduleStartTime: string;
+  scheduleEndTime: string;
+  conflictType: 'overlap' | 'approaching';
+  suggestion: string;
+}
+

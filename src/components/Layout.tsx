@@ -3,6 +3,7 @@ import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
+import { MurottalPlayerWidget } from './MurottalPlayerWidget';
 import { playClickSound } from '../lib/audio';
 import { storage } from '../lib/storage';
 
@@ -111,6 +112,9 @@ export const Layout = () => {
         isOpen={isQuickAddOpen} 
         onClose={() => setQuickAddOpen(false)} 
       />
+
+      {/* Global Murottal Player & Sleep Timer Widget */}
+      <MurottalPlayerWidget />
     </div>
   );
 };

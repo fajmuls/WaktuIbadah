@@ -3,12 +3,14 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   BookOpen, Search, Play, Pause, Volume2, Bookmark, Check, Copy, 
   ChevronRight, X, Sparkles, Heart, Download, CheckCircle2,
-  Trash2, ExternalLink, Share2, Compass
+  Trash2, ExternalLink, Share2, Compass, Headphones, Moon
 } from 'lucide-react';
 import { SurahItem, AyatItem, HadithArbain, FavoriteAyah, FavoriteHadith } from '../types';
 import { storage } from '../lib/storage';
 import { vibrateSuccess } from '../lib/audio';
+import { murottalPlayer } from '../lib/murottal';
 import { QuranLogModal } from '../components/QuranLogModal';
+import { KhatamCalculatorModal } from '../components/KhatamCalculatorModal';
 
 // Helper to convert western digits to authentic Arabic numerals (١, ٢, ٣...)
 export const toArabicNumerals = (num: number | string): string => {
@@ -20,6 +22,7 @@ export default function QuranHadis() {
   const [searchParams, setSearchParams] = useSearchParams();
   const initialTab = (searchParams.get('tab') as 'quran' | 'hadis' | 'favorit' | 'doa') || 'quran';
   const [activeTab, setActiveTab] = useState<'quran' | 'hadis' | 'favorit' | 'doa'>(initialTab);
+  const [isKhatamModalOpen, setIsKhatamModalOpen] = useState(false);
 
   const handleTabChange = (tab: 'quran' | 'hadis' | 'favorit' | 'doa') => {
     setActiveTab(tab);
@@ -396,12 +399,66 @@ export default function QuranHadis() {
           >
             Doa Kemenag
           </button>
+          <button
+            onClick={() => setIsKhatamModalOpen(true)}
+            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 hover:bg-teal-100 whitespace-nowrap shadow-xs ml-1"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+            <span>Target Khatam</span>
+          </button>
+          <button
+            onClick={() => {
+              murottalPlayer.togglePlay();
+              vibrateSuccess();
+            }}
+            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white whitespace-nowrap shadow-xs ml-1"
+          >
+            <Headphones className="w-3.5 h-3.5" />
+            <span>Putar Murottal 30 Juz</span>
+          </button>
         </div>
       </header>
 
       {/* ======================= TAB 1: AL-QUR'AN ======================= */}
       {activeTab === 'quran' && (
         <div className="space-y-4">
+          {/* Quick Target Khatam Banner */}
+          {(() => {
+            const target = storage.getKhatamTarget();
+            if (!target) return null;
+            const relevantLogs = storage.getQuranLogs().filter(q => q.date >= target.startDate);
+            const totalRead = relevantLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
+            const pct = Math.min(100, Math.round((totalRead / 6236) * 100));
+            return (
+              <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/40 dark:to-emerald-950/40 border border-teal-200 dark:border-teal-800/80 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-teal-600 text-white rounded-xl flex items-center justify-center shrink-0">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-teal-900 dark:text-teal-200">
+                        {target.title}
+                      </span>
+                      <span className="text-[10px] font-semibold bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300 px-1.5 py-0.5 rounded-md">
+                        {pct}% Tercapai
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-teal-700 dark:text-teal-300 mt-0.5">
+                      Sudah dibaca <strong>{totalRead}</strong> dari 6.236 Ayat (~{(totalRead / 208).toFixed(1)} Juz)
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setIsKhatamModalOpen(true)}
+                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors self-start sm:self-auto shadow-xs"
+                >
+                  Lihat Hitungan Target
+                </button>
+              </div>
+            );
+          })()}
+
           {/* Last Read & Quick Surah Banner */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             {/* Last read card */}
@@ -523,13 +580,26 @@ export default function QuranHadis() {
                       </div>
                     </div>
 
-                    <div className="text-right">
-                      <span className="font-serif text-base font-bold text-gray-700 dark:text-gray-200">
-                        {surah.nama}
-                      </span>
-                      <span className="block text-[10px] text-gray-400 capitalize">
-                        {surah.tempatTurun}
-                      </span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          murottalPlayer.setSurah(surah.nomor, true);
+                          vibrateSuccess();
+                        }}
+                        className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors"
+                        title={`Putar Audio QS ${surah.namaLatin}`}
+                      >
+                        <Volume2 className="w-4 h-4" />
+                      </button>
+                      <div className="text-right">
+                        <span className="font-serif text-base font-bold text-gray-700 dark:text-gray-200">
+                          {surah.nama}
+                        </span>
+                        <span className="block text-[10px] text-gray-400 capitalize">
+                          {surah.tempatTurun}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 );
@@ -1021,6 +1091,13 @@ export default function QuranHadis() {
         totalAyah={logModalProps.totalAyah}
         suggestedStart={logModalProps.startAyah}
         suggestedEnd={logModalProps.endAyah}
+      />
+
+      {/* Khatam Target Calculator Modal */}
+      <KhatamCalculatorModal
+        isOpen={isKhatamModalOpen}
+        onClose={() => setIsKhatamModalOpen(false)}
+        onOpenLogModal={() => setIsLogModalOpen(true)}
       />
     </div>
   );
