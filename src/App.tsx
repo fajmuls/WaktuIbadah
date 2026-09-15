@@ -61,6 +61,13 @@ export default function App() {
     if (user && user.isOnboarded) {
       setHasOnboarded(true);
     }
+    
+    // Auto update version in storage if app code is newer
+    const currentStorageVersion = storage.getVersion();
+    if (currentStorageVersion.version !== '1.0.1') {
+       storage.updateVersion();
+    }
+    
     setIsReady(true);
 
     const timer = setTimeout(() => {

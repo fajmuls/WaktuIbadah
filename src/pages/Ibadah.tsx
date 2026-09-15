@@ -12,7 +12,7 @@ export default function Ibadah() {
   const [user, setUser] = useState<User | null>(null);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [log, setLog] = useState<PrayerLog>({ date: selectedDate, prayers: { Subuh: false, Zuhur: false, Asar: false, Magrib: false, Isya: false } });
-  const [prayerData, setPrayerData] = useState<PrayerData | null>(null);
+  const [prayerData, setPrayerData] = useState<PrayerData | null>(getCachedPrayerData());
 
   useEffect(() => {
     const loadedUser = storage.getUser();
@@ -22,13 +22,14 @@ export default function Ibadah() {
     // We only fetch for today to keep it simple, otherwise we'd need to fetch historical data from API
     // For historical days, we just use the cached today's time as an approximation.
     if (selectedDate === format(new Date(), 'yyyy-MM-dd')) {
-        let lat = -6.2088;
-        let lng = 106.8456;
         if (loadedUser?.location) {
-            lat = loadedUser.location.latitude;
-            lng = loadedUser.location.longitude;
+            const lat = loadedUser.location.latitude;
+            const lng = loadedUser.location.longitude;
+            fetchPrayerTimes(lat, lng).then(data => setPrayerData(data));
+        } else {
+            // Default to Jakarta if no location is present, but try to fetch
+            fetchPrayerTimes(-6.2088, 106.8456).then(data => setPrayerData(data));
         }
-        fetchPrayerTimes(lat, lng).then(data => setPrayerData(data));
     }
   }, [selectedDate]);
 

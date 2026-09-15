@@ -59,7 +59,15 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
   }
 
   try {
-    const response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
+    let response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
+    
+    // Retry once if the first attempt fails
+    if (!response.ok) {
+        console.warn(`Aladhan API first attempt failed: ${response.status}. Retrying...`);
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
+    }
+
     if (!response.ok) {
       throw new Error(`API returned ${response.status}`);
     }
@@ -94,6 +102,7 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
     console.error("Error fetching prayer times:", error);
     // If we have old cached data, return it instead of completely breaking
     if (cachedData) {
+      // Return previous cache but tag as offline
       return { ...cachedData, location: cachedData.location.includes("(Offline)") ? cachedData.location : cachedData.location + " (Offline)" };
     }
     // Fallback to default if error
@@ -101,7 +110,7 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
       times: DEFAULT_TIMES,
       imsak: "04:20",
       hijri: { day: "-", month: "-", year: "-" },
-      location: cityName + " (Offline)"
+      location: cityName + " (Gagal Memuat)"
     };
   }
 };

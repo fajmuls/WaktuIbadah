@@ -86,17 +86,42 @@ export default function Dashboard() {
     if (currentUser?.location) {
       lat = currentUser.location.latitude;
       lng = currentUser.location.longitude;
+      const data = await fetchPrayerTimes(lat, lng);
+      setPrayerData(data);
+      updateNextPrayer(data);
     } else {
-      // Prompt user to enable location but default to Jakarta if not
-      if (navigator.geolocation && !isFetchingLocation && !prayerData) {
-        // We do not auto-prompt here aggressively to avoid blocking, user can click the refresh button.
-        // We just fetch Jakarta first.
+      // Prompt user to enable location
+      if (navigator.geolocation && !isFetchingLocation) {
+        setIsFetchingLocation(true);
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            const newLat = position.coords.latitude;
+            const newLng = position.coords.longitude;
+            const currentUserState = currentUser || storage.getUser() || { name: 'User' };
+            const updatedUser = { ...currentUserState, location: { latitude: newLat, longitude: newLng } };
+            storage.setUser(updatedUser as User);
+            setUser(updatedUser as User);
+            
+            const data = await fetchPrayerTimes(newLat, newLng, true);
+            setPrayerData(data);
+            updateNextPrayer(data);
+            setIsFetchingLocation(false);
+          },
+          async (error) => {
+            console.warn("Location prompt rejected or failed, falling back to Jakarta");
+            setIsFetchingLocation(false);
+            const data = await fetchPrayerTimes(lat, lng);
+            setPrayerData(data);
+            updateNextPrayer(data);
+          },
+          { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+        );
+      } else {
+        const data = await fetchPrayerTimes(lat, lng);
+        setPrayerData(data);
+        updateNextPrayer(data);
       }
     }
-
-    const data = await fetchPrayerTimes(lat, lng);
-    setPrayerData(data);
-    updateNextPrayer(data);
   };
 
   const updateNextPrayer = (data: PrayerData) => {
@@ -140,7 +165,7 @@ export default function Dashboard() {
             alert("Gagal mendapatkan lokasi. Pastikan GPS perangkat Anda aktif dan jaringan stabil.");
           }
         },
-        { enableHighAccuracy: false, timeout: 20000, maximumAge: 300000 }
+        { enableHighAccuracy: true, timeout: 20000, maximumAge: 0 }
       );
     } else {
       alert("Peramban Anda tidak mendukung pelacakan lokasi.");

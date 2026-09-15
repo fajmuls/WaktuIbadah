@@ -11,7 +11,7 @@ const KEYS = {
   PRAYER_CACHE: "wi_prayer_cache",
 };
 
-const CURRENT_VERSION = "1.0.0";
+const CURRENT_VERSION = "1.0.1";
 
 // --- Generic Storage Helpers ---
 function getItem<T>(key: string, defaultValue: T): T {
