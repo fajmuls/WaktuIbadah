@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
@@ -14,6 +15,26 @@ export default function Kalender() {
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [hijriDates, setHijriDates] = useState<Record<string, { day: string, month: string }>>({});
+  const [todayHijriText, setTodayHijriText] = useState<string>('');
+
+  useEffect(() => {
+    // Fetch today's official Hijri date from MyQuran Cal API
+    const fetchTodayHijri = async () => {
+      try {
+        const todayStr = format(new Date(), 'yyyy-MM-dd');
+        const res = await fetch(`https://api.myquran.com/v2/cal/hijr/${todayStr}`);
+        if (res.ok) {
+          const json = await res.json();
+          if (json.status && json.data?.date?.[1]) {
+            setTodayHijriText(`${json.data.date[0]}, ${json.data.date[1]}`);
+          }
+        }
+      } catch (err) {
+        console.warn("MyQuran Hijri fetch error:", err);
+      }
+    };
+    fetchTodayHijri();
+  }, []);
 
   const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
   const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
@@ -121,6 +142,21 @@ export default function Kalender() {
           </div>
         )}
       </div>
+
+      {todayHijriText && (
+        <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl flex items-center justify-between">
+          <div>
+            <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Hari Ini (MyQuran API)</span>
+            <span className="text-base font-bold text-text-main">{todayHijriText}</span>
+          </div>
+          <Link
+            to="/tools"
+            className="text-xs font-bold bg-primary text-white px-3.5 py-2 rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
+          >
+            Konversi Hijriyah
+          </Link>
+        </div>
+      )}
 
       <div className="bg-surface rounded-3xl p-6 shadow-sm border border-gray-100 overflow-hidden">
         

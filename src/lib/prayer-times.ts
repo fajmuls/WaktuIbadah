@@ -34,8 +34,46 @@ export const getCachedPrayerData = () => {
   return cachedData;
 };
 
+// Helper to find City ID in MyQuran API
+async function findMyQuranCityId(cityName: string): Promise<{ id: string; lokasi: string } | null> {
+  const cleaned = cityName
+    .toLowerCase()
+    .replace(/^(kota|kabupaten|kab\.|kecamatan|kelurahan)\s+/i, '')
+    .trim();
+
+  const searchTerms = [cleaned];
+  if (cleaned.includes(' ')) {
+    const parts = cleaned.split(' ');
+    searchTerms.push(parts[0]);
+  }
+
+  for (const term of searchTerms) {
+    if (!term || term.length < 3) continue;
+    try {
+      const res = await fetch(`https://api.myquran.com/v2/sholat/kota/cari/${encodeURIComponent(term)}`);
+      if (res.ok) {
+        const json = await res.json();
+        if (json.status && Array.isArray(json.data) && json.data.length > 0) {
+          const exact = json.data.find((item: any) => 
+            item.lokasi.toLowerCase().includes(cleaned)
+          );
+          return exact || json.data[0];
+        }
+      }
+    } catch (e) {
+      console.warn("MyQuran city search error:", e);
+    }
+  }
+
+  return null;
+}
+
 export const fetchPrayerTimes = async (latitude: number, longitude: number, forceRefresh: boolean = false): Promise<PrayerData> => {
-  const today = format(new Date(), 'dd-MM-yyyy');
+  const now = new Date();
+  const today = format(now, 'dd-MM-yyyy');
+  const yyyy = format(now, 'yyyy');
+  const mm = format(now, 'MM');
+  const dd = format(now, 'dd');
   
   if (!forceRefresh && cachedData && cachedData.dateStr === today && 
       cachedData.lat !== undefined && Math.abs(cachedData.lat - latitude) < 0.01 && 
@@ -43,52 +81,97 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
     return cachedData;
   }
 
-  let cityName = "Lokasi Anda";
+  let locality = "";
+  let cityName = "Jakarta";
+  let fullLocationLabel = "Jakarta, Indonesia";
+
   if (latitude !== -6.2088 || longitude !== 106.8456) {
     try {
-        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
-        if (geoRes.ok) {
-            const geoData = await geoRes.json();
-            cityName = geoData.locality || geoData.city || geoData.principalSubdivision || "Lokasi Anda";
+      const geoRes = await fetch(`https://api-bdc.io/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
+      if (geoRes.ok) {
+        const geoData = await geoRes.json();
+        locality = geoData.locality || "";
+        cityName = geoData.city || geoData.principalSubdivision || "Jakarta";
+        if (locality && cityName && locality !== cityName) {
+          fullLocationLabel = `${locality}, ${cityName}`;
+        } else {
+          fullLocationLabel = cityName || "Indonesia";
         }
+      }
     } catch (e) {
-        console.warn("Reverse geocoding failed", e);
+      console.warn("Reverse geocoding error:", e);
     }
   } else {
-    cityName = "Jakarta, Indonesia";
+    fullLocationLabel = "Jakarta, Indonesia";
   }
 
   try {
-    let response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
+    // 1. Find MyQuran City ID
+    let cityMatch = await findMyQuranCityId(cityName);
+    if (!cityMatch && locality) {
+      cityMatch = await findMyQuranCityId(locality);
+    }
     
-    // Retry once if the first attempt fails
-    if (!response.ok) {
-        console.warn(`Aladhan API first attempt failed: ${response.status}. Retrying...`);
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
+    // Default to Jakarta (1301) if not found
+    const cityId = cityMatch?.id || "1301";
+    const officialLokasi = cityMatch?.lokasi || "KOTA JAKARTA";
+
+    // 2. Fetch Sholat Schedule from MyQuran API
+    const scheduleRes = await fetch(`https://api.myquran.com/v2/sholat/jadwal/${cityId}/${yyyy}/${mm}/${dd}`);
+    if (!scheduleRes.ok) {
+      throw new Error(`MyQuran API returned status ${scheduleRes.status}`);
+    }
+    const scheduleJson = await scheduleRes.json();
+    if (!scheduleJson.status || !scheduleJson.data?.jadwal) {
+      throw new Error("Invalid response format from MyQuran API");
     }
 
-    if (!response.ok) {
-      throw new Error(`API returned ${response.status}`);
+    const jadwal = scheduleJson.data.jadwal;
+
+    // 3. Fetch Hijri calendar info from MyQuran Cal API
+    let hijriDay = "-";
+    let hijriMonth = "Hijriyah";
+    let hijriYear = "1448 H";
+
+    try {
+      const calRes = await fetch(`https://api.myquran.com/v2/cal/hijr/${yyyy}-${mm}-${dd}`);
+      if (calRes.ok) {
+        const calJson = await calRes.json();
+        if (calJson.status && calJson.data?.date?.[1]) {
+          const hijriStr = calJson.data.date[1];
+          const parts = hijriStr.split(' ');
+          if (parts.length >= 3) {
+            hijriDay = parts[0];
+            hijriYear = parts.slice(-2).join(' ');
+            hijriMonth = parts.slice(1, -2).join(' ');
+          } else {
+            hijriMonth = hijriStr;
+          }
+        }
+      }
+    } catch (calErr) {
+      console.warn("MyQuran Cal API error (non-fatal):", calErr);
     }
-    const jsonResponse = await response.json();
-    const data = jsonResponse.data;
-    
+
+    const finalLocation = locality 
+      ? `${locality} (${officialLokasi})` 
+      : (fullLocationLabel || officialLokasi);
+
     const prayerData: PrayerData = {
       times: {
-        Subuh: data.timings.Fajr,
-        Zuhur: data.timings.Dhuhr,
-        Asar: data.timings.Asr,
-        Magrib: data.timings.Maghrib,
-        Isya: data.timings.Isha,
+        Subuh: jadwal.subuh,
+        Zuhur: jadwal.dzuhur,
+        Asar: jadwal.ashar,
+        Magrib: jadwal.maghrib,
+        Isya: jadwal.isya,
       },
-      imsak: data.timings.Imsak,
+      imsak: jadwal.imsak || "04:20",
       hijri: {
-        day: data.date.hijri.day,
-        month: data.date.hijri.month.en,
-        year: data.date.hijri.year,
+        day: hijriDay,
+        month: hijriMonth,
+        year: hijriYear,
       },
-      location: cityName,
+      location: finalLocation,
       dateStr: today,
       lat: latitude,
       lng: longitude
@@ -100,12 +183,9 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
 
   } catch (error) {
     console.error("Error fetching prayer times:", error);
-    // If we have old cached data, return it instead of completely breaking
     if (cachedData) {
-      // Return previous cache but tag as offline
       return { ...cachedData, location: cachedData.location.includes("(Offline)") ? cachedData.location : cachedData.location + " (Offline)" };
     }
-    // Fallback to default if error
     return {
       times: DEFAULT_TIMES,
       imsak: "04:20",

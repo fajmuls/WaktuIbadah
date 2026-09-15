@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { useEffect, useState, useRef } from 'react';
-import { storage } from './lib/storage';
+import { storage, CURRENT_VERSION } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPrayerTimesForToday } from './lib/prayer-times';
 import { format } from 'date-fns';
@@ -19,7 +19,8 @@ import FocusMode from './pages/FocusMode';
 import Reflection from './pages/Reflection';
 import Settings from './pages/Settings';
 import Tips from './pages/Tips';
-import Hadis from './pages/Hadis';
+import QuranHadis from './pages/QuranHadis';
+import Tools from './pages/Tools';
 
 import Kalender from './pages/Kalender';
 import Qibla from './pages/Qibla';
@@ -64,7 +65,7 @@ export default function App() {
     
     // Auto update version in storage if app code is newer
     const currentStorageVersion = storage.getVersion();
-    if (currentStorageVersion.version !== '1.0.1') {
+    if (currentStorageVersion.version !== CURRENT_VERSION) {
        storage.updateVersion();
     }
     
@@ -151,7 +152,9 @@ export default function App() {
                 <Route path="/reflection" element={<Reflection />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/tips" element={<Tips />} />
-                <Route path="/hadis" element={<Hadis />} />
+                <Route path="/quran" element={<QuranHadis />} />
+                <Route path="/hadis" element={<QuranHadis />} />
+                <Route path="/tools" element={<Tools />} />
                 <Route path="/kalender" element={<Kalender />} />
                 <Route path="/qibla" element={<Qibla />} />
                 <Route path="*" element={<Navigate to="/" replace />} />

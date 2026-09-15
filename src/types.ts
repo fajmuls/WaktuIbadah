@@ -62,3 +62,46 @@ export interface AppVersion {
   version: string;
   lastUpdated: string;
 }
+
+export interface SurahItem {
+  nomor: number;
+  nama: string;
+  namaLatin: string;
+  jumlahAyat: number;
+  tempatTurun: string;
+  arti: string;
+  deskripsi: string;
+  audioFull?: Record<string, string>;
+}
+
+export interface AyatItem {
+  nomorAyat: number;
+  teksArab: string;
+  teksLatin: string;
+  teksIndonesia: string;
+  audio?: Record<string, string>;
+}
+
+export interface HadithArbain {
+  no: string;
+  judul: string;
+  arab: string;
+  indo: string;
+}
+
+export interface DoaItem {
+  id: string;
+  judul: string;
+  doa: string;
+  latin: string;
+  artinya: string;
+  source: string;
+}
+
+export interface AsmaulHusnaItem {
+  id: number;
+  arab: string;
+  latin: string;
+  indo: string;
+}
+

@@ -4,7 +4,7 @@ import { PrayerLog, PrayerName, User } from '../types';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Check, Clock, Heart } from 'lucide-react';
-import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
+import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData, getCachedPrayerData } from '../lib/prayer-times';
 import { formatTimeString } from '../lib/utils';
 import { vibrateSuccess } from '../lib/audio';
 

@@ -30,7 +30,7 @@ export const Layout = () => {
     { label: 'Jadwal', icon: Calendar, path: '/jadwal' },
     { label: 'Ibadah', icon: Clock, path: '/ibadah' },
     { label: 'Progress', icon: BarChart2, path: '/progress' },
-    { label: 'Hadis', icon: BookOpen, path: '/hadis' },
+    { label: 'Qur\'an', icon: BookOpen, path: '/quran' },
     { label: 'Menu', icon: Menu, path: '/menu' },
   ];
 

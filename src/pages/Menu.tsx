@@ -1,19 +1,20 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight, Compass, Calendar } from 'lucide-react';
+import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight, Compass, Calendar, Sparkles } from 'lucide-react';
 import { storage } from '../lib/storage';
 
 export default function Menu() {
   const user = storage.getUser();
 
-    const menuItems = [
-    { label: 'Kalender', icon: Calendar, path: '/kalender', desc: 'Kalender Hijriah & Google', color: 'text-rose-500', bg: 'bg-rose-50' },
-    { label: 'Arah Kiblat', icon: Compass, path: '/qibla', desc: 'Penunjuk arah Kakbah', color: 'text-teal-500', bg: 'bg-teal-50' },
-    { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk belajar', color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Kumpulan Hadis', icon: BookOpen, path: '/hadis', desc: 'Baca 50 hadis pilihan', color: 'text-green-500', bg: 'bg-green-50' },
-    { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi hari ini', color: 'text-purple-500', bg: 'bg-purple-50' },
-    { label: 'Tips Islami', icon: Lightbulb, path: '/tips', desc: 'Motivasi dan panduan', color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'Pengaturan', icon: SettingsIcon, path: '/settings', desc: 'Tema dan akun', color: 'text-gray-500', bg: 'bg-gray-50' },
+  const menuItems = [
+    { label: "Al-Qur'an & Hadits", icon: BookOpen, path: '/quran', desc: '114 Surat & 42 Hadits Arba\'in (MyQuran)', color: 'text-emerald-500', bg: 'bg-emerald-50' },
+    { label: 'Tools & Bantuan Islami', icon: Sparkles, path: '/tools', desc: 'Doa harian, Asmaul Husna & Konversi Hijriyah', color: 'text-amber-500', bg: 'bg-amber-50' },
+    { label: 'Kalender Islami', icon: Calendar, path: '/kalender', desc: 'Kalender Hijriah & Google Sync', color: 'text-rose-500', bg: 'bg-rose-50' },
+    { label: 'Arah Kiblat', icon: Compass, path: '/qibla', desc: 'Kompas penunjuk arah Kakbah presisi', color: 'text-teal-500', bg: 'bg-teal-50' },
+    { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk produktivitas ibadah & kerja', color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi ibadah dan produktivitas hari ini', color: 'text-purple-500', bg: 'bg-purple-50' },
+    { label: 'Tips Islami', icon: Lightbulb, path: '/tips', desc: 'Motivasi dan panduan harian', color: 'text-orange-500', bg: 'bg-orange-50' },
+    { label: 'Pengaturan', icon: SettingsIcon, path: '/settings', desc: 'Tema, audio, lokasi, dan versi aplikasi', color: 'text-gray-500', bg: 'bg-gray-50' },
   ];
 
   return (
