@@ -24,11 +24,13 @@ const DEFAULT_TIMES = {
 // Caching to avoid hitting API too much
 let cachedData: PrayerData | null = null;
 let lastFetchDate = '';
+let lastLat = 0;
+let lastLng = 0;
 
-export const fetchPrayerTimes = async (latitude: number, longitude: number): Promise<PrayerData> => {
+export const fetchPrayerTimes = async (latitude: number, longitude: number, forceRefresh: boolean = false): Promise<PrayerData> => {
   const today = format(new Date(), 'dd-MM-yyyy');
   
-  if (cachedData && lastFetchDate === today) {
+  if (!forceRefresh && cachedData && lastFetchDate === today && Math.abs(lastLat - latitude) < 0.01 && Math.abs(lastLng - longitude) < 0.01) {
     return cachedData;
   }
 
@@ -49,7 +51,8 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number): Pro
           const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
           if (geoRes.ok) {
               const geoData = await geoRes.json();
-              cityName = geoData.city || geoData.locality || geoData.principalSubdivision || "Lokasi Saat Ini";
+              // Prioritize locality (e.g. Pondok Aren) over city (South Tangerang)
+              cityName = geoData.locality || geoData.city || geoData.principalSubdivision || "Lokasi Saat Ini";
           }
       } catch (e) {
           console.warn("Reverse geocoding failed");
@@ -75,6 +78,8 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number): Pro
 
     cachedData = prayerData;
     lastFetchDate = today;
+    lastLat = latitude;
+    lastLng = longitude;
     return prayerData;
 
   } catch (error) {

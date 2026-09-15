@@ -103,12 +103,13 @@ export default function Dashboard() {
         async (position) => {
           const lat = position.coords.latitude;
           const lng = position.coords.longitude;
-          if (user) {
-            const updatedUser = { ...user, location: { latitude: lat, longitude: lng } };
-            storage.setUser(updatedUser);
-            setUser(updatedUser);
-          }
-          const data = await fetchPrayerTimes(lat, lng);
+          
+          const currentUserState = user || storage.getUser() || { name: 'User' };
+          const updatedUser = { ...currentUserState, location: { latitude: lat, longitude: lng } };
+          storage.setUser(updatedUser as User);
+          setUser(updatedUser as User);
+          
+          const data = await fetchPrayerTimes(lat, lng, true); // force refresh bypass cache
           setPrayerData(data);
           updateNextPrayer(data);
           setIsFetchingLocation(false);
@@ -116,9 +117,16 @@ export default function Dashboard() {
         (error) => {
           console.error(error);
           setIsFetchingLocation(false);
-          alert("Gagal mendapatkan lokasi. Pastikan izin lokasi aktif.");
-        }
+          if (error.code === 1) {
+            alert("Izin lokasi ditolak. Jika Anda melihat ini di dalam AI Studio, pratinjau mungkin memblokir akses lokasi. Silakan klik ikon 'Open in new tab' di pojok kanan atas pratinjau lalu coba lagi.");
+          } else {
+            alert("Gagal mendapatkan lokasi. Pastikan GPS/Lokasi perangkat Anda aktif.");
+          }
+        },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
+    } else {
+      alert("Peramban Anda tidak mendukung pelacakan lokasi.");
     }
   };
 
