@@ -3,7 +3,7 @@ import { storage } from '../lib/storage';
 import { User, Task, Schedule, PrayerName } from '../types';
 import { format, differenceInMinutes, parse } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { getPrayerStatus, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
+import { getPrayerStatus, fetchPrayerTimes, PrayerData, getCachedPrayerData } from '../lib/prayer-times';
 import { MapPin, Sun, Sunrise, Sunset, Moon, Circle, AlertCircle, Calendar, RefreshCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -21,10 +21,27 @@ export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [prayerData, setPrayerData] = useState<PrayerData | null>(null);
-  const [currentPrayer, setCurrentPrayer] = useState<{ prayer: PrayerName, time: string } | null>(null);
-  const [nextPrayer, setNextPrayer] = useState<{ prayer: PrayerName, time: string, isTomorrow: boolean } | null>(null);
-  const [minutesToNext, setMinutesToNext] = useState<number>(0);
+  
+  const [prayerData, setPrayerData] = useState<PrayerData | null>(getCachedPrayerData());
+  const [currentPrayer, setCurrentPrayer] = useState<{ prayer: PrayerName, time: string } | null>(() => {
+    const cached = getCachedPrayerData();
+    return cached ? getPrayerStatus(cached.times).currentPrayer : null;
+  });
+  const [nextPrayer, setNextPrayer] = useState<{ prayer: PrayerName, time: string, isTomorrow: boolean } | null>(() => {
+    const cached = getCachedPrayerData();
+    return cached ? getPrayerStatus(cached.times).nextPrayer : null;
+  });
+  const [minutesToNext, setMinutesToNext] = useState<number>(() => {
+    const cached = getCachedPrayerData();
+    if (!cached) return 0;
+    const next = getPrayerStatus(cached.times).nextPrayer;
+    if (!next) return 0;
+    const now = new Date();
+    const nextTime = parse(next.time, 'HH:mm', new Date());
+    if (next.isTomorrow) nextTime.setDate(nextTime.getDate() + 1);
+    return differenceInMinutes(nextTime, now);
+  });
+  
   const [prayerLogs, setPrayerLogs] = useState(storage.getPrayerLog(format(new Date(), 'yyyy-MM-dd')));
   const [wisdomOfTheDay, setWisdomOfTheDay] = useState(DAILY_WISDOM[0]);
   const [isFetchingLocation, setIsFetchingLocation] = useState(false);

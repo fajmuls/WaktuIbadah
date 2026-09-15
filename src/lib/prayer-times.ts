@@ -27,6 +27,8 @@ let lastFetchDate = '';
 let lastLat = 0;
 let lastLng = 0;
 
+export const getCachedPrayerData = () => cachedData;
+
 export const fetchPrayerTimes = async (latitude: number, longitude: number, forceRefresh: boolean = false): Promise<PrayerData> => {
   const today = format(new Date(), 'dd-MM-yyyy');
   
@@ -34,31 +36,29 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
     return cachedData;
   }
 
+  let cityName = "Lokasi Anda";
+  if (latitude !== -6.2088 || longitude !== 106.8456) {
+    try {
+        const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
+        if (geoRes.ok) {
+            const geoData = await geoRes.json();
+            cityName = geoData.locality || geoData.city || geoData.principalSubdivision || "Lokasi Anda";
+        }
+    } catch (e) {
+        console.warn("Reverse geocoding failed", e);
+    }
+  } else {
+    cityName = "Jakarta, Indonesia";
+  }
+
   try {
-    // Determine timezone from browser if possible
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Asia/Jakarta';
-    const response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20&timezone=${tz}`);
+    const response = await fetch(`https://api.aladhan.com/v1/timings/${today}?latitude=${latitude}&longitude=${longitude}&method=20`);
     if (!response.ok) {
-      throw new Error('Failed to fetch prayer times');
+      throw new Error(`API returned ${response.status}`);
     }
     const jsonResponse = await response.json();
     const data = jsonResponse.data;
     
-    // Attempt reverse geocoding to get city name using a free API
-    let cityName = "Jakarta, Indonesia";
-    if (latitude !== -6.2088 || longitude !== 106.8456) {
-      try {
-          const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=id`);
-          if (geoRes.ok) {
-              const geoData = await geoRes.json();
-              // Prioritize locality (e.g. Pondok Aren) over city (South Tangerang)
-              cityName = geoData.locality || geoData.city || geoData.principalSubdivision || "Lokasi Saat Ini";
-          }
-      } catch (e) {
-          console.warn("Reverse geocoding failed");
-      }
-    }
-
     const prayerData: PrayerData = {
       times: {
         Subuh: data.timings.Fajr,
@@ -84,12 +84,16 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
 
   } catch (error) {
     console.error("Error fetching prayer times:", error);
+    // If we have old cached data, return it instead of completely breaking
+    if (cachedData) {
+      return { ...cachedData, location: cachedData.location + " (Offline)" };
+    }
     // Fallback to default if error
     return {
       times: DEFAULT_TIMES,
       imsak: "04:20",
       hijri: { day: "-", month: "-", year: "-" },
-      location: "Offline/Default"
+      location: cityName + " (Offline)"
     };
   }
 };
