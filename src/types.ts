@@ -5,6 +5,12 @@ export interface User {
   useFocusMode: boolean;
   isOnboarded: boolean;
   theme?: string;
+  timeFormat?: '24h' | '12h';
+  location?: {
+    latitude: number;
+    longitude: number;
+    city?: string;
+  };
 }
 
 export interface Task {

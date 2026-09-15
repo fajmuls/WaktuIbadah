@@ -14,3 +14,15 @@ export function formatDate(date: Date): string {
     day: "numeric",
   });
 }
+
+// Format time string (HH:mm) to 12h or 24h
+export function formatTimeString(timeStr: string, format: '12h' | '24h' = '24h'): string {
+  if (!timeStr) return '';
+  if (format === '24h') return timeStr;
+  
+  const [hours, minutes] = timeStr.split(':');
+  const h = parseInt(hours, 10);
+  const ampm = h >= 12 ? 'PM' : 'AM';
+  const h12 = h % 12 || 12;
+  return `${h12}:${minutes} ${ampm}`;
+}

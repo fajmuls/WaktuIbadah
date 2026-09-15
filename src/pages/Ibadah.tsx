@@ -1,17 +1,34 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
-import { PrayerLog, PrayerName } from '../types';
+import { PrayerLog, PrayerName, User } from '../types';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { Check, Clock, Heart } from 'lucide-react';
-import { getPrayerTimesForToday } from '../lib/prayer-times';
+import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
+import { formatTimeString } from '../lib/utils';
 
 export default function Ibadah() {
+  const [user, setUser] = useState<User | null>(null);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [log, setLog] = useState<PrayerLog>({ date: selectedDate, prayers: { Subuh: false, Zuhur: false, Asar: false, Magrib: false, Isya: false } });
+  const [prayerData, setPrayerData] = useState<PrayerData | null>(null);
 
   useEffect(() => {
+    const loadedUser = storage.getUser();
+    setUser(loadedUser);
     setLog(storage.getPrayerLog(selectedDate));
+    
+    // We only fetch for today to keep it simple, otherwise we'd need to fetch historical data from API
+    // For historical days, we just use the cached today's time as an approximation.
+    if (selectedDate === format(new Date(), 'yyyy-MM-dd')) {
+        let lat = -6.2088;
+        let lng = 106.8456;
+        if (loadedUser?.location) {
+            lat = loadedUser.location.latitude;
+            lng = loadedUser.location.longitude;
+        }
+        fetchPrayerTimes(lat, lng).then(data => setPrayerData(data));
+    }
   }, [selectedDate]);
 
   const handleToggle = (prayer: PrayerName) => {
@@ -24,7 +41,7 @@ export default function Ibadah() {
   };
 
   const prayers: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
-  const times = getPrayerTimesForToday();
+  const times = prayerData ? prayerData.times : getPrayerTimesForToday();
   const completedCount = Object.values(log.prayers).filter(Boolean).length;
   
   // Calculate messages softly
@@ -119,7 +136,7 @@ export default function Ibadah() {
                     <h4 className={`text-lg font-bold ${isCompleted ? 'text-primary' : 'text-text-main'}`}>
                       {prayer}
                     </h4>
-                    <span className="text-sm text-text-muted font-medium">{times[prayer]}</span>
+                    <span className="text-sm text-text-muted font-medium">{formatTimeString(times[prayer], user?.timeFormat || '24h')}</span>
                   </div>
                 </div>
                 

@@ -1,45 +1,147 @@
 import React, { useEffect, useState } from 'react';
 import { storage } from '../lib/storage';
-import { User, Task, Schedule } from '../types';
-import { format } from 'date-fns';
+import { User, Task, Schedule, PrayerName } from '../types';
+import { format, differenceInMinutes, parse } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { getNextPrayer, getPrayerTimesForToday } from '../lib/prayer-times';
-import { Clock, CheckCircle2, Circle, AlertCircle, Calendar } from 'lucide-react';
+import { getNextPrayer, fetchPrayerTimes, PrayerData } from '../lib/prayer-times';
+import { MapPin, Sun, Sunrise, Sunset, Moon, Circle, AlertCircle, Calendar, RefreshCcw } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { motion, AnimatePresence } from 'motion/react';
+import { formatTimeString } from '../lib/utils';
+
+const DAILY_WISDOM = [
+  { text: "Waktu Bagaikan Pedang. Jika kamu tidak memotongnya, maka ia yang akan memotongmu.", source: "Imam Syafi'i" },
+  { text: "Dua kenikmatan yang sering dilupakan oleh kebanyakan manusia adalah kesehatan dan waktu luang.", source: "HR. Bukhari" },
+  { text: "Barangsiapa yang hari ini lebih baik dari kemarin, maka ia beruntung.", source: "Ali bin Abi Thalib" },
+  { text: "Jangan menunda amal hari ini untuk esok hari.", source: "Umar bin Khattab" },
+  { text: "Waktu yang telah berlalu tidak akan pernah kembali lagi.", source: "Pepatah Arab" }
+];
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [nextPrayer, setNextPrayer] = useState(getNextPrayer());
+  const [prayerData, setPrayerData] = useState<PrayerData | null>(null);
+  const [nextPrayer, setNextPrayer] = useState<{ prayer: PrayerName, time: string, isTomorrow: boolean } | null>(null);
+  const [minutesToNext, setMinutesToNext] = useState<number>(0);
   const [prayerLogs, setPrayerLogs] = useState(storage.getPrayerLog(format(new Date(), 'yyyy-MM-dd')));
+  const [wisdomOfTheDay, setWisdomOfTheDay] = useState(DAILY_WISDOM[0]);
+  const [isFetchingLocation, setIsFetchingLocation] = useState(false);
 
   useEffect(() => {
-    setUser(storage.getUser());
+    const loadedUser = storage.getUser();
+    setUser(loadedUser);
+    
+    // Daily wisdom based on day of year
+    const dayOfYear = Math.floor((new Date().getTime() - new Date(new Date().getFullYear(), 0, 0).getTime()) / 1000 / 60 / 60 / 24);
+    setWisdomOfTheDay(DAILY_WISDOM[dayOfYear % DAILY_WISDOM.length]);
+
     const today = format(new Date(), 'yyyy-MM-dd');
     
-    // Load tasks (only pending and today or earlier)
+    // Load tasks
     const allTasks = storage.getTasks();
     const activeTasks = allTasks.filter(t => t.status !== 'Selesai' && t.deadline <= today);
     activeTasks.sort((a, b) => new Date(a.deadline).getTime() - new Date(b.deadline).getTime());
-    setTasks(activeTasks.slice(0, 3)); // Only show top 3
+    setTasks(activeTasks.slice(0, 3)); 
 
-    // Load schedules for today
+    // Load schedules
     const allSchedules = storage.getSchedules();
     const todaySchedules = allSchedules.filter(s => s.date === today);
     todaySchedules.sort((a, b) => a.startTime.localeCompare(b.startTime));
-    setSchedules(todaySchedules.slice(0, 3)); // Only show top 3 next
+    setSchedules(todaySchedules.slice(0, 3)); 
 
-    // Timer for next prayer
+    loadPrayerData(loadedUser);
+
     const interval = setInterval(() => {
-      setNextPrayer(getNextPrayer());
-    }, 60000); // update every minute
+      if (prayerData) {
+        updateNextPrayer(prayerData);
+      }
+    }, 60000); 
 
     return () => clearInterval(interval);
   }, []);
 
-  const prayerTimes = getPrayerTimesForToday();
-  const prayerDoneCount = Object.values(prayerLogs.prayers).filter(Boolean).length;
+  const loadPrayerData = async (currentUser: User | null) => {
+    let lat = -6.2088; // Default Jakarta
+    let lng = 106.8456;
+
+    if (currentUser?.location) {
+      lat = currentUser.location.latitude;
+      lng = currentUser.location.longitude;
+    } else {
+      // Try to get location
+      if (navigator.geolocation) {
+        setIsFetchingLocation(true);
+        try {
+          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+            navigator.geolocation.getCurrentPosition(resolve, reject);
+          });
+          lat = position.coords.latitude;
+          lng = position.coords.longitude;
+          
+          if (currentUser) {
+            const updatedUser = { ...currentUser, location: { latitude: lat, longitude: lng } };
+            storage.setUser(updatedUser);
+            setUser(updatedUser);
+          }
+        } catch (error) {
+          console.warn("Location permission denied or failed, using default.");
+        }
+        setIsFetchingLocation(false);
+      }
+    }
+
+    const data = await fetchPrayerTimes(lat, lng);
+    setPrayerData(data);
+    updateNextPrayer(data);
+  };
+
+  const updateNextPrayer = (data: PrayerData) => {
+    const next = getNextPrayer(data.times);
+    setNextPrayer(next);
+    
+    const now = new Date();
+    const nextTime = parse(next.time, 'HH:mm', new Date());
+    if (next.isTomorrow) nextTime.setDate(nextTime.getDate() + 1);
+    
+    setMinutesToNext(differenceInMinutes(nextTime, now));
+  };
+
+  const handleRefreshLocation = () => {
+    if (navigator.geolocation) {
+      setIsFetchingLocation(true);
+      navigator.geolocation.getCurrentPosition(
+        async (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
+          if (user) {
+            const updatedUser = { ...user, location: { latitude: lat, longitude: lng } };
+            storage.setUser(updatedUser);
+            setUser(updatedUser);
+          }
+          const data = await fetchPrayerTimes(lat, lng);
+          setPrayerData(data);
+          updateNextPrayer(data);
+          setIsFetchingLocation(false);
+        },
+        (error) => {
+          console.error(error);
+          setIsFetchingLocation(false);
+          alert("Gagal mendapatkan lokasi. Pastikan izin lokasi aktif.");
+        }
+      );
+    }
+  };
+
+  const prayerIcons = {
+    Subuh: <Sunrise className="w-6 h-6" />,
+    Zuhur: <Sun className="w-6 h-6" />,
+    Asar: <Sun className="w-6 h-6 opacity-70" />,
+    Magrib: <Sunset className="w-6 h-6" />,
+    Isya: <Moon className="w-6 h-6" />
+  };
+
+  const prayersList: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
@@ -50,8 +152,13 @@ export default function Dashboard() {
           <h1 className="text-2xl font-bold text-text-main">
             Assalamu'alaikum, {user?.name?.split(' ')[0]}!
           </h1>
-          <p className="text-text-muted mt-1 font-medium text-sm">
+          <p className="text-text-muted mt-1 font-medium text-sm flex items-center gap-2">
             {format(new Date(), 'EEEE, d MMMM yyyy', { locale: id })}
+            {prayerData && (
+              <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs font-bold">
+                {prayerData.hijri.day} {prayerData.hijri.month} {prayerData.hijri.year} H
+              </span>
+            )}
           </p>
         </div>
         <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold shadow-sm">
@@ -59,29 +166,80 @@ export default function Dashboard() {
         </div>
       </header>
 
-      {/* Main Focus: Next Prayer */}
+      {/* Prayer Focus UI */}
       <section className="bg-primary text-white rounded-3xl p-6 shadow-xl shadow-primary/20 relative overflow-hidden">
-        <div className="absolute top-0 right-0 p-8 opacity-10 pointer-events-none">
-          <Clock className="w-32 h-32" />
-        </div>
-        <div className="relative z-10">
-          <h2 className="text-primary-light font-medium mb-1">Salat Berikutnya</h2>
-          <div className="flex items-end gap-3 mb-2">
-            <span className="text-4xl font-bold tracking-tight">{nextPrayer.prayer}</span>
-            <span className="text-xl font-medium mb-1 opacity-90">{nextPrayer.time}</span>
+        <div className="flex justify-between items-start mb-6">
+          <div className="flex items-center gap-2 text-primary-light bg-white/10 px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm">
+            <MapPin className="w-4 h-4" />
+            {isFetchingLocation ? 'Mencari lokasi...' : (prayerData?.location || 'Jakarta, Indonesia')}
+            <button onClick={handleRefreshLocation} className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors">
+              <RefreshCcw className={`w-3 h-3 ${isFetchingLocation ? 'animate-spin' : ''}`} />
+            </button>
           </div>
-          {nextPrayer.isTomorrow && <p className="text-sm opacity-80">(Besok)</p>}
           
-          <div className="mt-6 flex items-center justify-between">
-            <div className="text-sm font-medium">Ibadah hari ini</div>
-            <div className="text-sm font-bold">{prayerDoneCount}/5</div>
+          {prayerData && (
+            <div className="text-right">
+              <div className="text-xs text-primary-light">Imsak {formatTimeString(prayerData.imsak, user?.timeFormat || '24h')}</div>
+              <div className="text-xs text-primary-light mt-0.5">Iftar {formatTimeString(prayerData.times.Magrib, user?.timeFormat || '24h')}</div>
+            </div>
+          )}
+        </div>
+
+        {nextPrayer && (
+          <div className="text-center mb-8">
+            <h2 className="text-primary-light font-medium mb-2">Salat Berikutnya</h2>
+            <div className="text-5xl font-bold tracking-tight mb-2 flex items-center justify-center gap-3">
+              {prayerIcons[nextPrayer.prayer]}
+              {nextPrayer.prayer}
+            </div>
+            <div className="text-xl opacity-90 font-medium">
+              {formatTimeString(nextPrayer.time, user?.timeFormat || '24h')} {nextPrayer.isTomorrow && <span className="text-sm">(Besok)</span>}
+            </div>
+            {minutesToNext > 0 && minutesToNext < 120 && (
+              <div className="mt-3 inline-block bg-white/20 px-4 py-1.5 rounded-full text-sm font-bold animate-pulse">
+                Dalam {minutesToNext} menit
+              </div>
+            )}
           </div>
-          <div className="w-full bg-white/20 h-2 rounded-full mt-2 overflow-hidden">
-            <div 
-              className="bg-white h-full rounded-full transition-all duration-700"
-              style={{ width: `${(prayerDoneCount / 5) * 100}%` }}
-            />
-          </div>
+        )}
+
+        {/* Swipeable Prayer Times */}
+        <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 hide-scrollbar snap-x">
+          {prayerData && prayersList.map((p) => {
+            const isNext = nextPrayer?.prayer === p && !nextPrayer?.isTomorrow;
+            const isPassed = nextPrayer?.prayer !== p && parse(prayerData.times[p], 'HH:mm', new Date()) < new Date();
+            
+            return (
+              <motion.div 
+                key={p}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className={`snap-center flex flex-col items-center justify-center min-w-[80px] p-3 rounded-2xl border transition-all ${
+                  isNext 
+                    ? 'bg-white text-primary border-white shadow-lg' 
+                    : isPassed
+                      ? 'bg-white/5 border-white/10 text-white/50'
+                      : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                }`}
+              >
+                <div className="mb-2 opacity-80">{prayerIcons[p]}</div>
+                <span className="text-xs font-bold">{p}</span>
+                <span className={`text-sm mt-1 ${isNext ? 'font-bold' : 'font-medium'}`}>{formatTimeString(prayerData.times[p], user?.timeFormat || '24h')}</span>
+              </motion.div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* Daily Wisdom */}
+      <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-6 border border-amber-100 flex gap-4 items-start">
+        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm text-xl">
+          💡
+        </div>
+        <div>
+          <h3 className="text-sm font-bold text-secondary mb-1">Daily Wisdom</h3>
+          <p className="text-text-main italic text-sm leading-relaxed mb-2">"{wisdomOfTheDay.text}"</p>
+          <p className="text-xs text-text-muted font-medium">— {wisdomOfTheDay.source}</p>
         </div>
       </section>
 
@@ -93,7 +251,7 @@ export default function Dashboard() {
               <Calendar className="w-5 h-5 text-secondary" />
               Jadwal Hari Ini
             </h3>
-            <Link to="/jadwal" className="text-sm text-primary font-medium hover:underline">Lihat Semua</Link>
+            <Link to="/jadwal" className="text-sm text-primary font-medium hover:underline">Semua</Link>
           </div>
           
           {schedules.length > 0 ? (
@@ -102,7 +260,6 @@ export default function Dashboard() {
                 <div key={schedule.id} className="flex gap-4 items-center p-3 rounded-2xl hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-100">
                   <div className="text-center min-w-[60px]">
                     <div className="text-sm font-bold text-text-main">{schedule.startTime}</div>
-                    <div className="text-xs text-text-muted">{schedule.endTime}</div>
                   </div>
                   <div className="w-1 bg-gray-200 h-10 rounded-full" />
                   <div>
@@ -115,11 +272,9 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className="text-center py-6 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <p className="text-text-muted text-sm mb-3">Belum ada aktivitas hari ini.</p>
-              <Link to="/jadwal/baru" className="text-primary font-semibold text-sm hover:underline">
-                + Tambah Aktivitas
-              </Link>
+            <div className="text-center py-4 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <p className="text-text-muted text-sm mb-2">Belum ada aktivitas.</p>
+              <Link to="/jadwal/baru" className="text-primary font-semibold text-sm hover:underline">+ Tambah</Link>
             </div>
           )}
         </section>
@@ -131,7 +286,7 @@ export default function Dashboard() {
               <AlertCircle className="w-5 h-5 text-red-500" />
               Tugas Mendekat
             </h3>
-            <Link to="/tugas" className="text-sm text-primary font-medium hover:underline">Lihat Semua</Link>
+            <Link to="/tugas" className="text-sm text-primary font-medium hover:underline">Semua</Link>
           </div>
 
           {tasks.length > 0 ? (
@@ -145,36 +300,19 @@ export default function Dashboard() {
                       <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-0.5 rounded-md">
                         {format(new Date(task.deadline), 'dd MMM', { locale: id })}
                       </span>
-                      {task.priority === 'Tinggi' && (
-                        <span className="text-xs text-orange-600 font-medium bg-orange-50 px-2 py-0.5 rounded-md">
-                          Prioritas Tinggi
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           ) : (
-             <div className="text-center py-6 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-             <p className="text-text-muted text-sm mb-3">Semua tugas aman. Tambahkan tugas baru jika ada.</p>
-             <Link to="/tugas/baru" className="text-primary font-semibold text-sm hover:underline">
-               + Tambah Tugas
-             </Link>
+             <div className="text-center py-4 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+             <p className="text-text-muted text-sm mb-2">Semua tugas aman.</p>
+             <Link to="/tugas/baru" className="text-primary font-semibold text-sm hover:underline">+ Tambah</Link>
            </div>
           )}
         </section>
       </div>
-
-      {/* Daily Islamic Reminder */}
-      <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-6 border border-amber-100">
-        <h3 className="text-sm font-bold text-secondary mb-2">💡 Reminder Hari Ini</h3>
-        <p className="text-text-main italic">
-          "Dua kenikmatan yang sering dilupakan oleh kebanyakan manusia adalah kesehatan dan waktu luang." 
-        </p>
-        <p className="text-xs text-text-muted mt-2 font-medium">— HR. Bukhari</p>
-      </section>
-
     </div>
   );
 }

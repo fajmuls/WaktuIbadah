@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
 import { User, AppVersion } from '../types';
-import { User as UserIcon, Bell, Trash2, Info, ChevronRight, Check } from 'lucide-react';
+import { User as UserIcon, Bell, Trash2, Info, ChevronRight, Check, Clock } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function Settings() {
@@ -107,6 +107,31 @@ export default function Settings() {
           >
             <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-sm ${user.reminderEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
           </button>
+        </div>
+
+        {/* Format Waktu */}
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center text-blue-500">
+              <Clock className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-text-main">Format Waktu</h3>
+              <p className="text-sm text-text-muted">12 Jam (AM/PM) atau 24 Jam</p>
+            </div>
+          </div>
+          <select 
+            value={user.timeFormat || '24h'}
+            onChange={(e) => {
+              const updated = { ...user, timeFormat: e.target.value as '12h' | '24h' };
+              storage.setUser(updated);
+              setUser(updated);
+            }}
+            className="p-2 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary text-sm font-medium"
+          >
+            <option value="24h">24 Jam</option>
+            <option value="12h">12 Jam</option>
+          </select>
         </div>
 
         {/* Hapus Data */}
