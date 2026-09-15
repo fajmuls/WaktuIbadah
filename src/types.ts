@@ -11,7 +11,18 @@ export interface User {
     latitude: number;
     longitude: number;
     city?: string;
+    cityId?: string;
   };
+}
+
+export interface ReminderSettings {
+  reminderType: 'sound_and_vibrate' | 'sound_only' | 'vibrate_only';
+  alarmTone: 'azan_makkah' | 'chime_peaceful' | 'beep_classic';
+  reminderPrayers: boolean;
+  reminderImsak: boolean;
+  reminderDeadlines: boolean;
+  reminderSchedule: boolean;
+  reminderPuasa: boolean;
 }
 
 export interface Task {
@@ -103,5 +114,45 @@ export interface AsmaulHusnaItem {
   arab: string;
   latin: string;
   indo: string;
+}
+
+export interface QuranLog {
+  id: string;
+  date: string; // YYYY-MM-DD
+  surahNumber: number;
+  surahName: string;
+  startAyat: number;
+  endAyat: number;
+  totalAyat: number;
+  completedAt: string;
+  notes?: string;
+}
+
+export interface FavoriteAyah {
+  id: string;
+  surahNumber: number;
+  surahName: string;
+  ayahNumber: number;
+  arab: string;
+  latin: string;
+  translation: string;
+  addedAt: string;
+}
+
+export interface FavoriteHadith {
+  id: string;
+  source?: 'arbain' | 'perawi';
+  perawiName?: string;
+  no: string;
+  judul?: string;
+  arab: string;
+  indo: string;
+  addedAt: string;
+}
+
+export interface HadithPerawiInfo {
+  name: string;
+  slug: string;
+  total: number;
 }
 

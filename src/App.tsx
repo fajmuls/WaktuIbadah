@@ -3,9 +3,9 @@ import { Layout } from './components/Layout';
 import { useEffect, useState, useRef } from 'react';
 import { storage, CURRENT_VERSION } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
-import { getPrayerTimesForToday } from './lib/prayer-times';
-import { format } from 'date-fns';
-import { playAlarmSound } from './lib/audio';
+import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } from './lib/prayer-times';
+import { format, addDays } from 'date-fns';
+import { playAlarmSound, vibratePrayerAlarm } from './lib/audio';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -73,48 +73,95 @@ export default function App() {
 
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 2000); // Show splash for 2 seconds
+    }, 1800);
 
     const checkAlarms = () => {
       const currentUser = storage.getUser();
       if (!currentUser?.reminderEnabled) return;
-      
+
+      const reminderSettings = storage.getReminderSettings();
       const now = new Date();
       const currentHHMM = format(now, 'HH:mm');
       const today = format(now, 'yyyy-MM-dd');
       
-      // Check Prayers
-      const prayerTimes = getPrayerTimesForToday();
-      for (const [prayer, time] of Object.entries(prayerTimes)) {
-        if (time === currentHHMM && !notifiedTimes.current.has(`prayer-${prayer}-${today}`)) {
-          notifiedTimes.current.add(`prayer-${prayer}-${today}`);
-          if (currentUser.soundEnabled !== false) playAlarmSound();
-          if (Notification.permission === 'granted') {
-            new Notification(`Waktu Salat ${prayer}`, {
-              body: `Saatnya menunaikan ibadah salat ${prayer}.`,
+      const cached = getCachedPrayerData();
+      const times = cached?.times || getPrayerTimesForToday();
+
+      // Trigger Helper: sound and vibration based on user settings
+      const triggerAlarmEffect = () => {
+        if (reminderSettings.reminderType !== 'sound_only') {
+          vibratePrayerAlarm();
+        }
+        if (currentUser.soundEnabled !== false && reminderSettings.reminderType !== 'vibrate_only') {
+          playAlarmSound(reminderSettings.alarmTone, reminderSettings.reminderType);
+        }
+      };
+
+      // 1. Check Prayers (Subuh, Zuhur, Asar, Magrib, Isya)
+      if (reminderSettings.reminderPrayers !== false) {
+        const prayerList = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'] as const;
+        for (const prayer of prayerList) {
+          const prayerTime = times[prayer];
+          if (prayerTime === currentHHMM && !notifiedTimes.current.has(`prayer-${prayer}-${today}`)) {
+            notifiedTimes.current.add(`prayer-${prayer}-${today}`);
+            triggerAlarmEffect();
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`Waktu Salat ${prayer} Tiba`, {
+                body: `Allahu Akbar! Saatnya menunaikan ibadah salat ${prayer}.`,
+                icon: 'https://files.catbox.moe/3b6dqo.png'
+              });
+            }
+          }
+        }
+      }
+
+      // 2. Check Imsak Reminder
+      if (reminderSettings.reminderImsak && times['Imsak']) {
+        if (times['Imsak'] === currentHHMM && !notifiedTimes.current.has(`imsak-${today}`)) {
+          notifiedTimes.current.add(`imsak-${today}`);
+          triggerAlarmEffect();
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(`Waktu Imsak Telah Tiba`, {
+              body: `Waktu Imsak (${times['Imsak']}). Segera selesaikan santap sahur sebelum adzan Subuh.`,
               icon: 'https://files.catbox.moe/3b6dqo.png'
             });
           }
         }
       }
-      
-      // Check Schedules
-      const schedules = storage.getSchedules().filter(s => s.date === today);
-      for (const s of schedules) {
-        if (s.startTime === currentHHMM && !notifiedTimes.current.has(`schedule-${s.id}`)) {
-          notifiedTimes.current.add(`schedule-${s.id}`);
-          if (currentUser.soundEnabled !== false) playAlarmSound();
-          if (Notification.permission === 'granted') {
-            new Notification(`Jadwal: ${s.title}`, {
-              body: `Aktivitas ${s.title} dimulai sekarang.`,
+
+      // 3. Check Sunnah Fasting Reminder (every night at 20:00 / 8 PM)
+      if (reminderSettings.reminderPuasa && currentHHMM === '20:00' && !notifiedTimes.current.has(`puasa-${today}`)) {
+        notifiedTimes.current.add(`puasa-${today}`);
+        const fastingInfo = getSunnahFastingInfo(cached?.hijri?.day || "1", now);
+        if (fastingInfo && fastingInfo.isPuasaTomorrow) {
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(`Pengingat Puasa Sunnah`, {
+              body: `${fastingInfo.name}. ${fastingInfo.desc}`,
               icon: 'https://files.catbox.moe/3b6dqo.png'
             });
+          }
+        }
+      }
+
+      // 4. Check Schedules
+      if (reminderSettings.reminderSchedule !== false) {
+        const schedules = storage.getSchedules().filter(s => s.date === today);
+        for (const s of schedules) {
+          if (s.startTime === currentHHMM && !notifiedTimes.current.has(`schedule-${s.id}`)) {
+            notifiedTimes.current.add(`schedule-${s.id}`);
+            triggerAlarmEffect();
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification(`Jadwal: ${s.title}`, {
+                body: `Aktivitas ${s.title} dimulai sekarang.`,
+                icon: 'https://files.catbox.moe/3b6dqo.png'
+              });
+            }
           }
         }
       }
     };
 
-    const alarmInterval = setInterval(checkAlarms, 30000); // Check every 30s
+    const alarmInterval = setInterval(checkAlarms, 25000); // Check every 25s
     if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
       Notification.requestPermission();
     }
@@ -148,15 +195,16 @@ export default function App() {
                 <Route path="/ibadah" element={<Ibadah />} />
                 <Route path="/progress" element={<Progress />} />
                 <Route path="/menu" element={<Menu />} />
+                <Route path="/quran-hadis" element={<QuranHadis />} />
+                <Route path="/tools" element={<Tools />} />
                 <Route path="/focus" element={<FocusMode />} />
                 <Route path="/reflection" element={<Reflection />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/tips" element={<Tips />} />
-                <Route path="/quran" element={<QuranHadis />} />
-                <Route path="/hadis" element={<QuranHadis />} />
-                <Route path="/tools" element={<Tools />} />
                 <Route path="/kalender" element={<Kalender />} />
                 <Route path="/qibla" element={<Qibla />} />
+                
+                {/* Fallback to Dashboard */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             )}

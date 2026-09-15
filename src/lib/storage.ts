@@ -1,4 +1,4 @@
-import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion } from "../types";
+import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem } from "../types";
 
 const KEYS = {
   USER: "wi_user",
@@ -9,9 +9,24 @@ const KEYS = {
   REFLECTIONS: "wi_reflections",
   VERSION: "wi_version",
   PRAYER_CACHE: "wi_prayer_cache",
+  QURAN_LOGS: "wi_quran_logs",
+  FAVORITE_AYAHS: "wi_favorite_ayahs",
+  FAVORITE_HADITHS: "wi_favorite_hadiths",
+  OFFLINE_SURAHS: "wi_offline_surahs",
+  REMINDER_SETTINGS: "wi_reminder_settings",
 };
 
-export const CURRENT_VERSION = "1.2.0";
+export const CURRENT_VERSION = "1.4.0";
+
+export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
+  reminderType: 'sound_and_vibrate',
+  alarmTone: 'azan_makkah',
+  reminderPrayers: true,
+  reminderImsak: true,
+  reminderDeadlines: true,
+  reminderSchedule: true,
+  reminderPuasa: true,
+};
 
 // --- Generic Storage Helpers ---
 function getItem<T>(key: string, defaultValue: T): T {
@@ -85,6 +100,82 @@ export const storage = {
 
   getPrayerCache: () => getItem<any>(KEYS.PRAYER_CACHE, null),
   setPrayerCache: (data: any) => setItem(KEYS.PRAYER_CACHE, data),
+
+  // Quran Tilawah Logs
+  getQuranLogs: () => getItem<QuranLog[]>(KEYS.QURAN_LOGS, []),
+  setQuranLogs: (logs: QuranLog[]) => setItem(KEYS.QURAN_LOGS, logs),
+  addQuranLog: (log: QuranLog) => {
+    const logs = storage.getQuranLogs();
+    setItem(KEYS.QURAN_LOGS, [log, ...logs]);
+  },
+  deleteQuranLog: (id: string) => {
+    const logs = storage.getQuranLogs().filter(l => l.id !== id);
+    setItem(KEYS.QURAN_LOGS, logs);
+  },
+  getQuranLogsByDate: (date: string) => {
+    return storage.getQuranLogs().filter(l => l.date === date);
+  },
+
+  // Favorite Ayahs
+  getFavoriteAyahs: () => getItem<FavoriteAyah[]>(KEYS.FAVORITE_AYAHS, []),
+  addFavoriteAyah: (ayah: FavoriteAyah) => {
+    const list = storage.getFavoriteAyahs();
+    if (!list.some(a => a.id === ayah.id)) {
+      setItem(KEYS.FAVORITE_AYAHS, [ayah, ...list]);
+    }
+  },
+  removeFavoriteAyah: (id: string) => {
+    const list = storage.getFavoriteAyahs().filter(a => a.id !== id);
+    setItem(KEYS.FAVORITE_AYAHS, list);
+  },
+  isAyahFavorite: (id: string) => {
+    return storage.getFavoriteAyahs().some(a => a.id === id);
+  },
+
+  // Favorite Hadiths
+  getFavoriteHadiths: () => getItem<FavoriteHadith[]>(KEYS.FAVORITE_HADITHS, []),
+  addFavoriteHadith: (hadith: FavoriteHadith) => {
+    const list = storage.getFavoriteHadiths();
+    if (!list.some(h => h.id === hadith.id)) {
+      setItem(KEYS.FAVORITE_HADITHS, [hadith, ...list]);
+    }
+  },
+  removeFavoriteHadith: (id: string) => {
+    const list = storage.getFavoriteHadiths().filter(h => h.id !== id);
+    setItem(KEYS.FAVORITE_HADITHS, list);
+  },
+  isHadithFavorite: (id: string) => {
+    return storage.getFavoriteHadiths().some(h => h.id === id);
+  },
+
+  // Offline Surahs
+  getOfflineSurahs: () => getItem<Record<string, { surah: SurahItem; ayahs: AyatItem[]; savedAt: string }>>(KEYS.OFFLINE_SURAHS, {}),
+  saveOfflineSurah: (surah: SurahItem, ayahs: AyatItem[]) => {
+    const current = storage.getOfflineSurahs();
+    current[surah.nomor.toString()] = {
+      surah,
+      ayahs,
+      savedAt: new Date().toISOString()
+    };
+    setItem(KEYS.OFFLINE_SURAHS, current);
+  },
+  removeOfflineSurah: (surahNumber: number) => {
+    const current = storage.getOfflineSurahs();
+    delete current[surahNumber.toString()];
+    setItem(KEYS.OFFLINE_SURAHS, current);
+  },
+  isSurahOffline: (surahNumber: number) => {
+    const current = storage.getOfflineSurahs();
+    return !!current[surahNumber.toString()];
+  },
+  getOfflineSurahData: (surahNumber: number) => {
+    const current = storage.getOfflineSurahs();
+    return current[surahNumber.toString()] || null;
+  },
+
+  // Reminder Settings
+  getReminderSettings: () => getItem<ReminderSettings>(KEYS.REMINDER_SETTINGS, DEFAULT_REMINDER_SETTINGS),
+  setReminderSettings: (settings: ReminderSettings) => setItem(KEYS.REMINDER_SETTINGS, settings),
 
   clearAll: () => localStorage.clear(),
 };
