@@ -1,8 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { storage } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
+import { getPrayerTimesForToday } from './lib/prayer-times';
+import { format } from 'date-fns';
+import { playAlarmSound } from './lib/audio';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -16,6 +19,7 @@ import FocusMode from './pages/FocusMode';
 import Reflection from './pages/Reflection';
 import Settings from './pages/Settings';
 import Tips from './pages/Tips';
+import Hadis from './pages/Hadis';
 
 const SplashScreen = () => (
   <motion.div 
@@ -47,6 +51,7 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [hasOnboarded, setHasOnboarded] = useState(false);
+  const notifiedTimes = useRef<Set<string>>(new Set());
 
   useEffect(() => {
     const user = storage.getUser();
@@ -59,7 +64,54 @@ export default function App() {
       setShowSplash(false);
     }, 2000); // Show splash for 2 seconds
 
-    return () => clearTimeout(timer);
+    const checkAlarms = () => {
+      const currentUser = storage.getUser();
+      if (!currentUser?.reminderEnabled) return;
+      
+      const now = new Date();
+      const currentHHMM = format(now, 'HH:mm');
+      const today = format(now, 'yyyy-MM-dd');
+      
+      // Check Prayers
+      const prayerTimes = getPrayerTimesForToday();
+      for (const [prayer, time] of Object.entries(prayerTimes)) {
+        if (time === currentHHMM && !notifiedTimes.current.has(`prayer-${prayer}-${today}`)) {
+          notifiedTimes.current.add(`prayer-${prayer}-${today}`);
+          if (currentUser.soundEnabled !== false) playAlarmSound();
+          if (Notification.permission === 'granted') {
+            new Notification(`Waktu Salat ${prayer}`, {
+              body: `Saatnya menunaikan ibadah salat ${prayer}.`,
+              icon: 'https://files.catbox.moe/3b6dqo.png'
+            });
+          }
+        }
+      }
+      
+      // Check Schedules
+      const schedules = storage.getSchedules().filter(s => s.date === today);
+      for (const s of schedules) {
+        if (s.startTime === currentHHMM && !notifiedTimes.current.has(`schedule-${s.id}`)) {
+          notifiedTimes.current.add(`schedule-${s.id}`);
+          if (currentUser.soundEnabled !== false) playAlarmSound();
+          if (Notification.permission === 'granted') {
+            new Notification(`Jadwal: ${s.title}`, {
+              body: `Aktivitas ${s.title} dimulai sekarang.`,
+              icon: 'https://files.catbox.moe/3b6dqo.png'
+            });
+          }
+        }
+      }
+    };
+
+    const alarmInterval = setInterval(checkAlarms, 30000); // Check every 30s
+    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+      Notification.requestPermission();
+    }
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(alarmInterval);
+    };
   }, []);
 
   if (!isReady) return null;
@@ -89,6 +141,7 @@ export default function App() {
                 <Route path="/reflection" element={<Reflection />} />
                 <Route path="/settings" element={<Settings />} />
                 <Route path="/tips" element={<Tips />} />
+                <Route path="/hadis" element={<Hadis />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Route>
             )}

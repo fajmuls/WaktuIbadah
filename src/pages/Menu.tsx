@@ -6,8 +6,9 @@ import { storage } from '../lib/storage';
 export default function Menu() {
   const user = storage.getUser();
 
-  const menuItems = [
+    const menuItems = [
     { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk belajar', color: 'text-blue-500', bg: 'bg-blue-50' },
+    { label: 'Kumpulan Hadis', icon: BookOpen, path: '/hadis', desc: 'Baca 50 hadis pilihan', color: 'text-green-500', bg: 'bg-green-50' },
     { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi hari ini', color: 'text-purple-500', bg: 'bg-purple-50' },
     { label: 'Tips Islami', icon: Lightbulb, path: '/tips', desc: 'Motivasi dan panduan', color: 'text-amber-500', bg: 'bg-amber-50' },
     { label: 'Pengaturan', icon: SettingsIcon, path: '/settings', desc: 'Tema dan akun', color: 'text-gray-500', bg: 'bg-gray-50' },

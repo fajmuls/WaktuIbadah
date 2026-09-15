@@ -1,18 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings } from 'lucide-react';
+import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
+import { playClickSound } from '../lib/audio';
+import { storage } from '../lib/storage';
 
 export const Layout = () => {
   const [isQuickAddOpen, setQuickAddOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (target.closest('button') || target.closest('a')) {
+        const user = storage.getUser();
+        if (user && user.soundEnabled !== false) {
+          playClickSound();
+        }
+      }
+    };
+    
+    document.addEventListener('click', handleGlobalClick);
+    return () => document.removeEventListener('click', handleGlobalClick);
+  }, []);
 
   const navItems = [
     { label: 'Home', icon: Home, path: '/' },
     { label: 'Jadwal', icon: Calendar, path: '/jadwal' },
     { label: 'Ibadah', icon: Clock, path: '/ibadah' },
     { label: 'Progress', icon: BarChart2, path: '/progress' },
+    { label: 'Hadis', icon: BookOpen, path: '/hadis' },
     { label: 'Menu', icon: Menu, path: '/menu' },
   ];
 

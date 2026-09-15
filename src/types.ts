@@ -6,6 +6,7 @@ export interface User {
   isOnboarded: boolean;
   theme?: string;
   timeFormat?: '24h' | '12h';
+  soundEnabled?: boolean;
   location?: {
     latitude: number;
     longitude: number;

@@ -69,25 +69,10 @@ export default function Dashboard() {
       lat = currentUser.location.latitude;
       lng = currentUser.location.longitude;
     } else {
-      // Try to get location
-      if (navigator.geolocation) {
-        setIsFetchingLocation(true);
-        try {
-          const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-            navigator.geolocation.getCurrentPosition(resolve, reject);
-          });
-          lat = position.coords.latitude;
-          lng = position.coords.longitude;
-          
-          if (currentUser) {
-            const updatedUser = { ...currentUser, location: { latitude: lat, longitude: lng } };
-            storage.setUser(updatedUser);
-            setUser(updatedUser);
-          }
-        } catch (error) {
-          console.warn("Location permission denied or failed, using default.");
-        }
-        setIsFetchingLocation(false);
+      // Prompt user to enable location but default to Jakarta if not
+      if (navigator.geolocation && !isFetchingLocation && !prayerData) {
+        // We do not auto-prompt here aggressively to avoid blocking, user can click the refresh button.
+        // We just fetch Jakarta first.
       }
     }
 
@@ -134,46 +119,47 @@ export default function Dashboard() {
   };
 
   const prayerIcons = {
-    Subuh: <Sunrise className="w-6 h-6" />,
-    Zuhur: <Sun className="w-6 h-6" />,
-    Asar: <Sun className="w-6 h-6 opacity-70" />,
-    Magrib: <Sunset className="w-6 h-6" />,
-    Isya: <Moon className="w-6 h-6" />
+    Subuh: <Sunrise className="w-5 h-5" />,
+    Zuhur: <Sun className="w-5 h-5 text-amber-300" />,
+    Asar: <Sun className="w-5 h-5 opacity-70" />,
+    Magrib: <Sunset className="w-5 h-5 text-orange-300" />,
+    Isya: <Moon className="w-5 h-5" />
   };
 
   const prayersList: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-16">
       
       {/* Header section */}
       <header className="flex justify-between items-start mb-2">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">
+          <h1 className="text-xl font-bold text-text-main">
             Assalamu'alaikum, {user?.name?.split(' ')[0]}!
           </h1>
-          <p className="text-text-muted mt-1 font-medium text-sm flex items-center gap-2">
-            {format(new Date(), 'EEEE, d MMMM yyyy', { locale: id })}
+          <p className="text-text-muted mt-1 font-medium text-xs flex items-center gap-2">
+            {format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}
             {prayerData && (
-              <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-xs font-bold">
+              <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-[10px] font-bold">
                 {prayerData.hijri.day} {prayerData.hijri.month} {prayerData.hijri.year} H
               </span>
             )}
           </p>
         </div>
-        <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold shadow-sm">
+        <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold shadow-sm">
           {user?.name?.charAt(0).toUpperCase()}
         </div>
       </header>
 
       {/* Prayer Focus UI */}
-      <section className="bg-primary text-white rounded-3xl p-6 shadow-xl shadow-primary/20 relative overflow-hidden">
+      <section className="bg-primary text-white rounded-2xl p-5 shadow-lg shadow-primary/20 relative overflow-hidden">
         <div className="flex justify-between items-start mb-6">
-          <div className="flex items-center gap-2 text-primary-light bg-white/10 px-3 py-1.5 rounded-full text-sm font-medium backdrop-blur-sm">
-            <MapPin className="w-4 h-4" />
+          <div className="flex items-center gap-2 text-primary-light bg-white/10 px-3 py-1.5 rounded-full text-xs font-medium backdrop-blur-sm">
+            <MapPin className="w-3 h-3" />
             {isFetchingLocation ? 'Mencari lokasi...' : (prayerData?.location || 'Jakarta, Indonesia')}
-            <button onClick={handleRefreshLocation} className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors">
+            <button onClick={handleRefreshLocation} className="ml-1 p-1 hover:bg-white/20 rounded-full transition-colors flex items-center gap-1">
               <RefreshCcw className={`w-3 h-3 ${isFetchingLocation ? 'animate-spin' : ''}`} />
+              <span className="sr-only">Refresh Lokasi</span>
             </button>
           </div>
           
@@ -186,17 +172,17 @@ export default function Dashboard() {
         </div>
 
         {nextPrayer && (
-          <div className="text-center mb-8">
-            <h2 className="text-primary-light font-medium mb-2">Salat Berikutnya</h2>
-            <div className="text-5xl font-bold tracking-tight mb-2 flex items-center justify-center gap-3">
+          <div className="text-center mb-6">
+            <h2 className="text-primary-light font-medium text-sm mb-2">Salat Berikutnya</h2>
+            <div className="text-4xl font-bold tracking-tight mb-2 flex items-center justify-center gap-3">
               {prayerIcons[nextPrayer.prayer]}
               {nextPrayer.prayer}
             </div>
-            <div className="text-xl opacity-90 font-medium">
+            <div className="text-lg opacity-90 font-medium">
               {formatTimeString(nextPrayer.time, user?.timeFormat || '24h')} {nextPrayer.isTomorrow && <span className="text-sm">(Besok)</span>}
             </div>
             {minutesToNext > 0 && minutesToNext < 120 && (
-              <div className="mt-3 inline-block bg-white/20 px-4 py-1.5 rounded-full text-sm font-bold animate-pulse">
+              <div className="mt-3 inline-block bg-white/20 px-3 py-1 rounded-full text-xs font-bold animate-pulse">
                 Dalam {minutesToNext} menit
               </div>
             )}
@@ -204,7 +190,7 @@ export default function Dashboard() {
         )}
 
         {/* Swipeable Prayer Times */}
-        <div className="flex gap-3 overflow-x-auto pb-2 -mx-2 px-2 hide-scrollbar snap-x">
+        <div className="flex gap-2 overflow-x-auto pb-2 -mx-2 px-2 hide-scrollbar snap-x">
           {prayerData && prayersList.map((p) => {
             const isNext = nextPrayer?.prayer === p && !nextPrayer?.isTomorrow;
             const isPassed = nextPrayer?.prayer !== p && parse(prayerData.times[p], 'HH:mm', new Date()) < new Date();
@@ -214,7 +200,7 @@ export default function Dashboard() {
                 key={p}
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                className={`snap-center flex flex-col items-center justify-center min-w-[80px] p-3 rounded-2xl border transition-all ${
+                className={`snap-center flex flex-col items-center justify-center min-w-[70px] p-2 rounded-xl border transition-all ${
                   isNext 
                     ? 'bg-white text-primary border-white shadow-lg' 
                     : isPassed
@@ -222,9 +208,9 @@ export default function Dashboard() {
                       : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
                 }`}
               >
-                <div className="mb-2 opacity-80">{prayerIcons[p]}</div>
-                <span className="text-xs font-bold">{p}</span>
-                <span className={`text-sm mt-1 ${isNext ? 'font-bold' : 'font-medium'}`}>{formatTimeString(prayerData.times[p], user?.timeFormat || '24h')}</span>
+                <div className="mb-1 opacity-80">{prayerIcons[p]}</div>
+                <span className="text-[10px] font-bold">{p}</span>
+                <span className={`text-xs mt-0.5 ${isNext ? 'font-bold' : 'font-medium'}`}>{formatTimeString(prayerData.times[p], user?.timeFormat || '24h')}</span>
               </motion.div>
             );
           })}
@@ -232,14 +218,14 @@ export default function Dashboard() {
       </section>
 
       {/* Daily Wisdom */}
-      <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-3xl p-6 border border-amber-100 flex gap-4 items-start">
-        <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm text-xl">
+      <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100 flex gap-3 items-start">
+        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm text-sm">
           💡
         </div>
         <div>
-          <h3 className="text-sm font-bold text-secondary mb-1">Daily Wisdom</h3>
-          <p className="text-text-main italic text-sm leading-relaxed mb-2">"{wisdomOfTheDay.text}"</p>
-          <p className="text-xs text-text-muted font-medium">— {wisdomOfTheDay.source}</p>
+          <h3 className="text-xs font-bold text-secondary mb-1">Daily Wisdom</h3>
+          <p className="text-text-main italic text-xs leading-relaxed mb-1.5">"{wisdomOfTheDay.text}"</p>
+          <p className="text-[10px] text-text-muted font-medium">— {wisdomOfTheDay.source}</p>
         </div>
       </section>
 

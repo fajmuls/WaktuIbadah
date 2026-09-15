@@ -109,6 +109,29 @@ export default function Settings() {
           </button>
         </div>
 
+        {/* Suara */}
+        <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 transition-colors">
+          <div className="flex items-center gap-4">
+            <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center text-green-500">
+              <Bell className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-text-main">Efek Suara</h3>
+              <p className="text-sm text-text-muted">Suara klik dan alarm</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => {
+              const updated = { ...user, soundEnabled: user.soundEnabled !== false ? false : true };
+              storage.setUser(updated);
+              setUser(updated);
+            }}
+            className={`w-12 h-6 rounded-full transition-colors relative ${user.soundEnabled !== false ? 'bg-primary' : 'bg-gray-200'}`}
+          >
+            <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 transition-transform ${user.soundEnabled !== false ? 'translate-x-6' : 'translate-x-0.5'}`} />
+          </button>
+        </div>
+
         {/* Format Waktu */}
         <div className="p-4 sm:p-6 border-b border-gray-100 flex items-center justify-between hover:bg-gray-50 transition-colors">
           <div className="flex items-center gap-4">
