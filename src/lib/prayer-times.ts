@@ -11,6 +11,9 @@ export interface PrayerData {
   };
   imsak: string;
   location: string;
+  dateStr?: string;
+  lat?: number;
+  lng?: number;
 }
 
 const DEFAULT_TIMES = {
@@ -22,17 +25,21 @@ const DEFAULT_TIMES = {
 };
 
 // Caching to avoid hitting API too much
-let cachedData: PrayerData | null = null;
-let lastFetchDate = '';
-let lastLat = 0;
-let lastLng = 0;
+let cachedData: PrayerData | null = storage.getPrayerCache();
 
-export const getCachedPrayerData = () => cachedData;
+export const getCachedPrayerData = () => {
+  if (!cachedData) {
+    cachedData = storage.getPrayerCache();
+  }
+  return cachedData;
+};
 
 export const fetchPrayerTimes = async (latitude: number, longitude: number, forceRefresh: boolean = false): Promise<PrayerData> => {
   const today = format(new Date(), 'dd-MM-yyyy');
   
-  if (!forceRefresh && cachedData && lastFetchDate === today && Math.abs(lastLat - latitude) < 0.01 && Math.abs(lastLng - longitude) < 0.01) {
+  if (!forceRefresh && cachedData && cachedData.dateStr === today && 
+      cachedData.lat !== undefined && Math.abs(cachedData.lat - latitude) < 0.01 && 
+      cachedData.lng !== undefined && Math.abs(cachedData.lng - longitude) < 0.01) {
     return cachedData;
   }
 
@@ -73,20 +80,21 @@ export const fetchPrayerTimes = async (latitude: number, longitude: number, forc
         month: data.date.hijri.month.en,
         year: data.date.hijri.year,
       },
-      location: cityName
+      location: cityName,
+      dateStr: today,
+      lat: latitude,
+      lng: longitude
     };
 
     cachedData = prayerData;
-    lastFetchDate = today;
-    lastLat = latitude;
-    lastLng = longitude;
+    storage.setPrayerCache(prayerData);
     return prayerData;
 
   } catch (error) {
     console.error("Error fetching prayer times:", error);
     // If we have old cached data, return it instead of completely breaking
     if (cachedData) {
-      return { ...cachedData, location: cachedData.location + " (Offline)" };
+      return { ...cachedData, location: cachedData.location.includes("(Offline)") ? cachedData.location : cachedData.location + " (Offline)" };
     }
     // Fallback to default if error
     return {

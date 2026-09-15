@@ -137,10 +137,10 @@ export default function Dashboard() {
           if (error.code === 1) {
             alert("Izin lokasi ditolak. Jika Anda melihat ini di dalam AI Studio, pratinjau mungkin memblokir akses lokasi. Silakan klik ikon 'Open in new tab' di pojok kanan atas pratinjau lalu coba lagi.");
           } else {
-            alert("Gagal mendapatkan lokasi. Pastikan GPS/Lokasi perangkat Anda aktif.");
+            alert("Gagal mendapatkan lokasi. Pastikan GPS perangkat Anda aktif dan jaringan stabil.");
           }
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        { enableHighAccuracy: false, timeout: 20000, maximumAge: 300000 }
       );
     } else {
       alert("Peramban Anda tidak mendukung pelacakan lokasi.");

@@ -8,6 +8,7 @@ const KEYS = {
   FOCUS: "wi_focus",
   REFLECTIONS: "wi_reflections",
   VERSION: "wi_version",
+  PRAYER_CACHE: "wi_prayer_cache",
 };
 
 const CURRENT_VERSION = "1.0.0";
@@ -81,6 +82,9 @@ export const storage = {
 
   getVersion: () => getItem<AppVersion>(KEYS.VERSION, { version: CURRENT_VERSION, lastUpdated: new Date().toISOString() }),
   updateVersion: () => setItem(KEYS.VERSION, { version: CURRENT_VERSION, lastUpdated: new Date().toISOString() }),
+
+  getPrayerCache: () => getItem<any>(KEYS.PRAYER_CACHE, null),
+  setPrayerCache: (data: any) => setItem(KEYS.PRAYER_CACHE, data),
 
   clearAll: () => localStorage.clear(),
 };
