@@ -23,7 +23,7 @@ const KEYS = {
   ADMIN_AUTHENTICATED: "wi_admin_authenticated",
 };
 
-export const CURRENT_VERSION = "1.8.0";
+export const CURRENT_VERSION = "1.9.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -74,7 +74,20 @@ export const storage = {
 
   getPrayerLogs: () => getItem<PrayerLog[]>(KEYS.PRAYERS, []),
   setPrayerLogs: (logs: PrayerLog[]) => setItem(KEYS.PRAYERS, logs),
-  getPrayerLog: (date: string) => storage.getPrayerLogs().find(p => p.date === date) || { date, prayers: { Subuh: false, Zuhur: false, Asar: false, Magrib: false, Isya: false } },
+  getPrayerLog: (date: string): PrayerLog => {
+    const found = storage.getPrayerLogs().find(p => p.date === date);
+    if (found) {
+      return {
+        ...found,
+        sunnahPrayers: found.sunnahPrayers || { Dhuha: false, Tahajud: false, Witir: false }
+      };
+    }
+    return {
+      date,
+      prayers: { Subuh: false, Zuhur: false, Asar: false, Magrib: false, Isya: false },
+      sunnahPrayers: { Dhuha: false, Tahajud: false, Witir: false }
+    };
+  },
   updatePrayerLog: (log: PrayerLog) => {
     const logs = storage.getPrayerLogs();
     const index = logs.findIndex(p => p.date === log.date);
@@ -292,9 +305,16 @@ export const storage = {
     }
   },
   hasUserReviewed: (userName?: string): boolean => {
+    if (typeof window !== 'undefined') {
+      if (localStorage.getItem('wi_five_prayers_reviewed') === 'true' || localStorage.getItem('wi_rating_submitted') === 'true') {
+        return true;
+      }
+    }
     const list = storage.getWebsiteReviews();
-    if (!userName) return list.some(r => r.id.startsWith('user-'));
-    return list.some(r => r.userName.toLowerCase().trim() === userName.toLowerCase().trim());
+    // Non-seed reviews created by users have id starting with 'rev-'
+    if (list.some(r => r.id.startsWith('rev-'))) return true;
+    if (!userName) return false;
+    return list.some(r => r.id.startsWith('rev-') || r.userName.toLowerCase().trim() === userName.toLowerCase().trim());
   },
 
   // Background Sync Permission & State

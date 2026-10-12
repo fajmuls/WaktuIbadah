@@ -5,10 +5,11 @@ let audioCtx: AudioContext | null = null;
 let activeAdzanAudio: HTMLAudioElement | null = null;
 
 export const AZAN_AUDIO_URLS = {
-  subuh: 'https://files.catbox.moe/8jfmro.mp3', // Khusus sholat subuh
-  fardhu: 'https://files.catbox.moe/e1w884.mp3', // Sholat lainnya (Zuhur, Asar, Magrib, Isya)
-  makkah: 'https://files.catbox.moe/e1w884.mp3',
-  backup: 'https://ia800203.us.archive.org/31/items/AdhanMakkah/Adhan%20Makkah.mp3'
+  subuh: '/audio/azan-subuh.mp3', // Khusus sholat subuh (Lokal, responsif, anti-404)
+  fardhu: '/audio/azan-fardhu.mp3', // Sholat lainnya (Zuhur, Asar, Magrib, Isya)
+  makkah: '/audio/azan-fardhu.mp3',
+  subuhFallback: 'https://cdn.jsdelivr.net/gh/Kiwifu/adhan-mp3@master/Adhan_Fajr_Al_Haram_Al_Maki_(%D8%A3%D8%B0%D8%A7%D9%86_%D8%A7%D9%84%D9%81%D8%AC%D8%B1_%D8%A7%D9%84%D8%AD%D8%B1%D9%85_%D8%A7%D9%84%D9%85%D9%83%D9%8A).mp3',
+  fardhuFallback: 'https://cdn.jsdelivr.net/gh/Kiwifu/adhan-mp3@master/Adhan_Al_Haram_Al_Madani_-_Al_Madinah_1_(%D8%A3%D8%B0%D8%A7%D9%86_%D8%A7%D9%84%D8%AD%D8%B1%D9%85_%D8%A7%D9%84%D9%85%D8%AF%D9%86%D9%8A_-_%D8%A7%D9%84%D9%85%D8%AF%D9%8A%D9%86%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D9%88%D8%B1%D8%A9).mp3'
 };
 
 const getAudioContext = () => {
@@ -73,17 +74,29 @@ export const playPrayerAzan = (
 
   const isSubuh = prayerName.toLowerCase().includes('subuh');
   const targetUrl = isSubuh ? AZAN_AUDIO_URLS.subuh : AZAN_AUDIO_URLS.fardhu;
+  const fallbackUrl = isSubuh ? AZAN_AUDIO_URLS.subuhFallback : AZAN_AUDIO_URLS.fardhuFallback;
 
   try {
     const azanAudio = new Audio(targetUrl);
     azanAudio.volume = 1.0;
     activeAdzanAudio = azanAudio;
 
+    azanAudio.onerror = () => {
+      console.warn("Local Azan audio unavailable, playing fallback CDN:", fallbackUrl);
+      const fallbackAudio = new Audio(fallbackUrl);
+      fallbackAudio.volume = 1.0;
+      activeAdzanAudio = fallbackAudio;
+      fallbackAudio.play().catch(() => playSyntheticTakbir(true));
+    };
+
     const playPromise = azanAudio.play();
     if (playPromise !== undefined) {
       playPromise.catch(err => {
-        console.warn("Autoplay azan MP3 blocked by browser, falling back to synthetic takbir:", err);
-        playSyntheticTakbir(true);
+        console.warn("Autoplay azan MP3 blocked or delayed, attempting CDN fallback:", err);
+        const fallbackAudio = new Audio(fallbackUrl);
+        fallbackAudio.volume = 1.0;
+        activeAdzanAudio = fallbackAudio;
+        fallbackAudio.play().catch(() => playSyntheticTakbir(true));
       });
     }
   } catch (err) {
@@ -132,15 +145,27 @@ export const playAlarmSound = (
       stopAlarmSound();
       const isSubuh = prayerName?.toLowerCase().includes('subuh');
       const targetUrl = isSubuh ? AZAN_AUDIO_URLS.subuh : AZAN_AUDIO_URLS.fardhu;
+      const fallbackUrl = isSubuh ? AZAN_AUDIO_URLS.subuhFallback : AZAN_AUDIO_URLS.fardhuFallback;
+
       const azanAudio = new Audio(targetUrl);
       azanAudio.volume = 1.0;
       activeAdzanAudio = azanAudio;
 
+      azanAudio.onerror = () => {
+        const fallbackAudio = new Audio(fallbackUrl);
+        fallbackAudio.volume = 1.0;
+        activeAdzanAudio = fallbackAudio;
+        fallbackAudio.play().catch(() => playSyntheticTakbir(loudBoost));
+      };
+
       const playPromise = azanAudio.play();
       if (playPromise !== undefined) {
         playPromise.catch(err => {
-          console.warn("Real Azan MP3 blocked or offline, falling back to synthetic takbir:", err);
-          playSyntheticTakbir(loudBoost);
+          console.warn("Real Azan MP3 blocked or offline, trying fallback:", err);
+          const fallbackAudio = new Audio(fallbackUrl);
+          fallbackAudio.volume = 1.0;
+          activeAdzanAudio = fallbackAudio;
+          fallbackAudio.play().catch(() => playSyntheticTakbir(loudBoost));
         });
       }
     } catch {

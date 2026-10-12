@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
-import { PrayerLog, PrayerName, User, QuranLog } from '../types';
+import { PrayerLog, PrayerName, SunnahPrayerName, User, QuranLog } from '../types';
 import { format, subDays, addDays } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Check, Clock, Heart, BookOpen, ChevronLeft, ChevronRight, Plus, CheckCircle2 } from 'lucide-react';
+import { Check, Clock, Heart, BookOpen, ChevronLeft, ChevronRight, Plus, CheckCircle2, Sparkles, Sun, Moon, Star } from 'lucide-react';
 import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData, getCachedPrayerData } from '../lib/prayer-times';
 import { formatTimeString } from '../lib/utils';
 import { vibrateSuccess } from '../lib/audio';
@@ -13,7 +13,11 @@ import { Link } from 'react-router-dom';
 export default function Ibadah() {
   const [user, setUser] = useState<User | null>(null);
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
-  const [log, setLog] = useState<PrayerLog>({ date: selectedDate, prayers: { Subuh: false, Zuhur: false, Asar: false, Magrib: false, Isya: false } });
+  const [log, setLog] = useState<PrayerLog>({ 
+    date: selectedDate, 
+    prayers: { Subuh: false, Zuhur: false, Asar: false, Magrib: false, Isya: false },
+    sunnahPrayers: { Dhuha: false, Tahajud: false, Witir: false }
+  });
   const [prayerData, setPrayerData] = useState<PrayerData | null>(getCachedPrayerData());
   const [quranLogs, setQuranLogs] = useState<QuranLog[]>([]);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
@@ -56,6 +60,58 @@ export default function Ibadah() {
       }, 600);
     }
   };
+
+  const handleToggleSunnah = (sunnah: SunnahPrayerName) => {
+    const currentStatus = log.sunnahPrayers?.[sunnah] || false;
+    const isCompleted = !currentStatus;
+    if (isCompleted && user?.soundEnabled !== false) {
+      vibrateSuccess();
+    }
+    const newSunnah = {
+      ...(log.sunnahPrayers || { Dhuha: false, Tahajud: false, Witir: false }),
+      [sunnah]: isCompleted
+    };
+    const newLog = {
+      ...log,
+      sunnahPrayers: newSunnah
+    };
+    setLog(newLog);
+    storage.updatePrayerLog(newLog);
+  };
+
+  const sunnahPrayersList: {
+    id: SunnahPrayerName;
+    name: string;
+    waktu: string;
+    keutamaan: string;
+    rakaat: string;
+    icon: any;
+  }[] = [
+    {
+      id: 'Dhuha',
+      name: 'Salat Dhuha',
+      waktu: 'Pagi hari (~06:30 s/d 11:30 WIB)',
+      keutamaan: 'Sedekah seluruh persendian & pembuka rezeki',
+      rakaat: '2, 4, s/d 8 Rakaat',
+      icon: Sun
+    },
+    {
+      id: 'Tahajud',
+      name: 'Salat Tahajud',
+      waktu: 'Sepertiga malam terakhir (sesudah tidur)',
+      keutamaan: 'Derajat terpuji (Maqaman Mahmuda) & doa mustajab',
+      rakaat: 'Minimal 2 Rakaat',
+      icon: Moon
+    },
+    {
+      id: 'Witir',
+      name: 'Salat Witir',
+      waktu: 'Malam hari (penutup ibadah malam)',
+      keutamaan: 'Amalan ganjil yang dicintai Allah SWT',
+      rakaat: '1 atau 3 Rakaat',
+      icon: Star
+    }
+  ];
 
   const prayers: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
   const times = prayerData ? prayerData.times : getPrayerTimesForToday();
@@ -214,6 +270,106 @@ export default function Ibadah() {
                   ) : (
                     <span className="text-gray-400 group-hover:text-gray-600 px-2 py-1">
                       Klik untuk centang
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Salat Sunnah Pilihan Tracker (Dhuha, Tahajud, Witir) */}
+      <div className="bg-white dark:bg-gray-800 rounded-3xl p-4 sm:p-5 border border-emerald-100 dark:border-emerald-900/40 shadow-xs space-y-3">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/80 pb-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-100 dark:bg-amber-950/60 text-amber-700 dark:text-amber-300 flex items-center justify-center font-bold">
+              <Sparkles className="w-4 h-4" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                  Salat Sunnah Pilihan
+                </h3>
+                <span className="text-[10px] font-bold bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200 px-2 py-0.5 rounded-full">
+                  Amalan Pelengkap
+                </span>
+              </div>
+              <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                Pantau salat Dhuha, Tahajud, dan Witir di sela kesibukan perkuliahan
+              </p>
+            </div>
+          </div>
+
+          <div className="text-right">
+            <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/80 px-2.5 py-1 rounded-xl">
+              {Object.values(log.sunnahPrayers || {}).filter(Boolean).length} / 3 Selesai
+            </span>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 gap-2.5">
+          {sunnahPrayersList.map((sunnah) => {
+            const isCompleted = !!(log.sunnahPrayers && log.sunnahPrayers[sunnah.id]);
+            const Icon = sunnah.icon;
+
+            return (
+              <button
+                key={sunnah.id}
+                onClick={() => handleToggleSunnah(sunnah.id)}
+                className={`w-full flex items-center justify-between p-3.5 rounded-2xl border transition-all text-left group ${
+                  isCompleted
+                    ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 shadow-xs'
+                    : 'bg-gray-50/70 dark:bg-gray-900/50 border-gray-200/80 dark:border-gray-700/80 hover:border-emerald-300 dark:hover:border-emerald-600'
+                }`}
+              >
+                <div className="flex items-start sm:items-center gap-3 min-w-0">
+                  {/* High-visibility Checkbox Circle */}
+                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 sm:mt-0 transition-all ${
+                    isCompleted 
+                      ? 'bg-emerald-600 text-white shadow-xs scale-105' 
+                      : 'border-2 border-gray-300 dark:border-gray-600 text-transparent group-hover:border-emerald-400 bg-white dark:bg-gray-800'
+                  }`}>
+                    <Check className={`w-5 h-5 stroke-[3] ${isCompleted ? 'opacity-100' : 'opacity-0'}`} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <Icon className="w-3.5 h-3.5 text-amber-500 shrink-0" />
+                        <h4 className={`text-sm font-bold truncate ${
+                          isCompleted ? 'text-emerald-900 dark:text-emerald-100' : 'text-gray-900 dark:text-white'
+                        }`}>
+                          {sunnah.name}
+                        </h4>
+                      </div>
+                      <span className="text-[10px] font-semibold bg-gray-200/80 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-2 py-0.5 rounded-md">
+                        {sunnah.rakaat}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-1 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                      <span className="font-medium text-emerald-800 dark:text-emerald-300">
+                        🕒 {sunnah.waktu}
+                      </span>
+                      <span className="hidden sm:inline opacity-40">•</span>
+                      <span className="italic line-clamp-1">
+                        ✨ {sunnah.keutamaan}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-xs font-bold shrink-0 ml-2">
+                  {isCompleted ? (
+                    <span className="text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/80 px-2.5 py-1 rounded-lg flex items-center gap-1">
+                      <CheckCircle2 className="w-3.5 h-3.5" />
+                      <span className="hidden sm:inline">Sudah Ditunaikan</span>
+                      <span className="sm:hidden">Sudah</span>
+                    </span>
+                  ) : (
+                    <span className="text-gray-400 group-hover:text-gray-600 px-2 py-1">
+                      Centang
                     </span>
                   )}
                 </div>

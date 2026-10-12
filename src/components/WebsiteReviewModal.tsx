@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Star, Award, CheckCircle2, X, Send, ExternalLink, ThumbsUp } from 'lucide-react';
+import { Star, Award, CheckCircle2, X, Send, ExternalLink, ThumbsUp, Lock } from 'lucide-react';
 import { storage } from '../lib/storage';
 import { StarRatingValue, WebsiteReview } from '../types';
 import { vibrateSuccess } from '../lib/audio';
@@ -44,7 +44,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const finalName = userName.trim() || user?.name || 'Mahasiswa';
+    const finalName = user?.name?.trim() || 'Mahasiswa';
     const review: WebsiteReview = {
       id: 'rev-' + Date.now(),
       userName: finalName,
@@ -59,6 +59,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
 
     storage.addWebsiteReview(review);
     localStorage.setItem('wi_five_prayers_reviewed', 'true');
+    localStorage.setItem('wi_rating_submitted', 'true');
     vibrateSuccess();
     setIsSubmitted(true);
 
@@ -169,19 +170,18 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
 
             <form onSubmit={handleSubmit} className="space-y-4">
               
-              {/* Nama Responden */}
+              {/* Nama Responden (Terkunci Sesuai Akun Mahasiswa) */}
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  Nama Anda / Mahasiswa
+                  Nama Mahasiswa (Terkunci Sesuai Akun Awal)
                 </label>
-                <input
-                  type="text"
-                  required
-                  value={userName}
-                  onChange={(e) => setUserName(e.target.value)}
-                  placeholder="Masukkan nama lengkap / panggilan..."
-                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs sm:text-sm font-semibold text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
-                />
+                <div className="flex items-center gap-2 px-3.5 py-2.5 bg-gray-100 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200">
+                  <Lock className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+                  <span>{user?.name || 'Mahasiswa'}</span>
+                  <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold ml-auto bg-emerald-50 dark:bg-emerald-950/60 px-2 py-0.5 rounded-md border border-emerald-200/50 dark:border-emerald-800/50">
+                    Akun Terdaftar
+                  </span>
+                </div>
               </div>
 
               {/* 5-STAR RATING SELECTION */}

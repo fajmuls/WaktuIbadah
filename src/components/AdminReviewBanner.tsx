@@ -6,6 +6,10 @@ import { ExternalLink, Sparkles, MessageSquareHeart, X } from 'lucide-react';
 export function AdminReviewBanner() {
   const [config, setConfig] = useState<AdminReviewConfig>(() => storage.getAdminReviewConfig());
   const [isDismissed, setIsDismissed] = useState(false);
+  const [hasReviewed, setHasReviewed] = useState(() => {
+    const user = storage.getUser();
+    return storage.hasUserReviewed(user?.name);
+  });
 
   useEffect(() => {
     const handleUpdate = (e: any) => {
@@ -16,11 +20,20 @@ export function AdminReviewBanner() {
       }
     };
 
+    const handleReviewAdded = () => {
+      setHasReviewed(true);
+    };
+
     window.addEventListener('wi_admin_review_updated', handleUpdate);
-    return () => window.removeEventListener('wi_admin_review_updated', handleUpdate);
+    window.addEventListener('wi_website_review_added', handleReviewAdded);
+    return () => {
+      window.removeEventListener('wi_admin_review_updated', handleUpdate);
+      window.removeEventListener('wi_website_review_added', handleReviewAdded);
+    };
   }, []);
 
-  if (!config.isEnabled || !config.gformUrl || isDismissed) {
+  // Hide banner permanently if user has already submitted review, or disabled, or dismissed
+  if (!config.isEnabled || !config.gformUrl || isDismissed || hasReviewed) {
     return null;
   }
 

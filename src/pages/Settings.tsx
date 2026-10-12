@@ -4,10 +4,10 @@ import { User, AppVersion, ReminderSettings } from '../types';
 import { 
   User as UserIcon, Bell, Trash2, Info, ChevronRight, Check, 
   Clock, Vibrate, Volume2, Sparkles, Shield, Moon, CheckCircle2,
-  Calendar, BookOpen, AlertTriangle
+  Calendar, BookOpen, AlertTriangle, Lock, Play
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { playAlarmSound, vibratePrayerAlarm } from '../lib/audio';
+import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm } from '../lib/audio';
 import { showPWANotification, requestNotificationPermission } from '../lib/pwa-service';
 
 export default function Settings() {
@@ -81,6 +81,16 @@ export default function Settings() {
     }
   };
 
+  const handleTestPrayerAzan = (prayer: 'Subuh' | 'Zuhur') => {
+    if (stopAlarmFn) {
+      stopAlarmFn();
+      setStopAlarmFn(null);
+    } else {
+      const stop = playPrayerAzan(prayer, reminderSettings.reminderType);
+      setStopAlarmFn(() => stop);
+    }
+  };
+
   const handleClearData = () => {
     if (confirm('PERINGATAN: Apakah kamu yakin ingin menghapus seluruh data lokal (jadwal, catatan tilawah, ayat favorit)? Tindakan ini tidak dapat dibatalkan.')) {
       storage.clearAll();
@@ -113,28 +123,15 @@ export default function Settings() {
               <UserIcon className="w-5 h-5" />
             </div>
             <div className="flex-1">
-              <h3 className="text-xs font-semibold text-gray-400">Nama Pengguna</h3>
-              {isEditingName ? (
-                <div className="flex items-center gap-2 mt-1">
-                  <input 
-                    type="text" 
-                    value={nameInput}
-                    onChange={(e) => setNameInput(e.target.value)}
-                    className="flex-1 px-3 py-1.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white outline-none focus:border-emerald-500"
-                    autoFocus
-                  />
-                  <button onClick={handleSaveName} className="p-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold">
-                    <Check className="w-4 h-4" />
-                  </button>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 mt-0.5">
-                  <p className="font-bold text-base text-gray-900 dark:text-white">{user.name}</p>
-                  <button onClick={() => setIsEditingName(true)} className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold hover:underline">
-                    Ubah
-                  </button>
-                </div>
-              )}
+              <div className="flex items-center gap-1.5">
+                <h3 className="text-xs font-semibold text-gray-400">Nama Pengguna (Terkunci)</h3>
+                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
+                  <Lock className="w-2.5 h-2.5" /> Akun Mahasiswa Tetap
+                </span>
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                <p className="font-bold text-base text-gray-900 dark:text-white">{user.name}</p>
+              </div>
             </div>
           </div>
         </div>
@@ -257,29 +254,49 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Test Alarm & Haptic Button */}
-            <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <button 
-                onClick={handleTestAlarm}
-                className="w-full py-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs font-bold hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-colors flex items-center justify-center gap-2"
-              >
-                <Vibrate className="w-3.5 h-3.5" />
-                <span>{stopAlarmFn ? 'Hentikan Uji Alarm' : 'Uji Alarm & Getaran HP'}</span>
-              </button>
+            {/* Test Alarm & Real Azan Audio Buttons */}
+            <div className="pt-2 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button 
+                  onClick={() => handleTestPrayerAzan('Subuh')}
+                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-xs"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>{stopAlarmFn ? 'Hentikan Audio' : 'Uji Azan Subuh (Lokal)'}</span>
+                </button>
 
-              <button 
-                onClick={async () => {
-                  await requestNotificationPermission();
-                  showPWANotification('Uji Notifikasi PWA Latar Belakang', {
-                    body: 'Notifikasi Service Worker WaktuIbadah aktif & siap memicu adzan saat layar mati/terkunci.',
-                    tag: 'test-pwa-notification'
-                  });
-                }}
-                className="w-full py-2 bg-teal-100 dark:bg-teal-950 text-teal-800 dark:text-teal-200 rounded-xl text-xs font-bold hover:bg-teal-200 dark:hover:bg-teal-900 transition-colors flex items-center justify-center gap-2"
-              >
-                <Bell className="w-3.5 h-3.5" />
-                <span>Uji Notifikasi PWA Latar</span>
-              </button>
+                <button 
+                  onClick={() => handleTestPrayerAzan('Zuhur')}
+                  className="w-full py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-xs"
+                >
+                  <Play className="w-3.5 h-3.5 fill-current" />
+                  <span>{stopAlarmFn ? 'Hentikan Audio' : 'Uji Azan Fardhu (Lokal)'}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                <button 
+                  onClick={handleTestAlarm}
+                  className="w-full py-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs font-bold hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Vibrate className="w-3.5 h-3.5" />
+                  <span>{stopAlarmFn ? 'Hentikan Uji Alarm' : 'Uji Getaran & Nada HP'}</span>
+                </button>
+
+                <button 
+                  onClick={async () => {
+                    await requestNotificationPermission();
+                    showPWANotification('Uji Notifikasi PWA Latar Belakang', {
+                      body: 'Notifikasi Service Worker WaktuIbadah aktif & siap memicu adzan saat layar mati/terkunci.',
+                      tag: 'test-pwa-notification'
+                    });
+                  }}
+                  className="w-full py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-xl text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
+                >
+                  <Bell className="w-3.5 h-3.5" />
+                  <span>Uji Notifikasi PWA Latar</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -352,32 +369,31 @@ export default function Settings() {
             </button>
           </div>
 
-          {/* Changelog Card for Version 1.8.0 */}
+          {/* Changelog Card for Version 1.9.0 */}
           <div className="p-3.5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-xs space-y-2 text-gray-600 dark:text-gray-300">
             <p className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Catatan Pembaruan v{CURRENT_VERSION}:
             </p>
             <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-500 dark:text-gray-400 pl-1">
-              <li><strong>Suara Azan Autoplay Khusus Subuh & Salat Lainnya</strong>: Integrasi file audio azan MP3 resmi khusus Subuh dan fardhu lainnya dengan pemutaran otomatis saat waktu salat tiba.</li>
-              <li><strong>Sistem Berjalan di Latar Belakang (Hemat Baterai)</strong>: Izin latar belakang ultra-efisien agar smartphone tetap memperbarui jadwal dan melacak ibadah tepat waktu.</li>
-              <li><strong>Perbaikan Tuntas Bug Al-Qur'an</strong>: Penyelesaian kendala ayat tidak muncul dengan arsitektur multi-tiered fallback (equran, gading.dev, & jsdelivr CDN) disertai tombol muat ulang darurat.</li>
-              <li><strong>Pemisahan Hadis di Dashboard Kiri</strong>: Menu Hadis kini mandiri dan diposisikan tepat di bawah Al-Qur'an pada navigasi sidebar kiri dan dashboard utama.</li>
-              <li><strong>Privasi Token Admin & Persistensi Sesi</strong>: Token admin disembunyikan sepenuhnya dari UI publik dan sesi login admin tersimpan otomatis tanpa perlu mengetik ulang token.</li>
-              <li><strong>Sistem Review 5 Bintang & Chart Siap Cetak (Recharts)</strong>: Modal review otomatis muncul sekali ketika pengguna menuntaskan salat 5 waktu, dikonversi ke grafik batang penilaian di Admin Dashboard yang bisa di-print out dengan filter nama responden dan opsi dual mode (Website Review & GForm).</li>
+              <li><strong>Checklist Salat Sunnah (Dhuha, Tahajud, Witir)</strong>: Penambahan kartu salat sunnah terpisah di halaman Ibadah sebelum tilawah Al-Qur'an lengkap dengan panduan waktu afdhol dan respons haptic getar.</li>
+              <li><strong>Kejelasan Deadline Tugas & Countdown Real-Time</strong>: Peningkatan visual batas waktu tugas kuliah di Jadwal, Tugas, dan Dashboard dengan indikator sisa hari ("Hari Ini", "Besok", "X Hari Lagi", atau "Terlambat"), prioritas urgensi, dan jam batas pengumpulan.</li>
+              <li><strong>Perbaikan Total Bug Suara Azan (MP3 Lokal & Uji Langsung)</strong>: Integrasi file audio azan asli MP3 berkualitas tinggi yang tersimpan lokal di aplikasi untuk Subuh & Fardhu sehingga pengujian suara azan langsung berbunyi jernih tanpa kendala unduhan.</li>
+              <li><strong>Penguncian Permanen Identitas Akun Mahasiswa</strong>: Nama pengguna yang dimasukkan saat awal kini terkunci permanen untuk menjaga keaslian data evaluasi dan ulasan proyek PAI.</li>
+              <li><strong>Penyempurnaan Banner Evaluasi Rating</strong>: Banner review evaluasi kini otomatis hilang permanen seketika setelah rating bintang diisi, tanpa muncul berulang di bagian atas dashboard.</li>
             </ul>
           </div>
 
-          {/* Saran Pembaruan Mendatang */}
+          {/* Saran Pembaruan & Fitur Bermanfaat Berikutnya */}
           <div className="mt-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/40 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-xs space-y-1.5">
             <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
               <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
               Saran Update Bermanfaat untuk Rilis Berikutnya:
             </p>
             <ul className="space-y-1 text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
-              <li>• <strong>Sinkronisasi Cloud Multi-Perangkat (Google Auth/Cloud Sync)</strong>: Memudahkan mahasiswa memindahkan jadwal kuliah, target khatam, dan catatan tadabbur antar ponsel atau laptop tanpa hilang.</li>
-              <li>• <strong>Audio Doa Harian & Dzikir Pagi-Petang dengan Counter Tasbih Haptic</strong>: Tuntunan zikir Al-Ma'tsurat dengan penghitung getar digital untuk menemani perjalanan menuju kampus.</li>
-              <li>• <strong>Pilihan Ukuran Font & Mushaf Al-Qur'an (Utsmani / Standar Kemenag)</strong>: Memberikan kenyamanan membaca ayat sesuai preferensi visual masing-masing mahasiswa.</li>
+              <li>• <strong>Backup & Restore Data Lokal (Export/Import File JSON)</strong>: Memungkinkan mahasiswa memindahkan riwayat ibadah, checklist salat sunnah, dan jadwal tugas antar ponsel tanpa kehilangan data.</li>
+              <li>• <strong>Widget Kompas Kiblat Cepat di Halaman Depan</strong>: Kompas kiblat mini terkalibrasi langsung di kartu dashboard tanpa perlu membuka menu terpisah.</li>
+              <li>• <strong>Audio Dzikir Pagi-Petang dengan Counter Getar (Al-Ma'tsurat)</strong>: Penghitung zikir digital bergetar untuk menemani perjalanan mahasiswa menuju kampus.</li>
             </ul>
           </div>
         </div>

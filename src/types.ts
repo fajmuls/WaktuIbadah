@@ -30,6 +30,7 @@ export interface Task {
   title: string;
   description?: string;
   deadline: string; // YYYY-MM-DD
+  deadlineTime?: string; // HH:mm, default 23:59
   priority: 'Rendah' | 'Sedang' | 'Tinggi';
   status: 'Belum mulai' | 'Sedang dikerjakan' | 'Selesai';
   createdAt: string;
@@ -48,10 +49,12 @@ export interface Schedule {
 }
 
 export type PrayerName = 'Subuh' | 'Zuhur' | 'Asar' | 'Magrib' | 'Isya';
+export type SunnahPrayerName = 'Dhuha' | 'Tahajud' | 'Witir';
 
 export interface PrayerLog {
   date: string; // YYYY-MM-DD
   prayers: Record<PrayerName, boolean>;
+  sunnahPrayers?: Record<SunnahPrayerName, boolean>;
 }
 
 export interface FocusSession {
