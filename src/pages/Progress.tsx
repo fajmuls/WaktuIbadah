@@ -1,6 +1,9 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { storage } from '../lib/storage';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Legend, LineChart, Line, CartesianGrid } from 'recharts';
+import { 
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
+  Legend, LineChart, Line, CartesianGrid, AreaChart, Area, ComposedChart 
+} from 'recharts';
 import { 
   format, subDays, startOfWeek, endOfWeek, eachDayOfInterval, 
   startOfMonth, endOfMonth, isSameDay, isToday, addMonths, subMonths, parseISO 
@@ -54,7 +57,7 @@ export default function Progress() {
     };
   }, [prayerLogs, quranLogs, tasks]);
 
-  // Chart data: 7 days for weekly
+  // Chart data: 7 days for weekly progress chart
   const weeklyChartData = useMemo(() => {
     const data = [];
     for (let i = 6; i >= 0; i--) {
@@ -63,19 +66,28 @@ export default function Progress() {
       
       const pLog = storage.getPrayerLog(dateStr);
       const prayersDone = Object.values(pLog.prayers).filter(Boolean).length;
+      const salatPercent = Math.round((prayersDone / 5) * 100);
       
       const qLogs = storage.getQuranLogsByDate(dateStr);
       const ayahsDone = qLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
+      const tilawahScore = Math.min(100, Math.round((ayahsDone / 20) * 100));
+
+      const dayTasks = tasks.filter(t => t.deadline === dateStr && t.status === 'Selesai').length;
+      const worshipScore = Math.round((salatPercent * 0.7) + (tilawahScore * 0.3));
 
       data.push({
         date: format(d, 'dd MMM', { locale: id }),
         dayName: format(d, 'EEE', { locale: id }),
+        fullDate: dateStr,
         salat: prayersDone,
-        ayat: ayahsDone
+        salatPercent: salatPercent,
+        ayat: ayahsDone,
+        tasks: dayTasks,
+        worshipScore: worshipScore,
       });
     }
     return data;
-  }, [prayerLogs, quranLogs]);
+  }, [prayerLogs, quranLogs, tasks]);
 
   // Chart data: 30 days for monthly
   const monthlyChartData = useMemo(() => {
@@ -256,6 +268,125 @@ export default function Progress() {
           </div>
           <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Sesi Fokus</p>
           <p className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{stats.focusSessions} <span className="text-xs font-normal text-gray-400">kali</span></p>
+        </div>
+      </div>
+
+      {/* ======================= VISUAL WEEKLY PROGRESS CHART (RECHARTS) ======================= */}
+      <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-xs space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
+              <Sparkles className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">
+                Tren Penyelesaian Ibadah 7 Hari Terakhir
+              </h3>
+              <p className="text-xs text-gray-400">
+                Visualisasi dinamika kedisiplinan salat 5 waktu & tilawah Al-Qur'an harian
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-bold px-2.5 py-1 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300">
+              Rata-rata: {(weeklyChartData.reduce((acc, d) => acc + d.salat, 0) / 7).toFixed(1)} / 5 Waktu
+            </span>
+          </div>
+        </div>
+
+        {/* Recharts Area Chart */}
+        <div className="h-56 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={weeklyChartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorSalatPercent" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#059669" stopOpacity={0.4} />
+                  <stop offset="95%" stopColor="#059669" stopOpacity={0.02} />
+                </linearGradient>
+                <linearGradient id="colorWorshipScore" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#0d9488" stopOpacity={0.3} />
+                  <stop offset="95%" stopColor="#0d9488" stopOpacity={0.0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.12} />
+              <XAxis dataKey="dayName" axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 11, fill: '#6b7280' }} domain={[0, 100]} unit="%" />
+              <Tooltip 
+                content={({ active, payload }) => {
+                  if (active && payload && payload.length) {
+                    const data = payload[0].payload;
+                    return (
+                      <div className="bg-white dark:bg-gray-900 p-3 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 text-xs space-y-1">
+                        <p className="font-bold text-gray-900 dark:text-white border-b border-gray-100 dark:border-gray-800 pb-1">
+                          {data.dayName}, {data.date}
+                        </p>
+                        <p className="text-emerald-700 dark:text-emerald-400 font-semibold flex items-center justify-between gap-4">
+                          <span>Salat Fardhu:</span>
+                          <span className="font-bold">{data.salat} / 5 Waktu ({data.salatPercent}%)</span>
+                        </p>
+                        <p className="text-teal-700 dark:text-teal-400 font-semibold flex items-center justify-between gap-4">
+                          <span>Tilawah Qur'an:</span>
+                          <span className="font-bold">{data.ayat} Ayat</span>
+                        </p>
+                        <p className="text-blue-600 dark:text-blue-400 font-semibold flex items-center justify-between gap-4">
+                          <span>Skor Ibadah:</span>
+                          <span className="font-bold">{data.worshipScore}%</span>
+                        </p>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Legend wrapperStyle={{ fontSize: '11px', paddingTop: '6px' }} />
+              <Area 
+                type="monotone" 
+                dataKey="salatPercent" 
+                name="Kedisiplinan Salat (%)" 
+                stroke="#059669" 
+                strokeWidth={2.5} 
+                fillOpacity={1} 
+                fill="url(#colorSalatPercent)" 
+                dot={{ r: 4, fill: '#059669', strokeWidth: 1 }} 
+              />
+              <Area 
+                type="monotone" 
+                dataKey="worshipScore" 
+                name="Indeks Ibadah Gabungan (%)" 
+                stroke="#0d9488" 
+                strokeWidth={2} 
+                fillOpacity={1} 
+                fill="url(#colorWorshipScore)" 
+                strokeDasharray="4 4"
+                dot={{ r: 3, fill: '#0d9488' }} 
+              />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 7-Day Performance Quick Summary */}
+        <div className="grid grid-cols-3 gap-2 pt-1 text-center">
+          <div className="p-2.5 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-2xl border border-emerald-100 dark:border-emerald-900/40">
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">Salat Selesai</span>
+            <span className="text-xs sm:text-sm font-bold text-emerald-800 dark:text-emerald-300">
+              {weeklyChartData.reduce((acc, d) => acc + d.salat, 0)} dari 35 Waktu
+            </span>
+          </div>
+
+          <div className="p-2.5 bg-teal-50/60 dark:bg-teal-950/30 rounded-2xl border border-teal-100 dark:border-teal-900/40">
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">Total Ayat 7 Hari</span>
+            <span className="text-xs sm:text-sm font-bold text-teal-800 dark:text-teal-300">
+              {weeklyChartData.reduce((acc, d) => acc + d.ayat, 0)} Ayat
+            </span>
+          </div>
+
+          <div className="p-2.5 bg-blue-50/60 dark:bg-blue-950/30 rounded-2xl border border-blue-100 dark:border-blue-900/40">
+            <span className="text-[10px] text-gray-500 dark:text-gray-400 block font-medium">Konsistensi Mingguan</span>
+            <span className="text-xs sm:text-sm font-bold text-blue-800 dark:text-blue-300">
+              {Math.round(weeklyChartData.reduce((acc, d) => acc + d.salatPercent, 0) / 7)}%
+            </span>
+          </div>
         </div>
       </div>
 

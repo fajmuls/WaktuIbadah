@@ -19,6 +19,7 @@ export function MurottalPlayerWidget() {
   const [isLoopCurrent, setIsLoopCurrent] = useState(murottalPlayer.isLoopCurrent);
   const [sleepTimerSeconds, setSleepTimerSeconds] = useState<number | null>(murottalPlayer.sleepTimerSecondsRemaining);
   const [sleepTimerMode, setSleepTimerMode] = useState(murottalPlayer.sleepTimerMode);
+  const [playbackRate, setPlaybackRate] = useState<number>(murottalPlayer.playbackRate || 1.0);
   
   // UI States
   const [isExpanded, setIsExpanded] = useState(false);
@@ -39,6 +40,7 @@ export function MurottalPlayerWidget() {
       setIsLoopCurrent(murottalPlayer.isLoopCurrent);
       setSleepTimerSeconds(murottalPlayer.sleepTimerSecondsRemaining);
       setSleepTimerMode(murottalPlayer.sleepTimerMode);
+      setPlaybackRate(murottalPlayer.playbackRate || 1.0);
     });
 
     return () => unsubscribe();
@@ -303,6 +305,41 @@ export function MurottalPlayerWidget() {
                 >
                   <span className="text-[10px] font-bold">Auto</span>
                 </button>
+              </div>
+
+              {/* KECEPATAN PEMUTARAN (MURAJA'AH) */}
+              <div className="p-3.5 bg-gray-50 dark:bg-gray-800/80 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                    <span className="text-xs font-bold text-gray-900 dark:text-white">
+                      Kecepatan Audio (Muraja'ah):
+                    </span>
+                  </div>
+                  <span className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 px-2.5 py-0.5 rounded-lg">
+                    {playbackRate}x
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-4 gap-1.5">
+                  {[0.75, 1.0, 1.25, 1.5].map((rate) => (
+                    <button
+                      key={rate}
+                      onClick={() => {
+                        murottalPlayer.setPlaybackRate(rate);
+                        setPlaybackRate(rate);
+                        vibrateSuccess();
+                      }}
+                      className={`py-1.5 rounded-xl text-xs font-bold transition-all ${
+                        playbackRate === rate
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600 hover:border-emerald-300'
+                      }`}
+                    >
+                      {rate}x {rate === 1.0 ? '• Normal' : ''}
+                    </button>
+                  ))}
+                </div>
               </div>
 
               {/* SLEEP TIMER SECTION */}

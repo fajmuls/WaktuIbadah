@@ -1,4 +1,4 @@
-import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget } from "../types";
+import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig } from "../types";
 
 const KEYS = {
   USER: "wi_user",
@@ -15,9 +15,11 @@ const KEYS = {
   OFFLINE_SURAHS: "wi_offline_surahs",
   REMINDER_SETTINGS: "wi_reminder_settings",
   KHATAM_TARGET: "wi_khatam_target",
+  ADMIN_REVIEW: "wi_admin_review_config",
+  NOTIFICATION_VERIFIED: "wi_notification_verified",
 };
 
-export const CURRENT_VERSION = "1.6.0";
+export const CURRENT_VERSION = "1.7.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -181,6 +183,37 @@ export const storage = {
   // Khatam Target
   getKhatamTarget: () => getItem<QuranKhatamTarget | null>(KEYS.KHATAM_TARGET, null),
   setKhatamTarget: (target: QuranKhatamTarget | null) => setItem(KEYS.KHATAM_TARGET, target),
+
+  // Ayah Bookmark Update
+  updateFavoriteAyah: (ayah: FavoriteAyah) => {
+    const list = storage.getFavoriteAyahs();
+    const index = list.findIndex(a => a.id === ayah.id);
+    if (index >= 0) {
+      list[index] = ayah;
+      setItem(KEYS.FAVORITE_AYAHS, [...list]);
+    } else {
+      storage.addFavoriteAyah(ayah);
+    }
+  },
+
+  // Admin Review Config (GForm & Review toggle)
+  getAdminReviewConfig: () => getItem<AdminReviewConfig>(KEYS.ADMIN_REVIEW, {
+    isEnabled: true,
+    gformUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc7z8w4qD3xN0mK9vL5b1Y8T_sample/viewform',
+    title: 'Evaluasi Proyek PAI: Penggunaan Aplikasi WaktuIbadah',
+    description: 'Bantu evaluasi efektivitas aplikasi WaktuIbadah untuk perkuliahan dan ibadah dengan mengisi kuesioner singkat ini.',
+    updatedAt: new Date().toISOString()
+  }),
+  setAdminReviewConfig: (config: AdminReviewConfig) => {
+    setItem(KEYS.ADMIN_REVIEW, config);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_admin_review_updated', { detail: config }));
+    }
+  },
+
+  // Notification verification status
+  isNotificationVerified: () => getItem<boolean>(KEYS.NOTIFICATION_VERIFIED, false),
+  setNotificationVerified: (verified: boolean) => setItem(KEYS.NOTIFICATION_VERIFIED, verified),
 
   clearAll: () => localStorage.clear(),
 };

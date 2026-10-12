@@ -3,7 +3,8 @@ import { useSearchParams } from 'react-router-dom';
 import { 
   BookOpen, Search, Play, Pause, Volume2, Bookmark, Check, Copy, 
   ChevronRight, X, Sparkles, Heart, Download, CheckCircle2,
-  Trash2, ExternalLink, Share2, Compass, Headphones, Moon
+  Trash2, ExternalLink, Share2, Compass, Headphones, Moon,
+  Quote, Tag, Eye
 } from 'lucide-react';
 import { SurahItem, AyatItem, HadithArbain, FavoriteAyah, FavoriteHadith } from '../types';
 import { storage } from '../lib/storage';
@@ -11,6 +12,7 @@ import { vibrateSuccess } from '../lib/audio';
 import { murottalPlayer } from '../lib/murottal';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { KhatamCalculatorModal } from '../components/KhatamCalculatorModal';
+import { TadabburBookmarkModal } from '../components/TadabburBookmarkModal';
 
 // Helper to convert western digits to authentic Arabic numerals (١, ٢, ٣...)
 export const toArabicNumerals = (num: number | string): string => {
@@ -73,10 +75,12 @@ export default function QuranHadis() {
   const [hadisSearch, setHadisSearch] = useState('');
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
-  // --- FAVORITES STATE ---
+  // --- FAVORITES & TADABBUR STATE ---
   const [favoriteAyahs, setFavoriteAyahs] = useState<FavoriteAyah[]>(storage.getFavoriteAyahs());
   const [favoriteHadiths, setFavoriteHadiths] = useState<FavoriteHadith[]>(storage.getFavoriteHadiths());
   const [favSubTab, setFavSubTab] = useState<'ayah' | 'hadith'>('ayah');
+  const [favCategoryFilter, setFavCategoryFilter] = useState<string>('Semua');
+  const [bookmarkModalTarget, setBookmarkModalTarget] = useState<{ surah: SurahItem; ayah: AyatItem } | null>(null);
 
   // --- DOA STATE ---
   const [doas, setDoas] = useState<Array<{ id: string; doa: string; ayat: string; latin: string; artinya: string }>>([]);
@@ -735,54 +739,126 @@ export default function QuranHadis() {
           </div>
 
           {favSubTab === 'ayah' && (
-            <div>
+            <div className="space-y-4">
+              {/* Category Filter Chips */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+                {['Semua', 'Hafalan', 'Doa', 'Motivasi', 'Tadabbur'].map((cat) => {
+                  const count = cat === 'Semua' 
+                    ? favoriteAyahs.length 
+                    : favoriteAyahs.filter(a => (a.category || 'Tadabbur') === cat).length;
+                  return (
+                    <button
+                      key={cat}
+                      onClick={() => setFavCategoryFilter(cat)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all border ${
+                        favCategoryFilter === cat
+                          ? 'bg-purple-600 text-white border-purple-600 shadow-2xs'
+                          : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:border-purple-300'
+                      }`}
+                    >
+                      <span>{cat}</span>
+                      <span className="ml-1.5 opacity-80 text-[10px]">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+
               {favoriteAyahs.length === 0 ? (
                 <div className="p-8 text-center bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
-                  <Heart className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Belum ada ayat favorit</p>
+                  <Bookmark className="w-8 h-8 text-gray-300 mx-auto mb-2" />
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">Belum ada ayat bertanda</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    Buka surat di Al-Qur'an dan klik ikon hati pada ayat yang ingin Anda simpan.
+                    Buka surat di Al-Qur'an dan klik tombol bookmark untuk menandai ayat dengan kategori warna & catatan tadabbur.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-3">
-                  {favoriteAyahs.map((fav) => (
-                    <div
-                      key={fav.id}
-                      className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs space-y-2.5"
-                    >
-                      <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2">
-                        <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950 px-2 py-0.5 rounded-lg">
-                          Surah {fav.surahName} : Ayat {fav.ayahNumber}
-                        </span>
-                        <button
-                          onClick={() => {
-                            storage.removeFavoriteAyah(fav.id);
-                            setFavoriteAyahs(storage.getFavoriteAyahs());
-                          }}
-                          className="text-gray-400 hover:text-red-500 p-1"
-                          title="Hapus dari tersimpan"
+                  {favoriteAyahs
+                    .filter(fav => favCategoryFilter === 'Semua' || (fav.category || 'Tadabbur') === favCategoryFilter)
+                    .map((fav) => {
+                      const categoryBadgeColor: Record<string, string> = {
+                        Hafalan: 'bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700',
+                        Doa: 'bg-amber-100 dark:bg-amber-950 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700',
+                        Motivasi: 'bg-blue-100 dark:bg-blue-950 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700',
+                        Tadabbur: 'bg-purple-100 dark:bg-purple-950 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700',
+                      };
+                      const badgeClass = categoryBadgeColor[fav.category || 'Tadabbur'] || categoryBadgeColor.Tadabbur;
+
+                      return (
+                        <div
+                          key={fav.id}
+                          className="bg-white dark:bg-gray-800 p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs space-y-3 transition-all hover:border-purple-300/60"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700 pb-2.5">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-bold text-gray-900 dark:text-white">
+                                QS. {fav.surahName} : Ayat {fav.ayahNumber}
+                              </span>
+                              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeClass}`}>
+                                {fav.category || 'Tadabbur'}
+                              </span>
+                            </div>
 
-                      {/* Arabic with end-of-ayah circular indicator */}
-                      <div className="text-right font-serif text-xl sm:text-2xl leading-[2.5] text-gray-900 dark:text-gray-100 pr-1" dir="rtl">
-                        <span>{fav.arab}</span>
-                        <span className="inline-flex items-center justify-center mx-2 w-7 h-7 rounded-full border border-emerald-500/70 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 text-xs font-serif font-bold align-middle">
-                          {toArabicNumerals(fav.ayahNumber)}
-                        </span>
-                      </div>
+                            <div className="flex items-center gap-1.5">
+                              <button
+                                onClick={() => {
+                                  const surahObj = surahs.find(s => s.nomor === fav.surahNumber);
+                                  if (surahObj) {
+                                    openSurah(surahObj, fav.ayahNumber);
+                                  }
+                                }}
+                                className="px-2.5 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-semibold hover:bg-purple-100 transition-colors flex items-center gap-1"
+                                title="Buka dan baca ayat ini di surah"
+                              >
+                                <Eye className="w-3.5 h-3.5" />
+                                <span className="hidden sm:inline">Buka Surah</span>
+                              </button>
+                              <button
+                                onClick={() => {
+                                  storage.removeFavoriteAyah(fav.id);
+                                  setFavoriteAyahs(storage.getFavoriteAyahs());
+                                  vibrateSuccess();
+                                }}
+                                className="text-gray-400 hover:text-red-500 p-1 rounded-lg"
+                                title="Hapus dari tersimpan"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </button>
+                            </div>
+                          </div>
 
-                      <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium italic">
-                        {fav.latin}
-                      </p>
-                      <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-900 p-2.5 rounded-xl">
-                        "{fav.translation}"
-                      </p>
-                    </div>
-                  ))}
+                          {/* Arabic with end-of-ayah circular indicator */}
+                          <div className="text-right font-serif text-xl sm:text-2xl leading-[2.5] text-gray-900 dark:text-gray-100 pr-1" dir="rtl">
+                            <span>{fav.arab}</span>
+                            <span className="inline-flex items-center justify-center mx-2 w-7 h-7 rounded-full border border-purple-500/70 bg-purple-50 dark:bg-purple-950 text-purple-800 dark:text-purple-300 text-xs font-serif font-bold align-middle">
+                              {toArabicNumerals(fav.ayahNumber)}
+                            </span>
+                          </div>
+
+                          <p className="text-xs text-emerald-700 dark:text-emerald-300 font-medium italic">
+                            {fav.latin}
+                          </p>
+                          <p className="text-xs text-gray-700 dark:text-gray-300 leading-relaxed bg-gray-50 dark:bg-gray-900 p-2.5 rounded-xl">
+                            "{fav.translation}"
+                          </p>
+
+                          {/* Personal Tadabbur Note if present */}
+                          {fav.note && (
+                            <div className="p-3 bg-purple-50/70 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900/60 flex items-start gap-2 text-xs">
+                              <Quote className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
+                              <div>
+                                <span className="font-bold text-[10px] text-purple-800 dark:text-purple-300 block uppercase tracking-wider">
+                                  Catatan Tadabbur Pribadi:
+                                </span>
+                                <p className="text-gray-800 dark:text-gray-200 italic mt-0.5 leading-relaxed">
+                                  "{fav.note}"
+                                </p>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
@@ -1017,18 +1093,41 @@ export default function QuranHadis() {
                         </div>
 
                         <div className="flex items-center gap-2">
-                          {/* Favorite Ayah */}
-                          <button
-                            onClick={() => handleToggleFavoriteAyah(ayah)}
-                            className={`p-1.5 rounded-lg transition-colors ${
-                              isFav 
-                                ? 'text-red-500 bg-red-50 dark:bg-red-950/50' 
-                                : 'text-gray-400 hover:text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700'
-                            }`}
-                            title={isFav ? "Hapus dari Favorit" : "Simpan Ayat"}
-                          >
-                            <Heart className={`w-4 h-4 ${isFav ? 'fill-red-500' : ''}`} />
-                          </button>
+                          {/* Bookmark & Tadabbur Multi-Warna Button */}
+                          {(() => {
+                            const b = favoriteAyahs.find(f => f.id === ayahId);
+                            const categoryColorClasses: Record<string, string> = {
+                              Hafalan: 'bg-emerald-100 dark:bg-emerald-950/80 text-emerald-800 dark:text-emerald-300 border-emerald-300 dark:border-emerald-700',
+                              Doa: 'bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border-amber-300 dark:border-amber-700',
+                              Motivasi: 'bg-blue-100 dark:bg-blue-950/80 text-blue-800 dark:text-blue-300 border-blue-300 dark:border-blue-700',
+                              Tadabbur: 'bg-purple-100 dark:bg-purple-950/80 text-purple-800 dark:text-purple-300 border-purple-300 dark:border-purple-700'
+                            };
+
+                            if (b) {
+                              const badgeStyle = categoryColorClasses[b.category || 'Tadabbur'] || categoryColorClasses.Tadabbur;
+                              return (
+                                <button
+                                  onClick={() => setBookmarkModalTarget({ surah: selectedSurah, ayah })}
+                                  className={`px-2 py-0.5 rounded-lg border text-[11px] font-bold flex items-center gap-1 transition-transform active:scale-95 shadow-2xs ${badgeStyle}`}
+                                  title="Edit Kategori & Catatan Tadabbur"
+                                >
+                                  <Bookmark className="w-3 h-3 fill-current" />
+                                  <span>{b.category || 'Tadabbur'}</span>
+                                </button>
+                              );
+                            }
+
+                            return (
+                              <button
+                                onClick={() => setBookmarkModalTarget({ surah: selectedSurah, ayah })}
+                                className="text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 p-1.5 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-950/50 transition-colors flex items-center gap-1 text-xs"
+                                title="Beri Penanda & Catatan Tadabbur"
+                              >
+                                <Bookmark className="w-4 h-4" />
+                                <span className="hidden sm:inline text-[11px]">Tadabbur</span>
+                              </button>
+                            );
+                          })()}
 
                           {/* Audio */}
                           {ayah.audio?.['05'] && (
@@ -1073,6 +1172,27 @@ export default function QuranHadis() {
                       <p className="text-xs sm:text-sm text-gray-700 dark:text-gray-200 leading-relaxed">
                         {ayah.teksIndonesia}
                       </p>
+
+                      {/* Catatan Tadabbur Pribadi (Jika ada) */}
+                      {(() => {
+                        const b = favoriteAyahs.find(f => f.id === ayahId);
+                        if (b && b.note) {
+                          return (
+                            <div className="p-2.5 bg-purple-50/80 dark:bg-purple-950/40 rounded-xl border border-purple-200 dark:border-purple-900/60 flex items-start gap-2 text-xs">
+                              <Quote className="w-3.5 h-3.5 text-purple-600 shrink-0 mt-0.5" />
+                              <div>
+                                <span className="font-bold text-[10px] text-purple-700 dark:text-purple-300 block uppercase tracking-wider">
+                                  Catatan Tadabbur Pribadi ({b.category || 'Tadabbur'}):
+                                </span>
+                                <p className="text-gray-800 dark:text-gray-200 italic mt-0.5">
+                                  "{b.note}"
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
                     </div>
                   );
                 })
@@ -1098,6 +1218,15 @@ export default function QuranHadis() {
         isOpen={isKhatamModalOpen}
         onClose={() => setIsKhatamModalOpen(false)}
         onOpenLogModal={() => setIsLogModalOpen(true)}
+      />
+
+      {/* Tadabbur Bookmark Modal */}
+      <TadabburBookmarkModal
+        isOpen={!!bookmarkModalTarget}
+        onClose={() => setBookmarkModalTarget(null)}
+        surah={bookmarkModalTarget?.surah || null}
+        ayah={bookmarkModalTarget?.ayah || null}
+        onSaved={() => setFavoriteAyahs(storage.getFavoriteAyahs())}
       />
     </div>
   );

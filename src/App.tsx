@@ -22,6 +22,7 @@ import Settings from './pages/Settings';
 import Tips from './pages/Tips';
 import QuranHadis from './pages/QuranHadis';
 import Tools from './pages/Tools';
+import AdminDashboard from './pages/AdminDashboard';
 
 import Kalender from './pages/Kalender';
 import Qibla from './pages/Qibla';
@@ -209,6 +210,7 @@ export default function App() {
                 <Route path="/tips" element={<Tips />} />
                 <Route path="/kalender" element={<Kalender />} />
                 <Route path="/qibla" element={<Qibla />} />
+                <Route path="/admin" element={<AdminDashboard />} />
                 
                 {/* Fallback to Dashboard */}
                 <Route path="*" element={<Navigate to="/" replace />} />

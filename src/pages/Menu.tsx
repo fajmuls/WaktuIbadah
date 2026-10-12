@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight, Compass, Calendar, Sparkles } from 'lucide-react';
+import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight, Compass, Calendar, Sparkles, Lock } from 'lucide-react';
 import { storage } from '../lib/storage';
 
 export default function Menu() {
@@ -14,6 +14,7 @@ export default function Menu() {
     { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk produktivitas ibadah & kerja', color: 'text-blue-500', bg: 'bg-blue-50' },
     { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi ibadah dan produktivitas hari ini', color: 'text-purple-500', bg: 'bg-purple-50' },
     { label: 'Tips Islami', icon: Lightbulb, path: '/tips', desc: 'Motivasi dan panduan harian', color: 'text-orange-500', bg: 'bg-orange-50' },
+    { label: 'Admin Dashboard (PAI)', icon: Lock, path: '/admin', desc: 'Kelola link formulir evaluasi review (Token: fajrul22)', color: 'text-emerald-600', bg: 'bg-emerald-50' },
     { label: 'Pengaturan', icon: SettingsIcon, path: '/settings', desc: 'Tema, audio, lokasi, dan versi aplikasi', color: 'text-gray-500', bg: 'bg-gray-50' },
   ];
 

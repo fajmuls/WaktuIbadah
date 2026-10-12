@@ -151,6 +151,7 @@ class MurottalController {
   public duration: number = 0;
   public autoplayNext: boolean = true;
   public isLoopCurrent: boolean = false;
+  public playbackRate: number = 1.0;
   
   // Sleep Timer
   public sleepTimerSecondsRemaining: number | null = null;
@@ -271,6 +272,7 @@ class MurottalController {
     if (this.audio) {
       this.audio.src = url;
       this.audio.load();
+      this.audio.playbackRate = this.playbackRate;
       this.updateMediaSessionMetadata();
       if (autoPlay) {
         this.audio.play().catch(err => {
@@ -331,6 +333,14 @@ class MurottalController {
     if (this.audio) {
       this.audio.currentTime = Math.max(0, Math.min(seconds, this.duration));
     }
+  }
+
+  public setPlaybackRate(rate: number) {
+    this.playbackRate = rate;
+    if (this.audio) {
+      this.audio.playbackRate = rate;
+    }
+    this.notify();
   }
 
   public playNextSurah() {

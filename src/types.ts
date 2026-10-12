@@ -128,6 +128,9 @@ export interface QuranLog {
   notes?: string;
 }
 
+export type AyahBookmarkCategory = 'Hafalan' | 'Doa' | 'Motivasi' | 'Tadabbur';
+export type AyahBookmarkColor = 'emerald' | 'amber' | 'blue' | 'purple';
+
 export interface FavoriteAyah {
   id: string;
   surahNumber: number;
@@ -137,6 +140,9 @@ export interface FavoriteAyah {
   latin: string;
   translation: string;
   addedAt: string;
+  category?: AyahBookmarkCategory;
+  color?: AyahBookmarkColor;
+  note?: string; // Catatan Tadabbur pribadi
 }
 
 export interface FavoriteHadith {
@@ -189,6 +195,7 @@ export interface MurottalState {
   sleepTimerMinutes: number | null; // null if off, or remaining seconds
   sleepTimerTarget: number | null; // timestamp when it should stop
   sleepTimerMode: 'none' | '15' | '30' | '45' | '60' | 'surah_end' | 'custom';
+  playbackRate?: number; // 0.75, 1.0, 1.25, 1.5
 }
 
 export interface PrayerConflictInfo {
@@ -199,5 +206,13 @@ export interface PrayerConflictInfo {
   scheduleEndTime: string;
   conflictType: 'overlap' | 'approaching';
   suggestion: string;
+}
+
+export interface AdminReviewConfig {
+  isEnabled: boolean;
+  gformUrl: string;
+  title: string;
+  description: string;
+  updatedAt: string;
 }
 
