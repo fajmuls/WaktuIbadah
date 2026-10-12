@@ -48,6 +48,13 @@ export default function Ibadah() {
     };
     setLog(newLog);
     storage.updatePrayerLog(newLog);
+
+    // If all 5 prayers are completed today, notify review listener
+    if (Object.values(newLog.prayers).every(Boolean) && selectedDate === format(new Date(), 'yyyy-MM-dd')) {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('wi_check_five_prayers_review'));
+      }, 600);
+    }
   };
 
   const prayers: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];

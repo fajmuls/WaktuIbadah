@@ -5,9 +5,10 @@ let audioCtx: AudioContext | null = null;
 let activeAdzanAudio: HTMLAudioElement | null = null;
 
 export const AZAN_AUDIO_URLS = {
-  makkah: 'https://ia800203.us.archive.org/31/items/AdhanMakkah/Adhan%20Makkah.mp3',
-  subuh: 'https://ia800301.us.archive.org/15/items/AdhanMadinah/Adhan%20Madinah.mp3',
-  backup: 'https://cdn.islamic.network/audio/adzan/azan1.mp3'
+  subuh: 'https://files.catbox.moe/8jfmro.mp3', // Khusus sholat subuh
+  fardhu: 'https://files.catbox.moe/e1w884.mp3', // Sholat lainnya (Zuhur, Asar, Magrib, Isya)
+  makkah: 'https://files.catbox.moe/e1w884.mp3',
+  backup: 'https://ia800203.us.archive.org/31/items/AdhanMakkah/Adhan%20Makkah.mp3'
 };
 
 const getAudioContext = () => {
@@ -52,12 +53,65 @@ export const playClickSound = () => {
 let currentAlarmInterval: number | null = null;
 
 /**
+ * Play authentic loud Azan audio specifically customized for Subuh vs other prayers
+ */
+export const playPrayerAzan = (
+  prayerName: string,
+  type: 'sound_and_vibrate' | 'sound_only' | 'vibrate_only' = 'sound_and_vibrate'
+) => {
+  stopAlarmSound();
+  const allowVibrate = type === 'sound_and_vibrate' || type === 'vibrate_only';
+  const allowSound = type === 'sound_and_vibrate' || type === 'sound_only';
+
+  if (allowVibrate && navigator.vibrate) {
+    navigator.vibrate([800, 300, 800, 300, 1200]);
+  }
+
+  if (!allowSound) {
+    return () => stopAlarmSound();
+  }
+
+  const isSubuh = prayerName.toLowerCase().includes('subuh');
+  const targetUrl = isSubuh ? AZAN_AUDIO_URLS.subuh : AZAN_AUDIO_URLS.fardhu;
+
+  try {
+    const azanAudio = new Audio(targetUrl);
+    azanAudio.volume = 1.0;
+    activeAdzanAudio = azanAudio;
+
+    const playPromise = azanAudio.play();
+    if (playPromise !== undefined) {
+      playPromise.catch(err => {
+        console.warn("Autoplay azan MP3 blocked by browser, falling back to synthetic takbir:", err);
+        playSyntheticTakbir(true);
+      });
+    }
+  } catch (err) {
+    console.warn("Error initiating Azan MP3:", err);
+    playSyntheticTakbir(true);
+  }
+
+  if (allowVibrate && navigator.vibrate) {
+    currentAlarmInterval = window.setInterval(() => {
+      if (navigator.vibrate) {
+        navigator.vibrate([600, 200, 600]);
+      }
+    }, 4000);
+  }
+
+  return () => {
+    stopAlarmSound();
+  };
+};
+
+/**
  * Play authentic loud Azan audio (or synthetic fallback) + strong phone vibration
  */
 export const playAlarmSound = (
   tone: 'azan_makkah' | 'chime_peaceful' | 'beep_classic' = 'azan_makkah',
   type: 'sound_and_vibrate' | 'sound_only' | 'vibrate_only' = 'sound_and_vibrate',
-  loudBoost: boolean = true
+  loudBoost: boolean = true,
+  prayerName?: string
 ) => {
   const allowVibrate = type === 'sound_and_vibrate' || type === 'vibrate_only';
   const allowSound = type === 'sound_and_vibrate' || type === 'sound_only';
@@ -76,7 +130,9 @@ export const playAlarmSound = (
   if (tone === 'azan_makkah') {
     try {
       stopAlarmSound();
-      const azanAudio = new Audio(AZAN_AUDIO_URLS.makkah);
+      const isSubuh = prayerName?.toLowerCase().includes('subuh');
+      const targetUrl = isSubuh ? AZAN_AUDIO_URLS.subuh : AZAN_AUDIO_URLS.fardhu;
+      const azanAudio = new Audio(targetUrl);
       azanAudio.volume = 1.0;
       activeAdzanAudio = azanAudio;
 

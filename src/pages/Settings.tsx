@@ -348,24 +348,23 @@ export default function Settings() {
               onClick={() => navigate('/admin')}
               className="text-xs font-bold px-3 py-1.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-2xs"
             >
-              Admin Dashboard (fajrul22)
+              Admin Dashboard
             </button>
           </div>
 
-          {/* Changelog Card for Version 1.7.0 */}
+          {/* Changelog Card for Version 1.8.0 */}
           <div className="p-3.5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-xs space-y-2 text-gray-600 dark:text-gray-300">
             <p className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
               <CheckCircle2 className="w-3.5 h-3.5" />
               Catatan Pembaruan v{CURRENT_VERSION}:
             </p>
             <ul className="list-disc list-inside space-y-1 text-[11px] text-gray-500 dark:text-gray-400 pl-1">
-              <li><strong>Visual Weekly Progress Chart (Recharts)</strong>: Grafik visual area tren kedisiplinan salat 5 waktu, indeks ibadah gabungan, dan tilawah 7 hari terakhir di halaman Progress.</li>
-              <li><strong>Pengaturan Kecepatan Pemutaran Murottal (0.75x, 1x, 1.25x, 1.5x)</strong>: Pilihan tempo muraja'ah dan hafalan Al-Qur'an langsung di player audio murottal.</li>
-              <li><strong>Ekspor Jadwal ke Google Calendar (.ics)</strong>: Sinkronisasi satu-klik jadwal kuliah bebas bentrok salat ke Google Calendar Android/iOS dengan pengingat jeda ibadah otomatis.</li>
-              <li><strong>Mode Tadabbur & Bookmark Multi-Warna</strong>: Penandaan ayat dengan 4 kategori warna (🟢 Hafalan, 🟡 Doa, 🔵 Motivasi, 🟣 Tadabbur) disertai catatan refleksi pribadi dan filter khusus.</li>
-              <li><strong>Notifikasi Langsung ke Handphone (Service Worker /sw.js) & Suara Azan Keras</strong>: Pembaruan engine notifikasi background dengan audio Azan MP3 bervolume tinggi, getaran haptic ganda, dan modal uji coba notifikasi di awal aplikasi.</li>
-              <li><strong>Admin Dashboard (Token: fajrul22)</strong>: Panel khusus admin untuk mengelola link kuesioner evaluasi Google Form (GForm) dan tombol toggle aktif/nonaktif review bagi semua pengguna.</li>
-              <li><strong>Redesign Dashboard Utama</strong>: Ilustrasi grand mosque vector siluet bernuansa islami, penataan jam salat 5 waktu simetris presisi di tengah, tombol tes suara azan keras, dan kartu Hadits Harian API MyQuran.</li>
+              <li><strong>Suara Azan Autoplay Khusus Subuh & Salat Lainnya</strong>: Integrasi file audio azan MP3 resmi khusus Subuh dan fardhu lainnya dengan pemutaran otomatis saat waktu salat tiba.</li>
+              <li><strong>Sistem Berjalan di Latar Belakang (Hemat Baterai)</strong>: Izin latar belakang ultra-efisien agar smartphone tetap memperbarui jadwal dan melacak ibadah tepat waktu.</li>
+              <li><strong>Perbaikan Tuntas Bug Al-Qur'an</strong>: Penyelesaian kendala ayat tidak muncul dengan arsitektur multi-tiered fallback (equran, gading.dev, & jsdelivr CDN) disertai tombol muat ulang darurat.</li>
+              <li><strong>Pemisahan Hadis di Dashboard Kiri</strong>: Menu Hadis kini mandiri dan diposisikan tepat di bawah Al-Qur'an pada navigasi sidebar kiri dan dashboard utama.</li>
+              <li><strong>Privasi Token Admin & Persistensi Sesi</strong>: Token admin disembunyikan sepenuhnya dari UI publik dan sesi login admin tersimpan otomatis tanpa perlu mengetik ulang token.</li>
+              <li><strong>Sistem Review 5 Bintang & Chart Siap Cetak (Recharts)</strong>: Modal review otomatis muncul sekali ketika pengguna menuntaskan salat 5 waktu, dikonversi ke grafik batang penilaian di Admin Dashboard yang bisa di-print out dengan filter nama responden dan opsi dual mode (Website Review & GForm).</li>
             </ul>
           </div>
 
@@ -376,9 +375,9 @@ export default function Settings() {
               Saran Update Bermanfaat untuk Rilis Berikutnya:
             </p>
             <ul className="space-y-1 text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
-              <li>• <strong>Widget Kompas Kiblat Berbantuan Sensor Gyroscope Presisi Tinggi</strong>: Kalibrasi kiblat langsung di dashboard depan tanpa perlu pindah tab.</li>
-              <li>• <strong>Backup & Restore Data Cloud / File JSON</strong>: Memungkinkan mahasiswa memindahkan jadwal dan progres tilawah antar HP atau laptop.</li>
-              <li>• <strong>Audio Doa Harian & Dzikir Pagi-Petang dengan Counter Digital</strong>: Menambah kemudahan wirid dan zikir di sela waktu luang perkuliahan.</li>
+              <li>• <strong>Sinkronisasi Cloud Multi-Perangkat (Google Auth/Cloud Sync)</strong>: Memudahkan mahasiswa memindahkan jadwal kuliah, target khatam, dan catatan tadabbur antar ponsel atau laptop tanpa hilang.</li>
+              <li>• <strong>Audio Doa Harian & Dzikir Pagi-Petang dengan Counter Tasbih Haptic</strong>: Tuntunan zikir Al-Ma'tsurat dengan penghitung getar digital untuk menemani perjalanan menuju kampus.</li>
+              <li>• <strong>Pilihan Ukuran Font & Mushaf Al-Qur'an (Utsmani / Standar Kemenag)</strong>: Memberikan kenyamanan membaca ayat sesuai preferensi visual masing-masing mahasiswa.</li>
             </ul>
           </div>
         </div>

@@ -208,11 +208,28 @@ export interface PrayerConflictInfo {
   suggestion: string;
 }
 
+export type ReviewSystemMode = 'website' | 'gform' | 'both';
+
 export interface AdminReviewConfig {
   isEnabled: boolean;
+  reviewMode: ReviewSystemMode; // 'website' | 'gform' | 'both'
   gformUrl: string;
   title: string;
   description: string;
   updatedAt: string;
+}
+
+export type StarRatingValue = 1 | 2 | 3 | 4 | 5;
+
+export interface WebsiteReview {
+  id: string;
+  userName: string;
+  rating: StarRatingValue;
+  ratingLabel: 'Tidak Membantu' | 'Kurang Membantu' | 'Cukup Membantu' | 'Membantu' | 'Sangat Membantu';
+  comment: string;
+  prayerAspectRating?: number; // 1-5
+  scheduleAspectRating?: number; // 1-5
+  submittedAt: string;
+  date: string; // YYYY-MM-DD
 }
 

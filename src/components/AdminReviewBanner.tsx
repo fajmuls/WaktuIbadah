@@ -46,15 +46,25 @@ export function AdminReviewBanner() {
       </div>
 
       <div className="flex items-center gap-2 shrink-0">
-        <a
-          href={config.gformUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-teal-950 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
-        >
-          <span>Isi Google Form</span>
-          <ExternalLink className="w-3 h-3" />
-        </a>
+        {(config.reviewMode === 'website' || config.reviewMode === 'both') && (
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('wi_check_five_prayers_review'))}
+            className="px-3 py-1.5 bg-white text-emerald-900 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+          >
+            <span>⭐ Rating Bintang</span>
+          </button>
+        )}
+        {(config.reviewMode === 'gform' || config.reviewMode === 'both') && config.gformUrl && (
+          <a
+            href={config.gformUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-teal-950 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+          >
+            <span>Google Form</span>
+            <ExternalLink className="w-3 h-3" />
+          </a>
+        )}
         <button
           onClick={() => setIsDismissed(true)}
           className="p-1 text-teal-200 hover:text-white rounded-lg transition-colors"

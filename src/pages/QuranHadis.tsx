@@ -13,6 +13,7 @@ import { murottalPlayer } from '../lib/murottal';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { KhatamCalculatorModal } from '../components/KhatamCalculatorModal';
 import { TadabburBookmarkModal } from '../components/TadabburBookmarkModal';
+import { getSurahAyahs } from '../lib/quran-api';
 
 // Helper to convert western digits to authentic Arabic numerals (١, ٢, ٣...)
 export const toArabicNumerals = (num: number | string): string => {
@@ -147,31 +148,18 @@ export default function QuranHadis() {
     }
   }, [activeTab]);
 
-  // Open Surah Detail with Offline Caching check
+  // Open Surah Detail with resilient multi-tier fallback
   const openSurah = async (surah: SurahItem, targetAyah?: number) => {
     setSelectedSurah(surah);
     setIsLoadingAyahs(true);
     setAyahs([]);
 
-    // Check offline cache first
-    const offlineData = storage.getOfflineSurahData(surah.nomor);
-    if (offlineData && offlineData.ayahs && offlineData.ayahs.length > 0) {
-      setAyahs(offlineData.ayahs);
-      setIsLoadingAyahs(false);
-      // Save last read
-      const record = { number: surah.nomor, name: surah.namaLatin, lastAyah: targetAyah || 1 };
-      setLastReadSurah(record);
-      localStorage.setItem('wi_last_read', JSON.stringify(record));
-      return;
-    }
-
     try {
-      const res = await fetch(`https://equran.id/api/v2/surat/${surah.nomor}`);
-      if (res.ok) {
-        const json = await res.json();
-        if (json.data?.ayat) {
-          setAyahs(json.data.ayat);
-        }
+      const result = await getSurahAyahs(surah.nomor);
+      if (result.success && result.ayahs.length > 0) {
+        setAyahs(result.ayahs);
+      } else {
+        console.warn(`Could not load ayahs for surah ${surah.nomor}`);
       }
     } catch (err) {
       console.error("Failed to fetch surah detail:", err);
@@ -201,16 +189,13 @@ export default function QuranHadis() {
         setOfflineSurahsMap(storage.getOfflineSurahs());
         vibrateSuccess();
       } else {
-        // Fetch and save
+        // Fetch and save via resilient loader
         try {
-          const res = await fetch(`https://equran.id/api/v2/surat/${surah.nomor}`);
-          if (res.ok) {
-            const json = await res.json();
-            if (json.data?.ayat) {
-              storage.saveOfflineSurah(surah, json.data.ayat);
-              setOfflineSurahsMap(storage.getOfflineSurahs());
-              vibrateSuccess();
-            }
+          const result = await getSurahAyahs(surah.nomor);
+          if (result.success && result.ayahs.length > 0) {
+            storage.saveOfflineSurah(surah, result.ayahs);
+            setOfflineSurahsMap(storage.getOfflineSurahs());
+            vibrateSuccess();
           }
         } catch (err) {
           console.error("Failed to download surah for offline:", err);
@@ -1064,6 +1049,24 @@ export default function QuranHadis() {
                   {Array.from({ length: 6 }).map((_, i) => (
                     <div key={i} className="h-28 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
                   ))}
+                </div>
+              ) : ayahs.length === 0 ? (
+                <div className="text-center py-16 px-4 space-y-3 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 p-8 shadow-xs">
+                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 mx-auto flex items-center justify-center font-bold text-lg">
+                    📖
+                  </div>
+                  <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    Ayat belum tampil atau terjadi kendala jaringan
+                  </h4>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+                    Sistem multi-sumber cadangan siap memuat ulang teks ayat surat {selectedSurah.namaLatin}.
+                  </p>
+                  <button
+                    onClick={() => openSurah(selectedSurah)}
+                    className="mt-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition-all active:scale-95 inline-flex items-center gap-2"
+                  >
+                    <span>Muat Ulang Ayat Sekarang</span>
+                  </button>
                 </div>
               ) : (
                 ayahs.map((ayah) => {

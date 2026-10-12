@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen } from 'lucide-react';
+import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen, Quote } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
 import { MurottalPlayerWidget } from './MurottalPlayerWidget';
@@ -32,6 +32,16 @@ export const Layout = () => {
     { label: 'Ibadah', icon: Clock, path: '/ibadah' },
     { label: 'Progress', icon: BarChart2, path: '/progress' },
     { label: 'Qur\'an', icon: BookOpen, path: '/quran' },
+    { label: 'Hadis', icon: Quote, path: '/hadis' },
+    { label: 'Menu', icon: Menu, path: '/menu' },
+  ];
+
+  const mobileNavItems = [
+    { label: 'Home', icon: Home, path: '/' },
+    { label: 'Jadwal', icon: Calendar, path: '/jadwal' },
+    { label: 'Ibadah', icon: Clock, path: '/ibadah' },
+    { label: 'Qur\'an', icon: BookOpen, path: '/quran' },
+    { label: 'Hadis', icon: Quote, path: '/hadis' },
     { label: 'Menu', icon: Menu, path: '/menu' },
   ];
 
@@ -82,7 +92,7 @@ export const Layout = () => {
 
       {/* Mobile Bottom Navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-gray-100 flex justify-around items-center p-2 pb-[env(safe-area-inset-bottom)] z-40">
-        {navItems.map((item) => (
+        {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}

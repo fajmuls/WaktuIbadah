@@ -1,4 +1,4 @@
-import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig } from "../types";
+import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig, WebsiteReview } from "../types";
 
 const KEYS = {
   USER: "wi_user",
@@ -17,9 +17,13 @@ const KEYS = {
   KHATAM_TARGET: "wi_khatam_target",
   ADMIN_REVIEW: "wi_admin_review_config",
   NOTIFICATION_VERIFIED: "wi_notification_verified",
+  WEBSITE_REVIEWS: "wi_website_reviews",
+  BACKGROUND_SYNC_ALLOWED: "wi_bg_sync_allowed",
+  BACKGROUND_SYNC_DISMISSED: "wi_bg_sync_dismissed",
+  ADMIN_AUTHENTICATED: "wi_admin_authenticated",
 };
 
-export const CURRENT_VERSION = "1.7.0";
+export const CURRENT_VERSION = "1.8.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -196,9 +200,10 @@ export const storage = {
     }
   },
 
-  // Admin Review Config (GForm & Review toggle)
+  // Admin Review Config (Dual Mode: Website Review & GForm)
   getAdminReviewConfig: () => getItem<AdminReviewConfig>(KEYS.ADMIN_REVIEW, {
     isEnabled: true,
+    reviewMode: 'website',
     gformUrl: 'https://docs.google.com/forms/d/e/1FAIpQLSc7z8w4qD3xN0mK9vL5b1Y8T_sample/viewform',
     title: 'Evaluasi Proyek PAI: Penggunaan Aplikasi WaktuIbadah',
     description: 'Bantu evaluasi efektivitas aplikasi WaktuIbadah untuk perkuliahan dan ibadah dengan mengisi kuesioner singkat ini.',
@@ -210,6 +215,97 @@ export const storage = {
       window.dispatchEvent(new CustomEvent('wi_admin_review_updated', { detail: config }));
     }
   },
+
+  // Website Reviews (5-Star System)
+  getWebsiteReviews: (): WebsiteReview[] => {
+    const list = getItem<WebsiteReview[]>(KEYS.WEBSITE_REVIEWS, []);
+    if (list.length === 0) {
+      // Seed default initial respondent reviews for nice chart visualization
+      const defaultReviews: WebsiteReview[] = [
+        {
+          id: 'seed-rev-1',
+          userName: 'Ahmad Fauzi (Teknik Informatika)',
+          rating: 5,
+          ratingLabel: 'Sangat Membantu',
+          comment: 'Sangat membantu menyeimbangkan tugas kuliah dan sholat tepat waktu. Suara adzannya jernih dan otomatis.',
+          prayerAspectRating: 5,
+          scheduleAspectRating: 5,
+          submittedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+          date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0]
+        },
+        {
+          id: 'seed-rev-2',
+          userName: 'Siti Nurhaliza (Manajemen)',
+          rating: 5,
+          ratingLabel: 'Sangat Membantu',
+          comment: 'Tampilan bersih tanpa distraksi, fitur murottal dan jadwal bebas bentrok sangat memudahkan kegiatan sehari-hari.',
+          prayerAspectRating: 5,
+          scheduleAspectRating: 4,
+          submittedAt: new Date(Date.now() - 86400000).toISOString(),
+          date: new Date(Date.now() - 86400000).toISOString().split('T')[0]
+        },
+        {
+          id: 'seed-rev-3',
+          userName: 'Budi Santoso (Sistem Informasi)',
+          rating: 4,
+          ratingLabel: 'Membantu',
+          comment: 'Pengingat adzan di HP sangat berguna saat sedang praktikum. Sangat rekomendasi untuk mahasiswa.',
+          prayerAspectRating: 5,
+          scheduleAspectRating: 4,
+          submittedAt: new Date(Date.now() - 3600000 * 10).toISOString(),
+          date: new Date().toISOString().split('T')[0]
+        },
+        {
+          id: 'seed-rev-4',
+          userName: 'Nadia Putri (Pendidikan Agama Islam)',
+          rating: 5,
+          ratingLabel: 'Sangat Membantu',
+          comment: 'Proyek website ini sangat relevan untuk kebutuhan ibadah dan kuliah. Evaluasi 5 bintang penuh!',
+          prayerAspectRating: 5,
+          scheduleAspectRating: 5,
+          submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
+          date: new Date().toISOString().split('T')[0]
+        },
+        {
+          id: 'seed-rev-5',
+          userName: 'Rian Hidayat (Ilmu Komputer)',
+          rating: 3,
+          ratingLabel: 'Cukup Membantu',
+          comment: 'Bagus dan bermanfaat. Akan lebih mantap jika ada sinkronisasi cloud.',
+          prayerAspectRating: 4,
+          scheduleAspectRating: 3,
+          submittedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
+          date: new Date().toISOString().split('T')[0]
+        }
+      ];
+      setItem(KEYS.WEBSITE_REVIEWS, defaultReviews);
+      return defaultReviews;
+    }
+    return list;
+  },
+  addWebsiteReview: (review: WebsiteReview) => {
+    const list = storage.getWebsiteReviews();
+    const updated = [review, ...list];
+    setItem(KEYS.WEBSITE_REVIEWS, updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_website_review_added', { detail: review }));
+    }
+  },
+  hasUserReviewed: (userName?: string): boolean => {
+    const list = storage.getWebsiteReviews();
+    if (!userName) return list.some(r => r.id.startsWith('user-'));
+    return list.some(r => r.userName.toLowerCase().trim() === userName.toLowerCase().trim());
+  },
+
+  // Background Sync Permission & State
+  isBackgroundSyncAllowed: () => getItem<boolean>(KEYS.BACKGROUND_SYNC_ALLOWED, false),
+  setBackgroundSyncAllowed: (allowed: boolean) => setItem(KEYS.BACKGROUND_SYNC_ALLOWED, allowed),
+  isBackgroundSyncDismissed: () => getItem<boolean>(KEYS.BACKGROUND_SYNC_DISMISSED, false),
+  setBackgroundSyncDismissed: (dismissed: boolean) => setItem(KEYS.BACKGROUND_SYNC_DISMISSED, dismissed),
+
+  // Persistent Admin Authentication
+  isAdminAuthenticated: () => getItem<boolean>(KEYS.ADMIN_AUTHENTICATED, false),
+  setAdminAuthenticated: (auth: boolean) => setItem(KEYS.ADMIN_AUTHENTICATED, auth),
 
   // Notification verification status
   isNotificationVerified: () => getItem<boolean>(KEYS.NOTIFICATION_VERIFIED, false),

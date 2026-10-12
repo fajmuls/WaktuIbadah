@@ -5,7 +5,7 @@ import { storage, CURRENT_VERSION } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } from './lib/prayer-times';
 import { format, addDays } from 'date-fns';
-import { playAlarmSound, vibratePrayerAlarm } from './lib/audio';
+import { playAlarmSound, playPrayerAzan, vibratePrayerAlarm } from './lib/audio';
 import { showPWANotification } from './lib/pwa-service';
 
 // Pages
@@ -21,11 +21,15 @@ import Reflection from './pages/Reflection';
 import Settings from './pages/Settings';
 import Tips from './pages/Tips';
 import QuranHadis from './pages/QuranHadis';
+import Hadis from './pages/Hadis';
 import Tools from './pages/Tools';
 import AdminDashboard from './pages/AdminDashboard';
-
 import Kalender from './pages/Kalender';
 import Qibla from './pages/Qibla';
+
+// Modals
+import { BackgroundSyncModal } from './components/BackgroundSyncModal';
+import { WebsiteReviewModal } from './components/WebsiteReviewModal';
 
 const SplashScreen = () => (
   <motion.div 
@@ -57,6 +61,7 @@ export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [showSplash, setShowSplash] = useState(true);
   const [hasOnboarded, setHasOnboarded] = useState(false);
+  const [isReviewOpen, setIsReviewOpen] = useState(false);
   const notifiedTimes = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -77,6 +82,26 @@ export default function App() {
       setShowSplash(false);
     }, 1800);
 
+    // Check if user has completed all 5 prayers today
+    const checkFivePrayersReview = () => {
+      const today = format(new Date(), 'yyyy-MM-dd');
+      const prayerLog = storage.getPrayerLog(today);
+      const isAllDone = Object.values(prayerLog.prayers).every(Boolean);
+      const hasReviewed = localStorage.getItem('wi_five_prayers_reviewed') === 'true';
+      const reviewConfig = storage.getAdminReviewConfig();
+      if (isAllDone && !hasReviewed && reviewConfig.isEnabled) {
+        setIsReviewOpen(true);
+      }
+    };
+    
+    // Check review prompt shortly after app loads
+    const reviewTimer = setTimeout(checkFivePrayersReview, 2500);
+
+    const handleReviewTrigger = () => {
+      checkFivePrayersReview();
+    };
+    window.addEventListener('wi_check_five_prayers_review', handleReviewTrigger);
+
     const checkAlarms = () => {
       const currentUser = storage.getUser();
       if (!currentUser?.reminderEnabled) return;
@@ -89,13 +114,17 @@ export default function App() {
       const cached = getCachedPrayerData();
       const times = cached?.times || getPrayerTimesForToday();
 
-      // Trigger Helper: sound and vibration based on user settings
-      const triggerAlarmEffect = () => {
+      // Trigger Helper: sound and vibration with custom Azan URLs
+      const triggerAlarmEffect = (prayerName?: string) => {
         if (reminderSettings.reminderType !== 'sound_only') {
           vibratePrayerAlarm();
         }
         if (currentUser.soundEnabled !== false && reminderSettings.reminderType !== 'vibrate_only') {
-          playAlarmSound(reminderSettings.alarmTone, reminderSettings.reminderType);
+          if (prayerName) {
+            playPrayerAzan(prayerName, reminderSettings.reminderType);
+          } else {
+            playAlarmSound(reminderSettings.alarmTone, reminderSettings.reminderType);
+          }
         }
       };
 
@@ -106,7 +135,7 @@ export default function App() {
           const prayerTime = times[prayer];
           if (prayerTime === currentHHMM && !notifiedTimes.current.has(`prayer-${prayer}-${today}`)) {
             notifiedTimes.current.add(`prayer-${prayer}-${today}`);
-            triggerAlarmEffect();
+            triggerAlarmEffect(prayer);
             showPWANotification(`Waktu Salat ${prayer} Tiba`, {
               body: `Allahu Akbar! Saatnya menunaikan ibadah salat ${prayer}.`,
               tag: `prayer-${prayer}-${today}`,
@@ -203,6 +232,7 @@ export default function App() {
                 <Route path="/menu" element={<Menu />} />
                 <Route path="/quran" element={<QuranHadis />} />
                 <Route path="/quran-hadis" element={<QuranHadis />} />
+                <Route path="/hadis" element={<Hadis />} />
                 <Route path="/tools" element={<Tools />} />
                 <Route path="/focus" element={<FocusMode />} />
                 <Route path="/reflection" element={<Reflection />} />
@@ -217,6 +247,15 @@ export default function App() {
               </Route>
             )}
           </Routes>
+
+          {/* Polite Battery-Efficient Background Sync Prompt Modal */}
+          <BackgroundSyncModal />
+
+          {/* Automatic 5-Star Website Review Modal after 5 prayers */}
+          <WebsiteReviewModal
+            isOpen={isReviewOpen}
+            onClose={() => setIsReviewOpen(false)}
+          />
         </BrowserRouter>
       )}
     </>

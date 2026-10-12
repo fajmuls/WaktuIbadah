@@ -16,7 +16,7 @@ import { CitySelectorModal } from '../components/CitySelectorModal';
 import { checkSchedulePrayerConflicts } from '../lib/schedule-prayer-conflict';
 import { AdminReviewBanner } from '../components/AdminReviewBanner';
 import { NotificationGatekeeperModal } from '../components/NotificationGatekeeperModal';
-import { testAlarmTone, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess } from '../lib/audio';
+import { playPrayerAzan, testAlarmTone, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess } from '../lib/audio';
 
 const DAILY_WISDOM = [
   { text: "Waktu Bagaikan Pedang. Jika kamu tidak memotongnya, maka ia yang akan memotongmu.", source: "Imam Syafi'i" },
@@ -215,10 +215,11 @@ export default function Dashboard() {
     } else {
       setIsTestingSound(true);
       vibratePrayerAlarm();
-      testAlarmTone('azan_makkah', 'sound_and_vibrate', 7000);
+      const stop = playPrayerAzan('Subuh', 'sound_and_vibrate');
       setTimeout(() => {
+        stop();
         setIsTestingSound(false);
-      }, 7000);
+      }, 7500);
     }
   };
 
@@ -247,7 +248,7 @@ export default function Dashboard() {
           <Link
             to="/admin"
             className="text-[11px] font-bold px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 transition-colors"
-            title="Akses Admin Dashboard (Token: fajrul22)"
+            title="Akses Admin Dashboard"
           >
             Admin
           </Link>
@@ -398,43 +399,6 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* HADITS PILIHAN HARI INI (API MYQURAN) */}
-      {dailyHadith && (
-        <section className="bg-white dark:bg-gray-800 rounded-3xl p-4 sm:p-5 border border-emerald-100 dark:border-emerald-900/50 shadow-xs space-y-2.5">
-          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/80 pb-2.5">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                <Quote className="w-4 h-4" />
-              </div>
-              <div>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
-                  Hadits Pilihan Hari Ini (API MyQuran)
-                </span>
-                <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
-                  Hadits #{dailyHadith.no}: {dailyHadith.judul}
-                </h4>
-              </div>
-            </div>
-
-            <Link
-              to="/quran-hadis?tab=hadis"
-              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
-            >
-              <span>42 Hadits</span>
-              <ChevronRight className="w-3.5 h-3.5" />
-            </Link>
-          </div>
-
-          <div className="text-right font-serif text-lg leading-loose text-gray-900 dark:text-gray-100 my-1" dir="rtl">
-            {dailyHadith.arab}
-          </div>
-
-          <p className="text-xs text-gray-700 dark:text-gray-300 italic bg-emerald-50/50 dark:bg-emerald-950/30 p-3 rounded-2xl border border-emerald-100/80 dark:border-emerald-900/40 leading-relaxed">
-            "{dailyHadith.indo}"
-          </p>
-        </section>
-      )}
-
       {/* Notification Gatekeeper Modal (Auto-tests or opens on demand) */}
       <NotificationGatekeeperModal
         forceOpen={isGatekeeperOpen}
@@ -495,6 +459,43 @@ export default function Dashboard() {
           <ChevronRight className="w-3.5 h-3.5" />
         </Link>
       </section>
+
+      {/* HADITS PILIHAN HARI INI (DIPISAHKAN DI BAWAH QURAN) */}
+      {dailyHadith && (
+        <section className="bg-white dark:bg-gray-800 rounded-3xl p-4 sm:p-5 border border-emerald-100 dark:border-emerald-900/50 shadow-xs space-y-2.5">
+          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/80 pb-2.5">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
+                <Quote className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+                  Hadits Pilihan Hari Ini (API MyQuran)
+                </span>
+                <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
+                  Hadits #{dailyHadith.no}: {dailyHadith.judul}
+                </h4>
+              </div>
+            </div>
+
+            <Link
+              to="/hadis"
+              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+            >
+              <span>Semua Hadis</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="text-right font-serif text-lg leading-loose text-gray-900 dark:text-gray-100 my-1" dir="rtl">
+            {dailyHadith.arab}
+          </div>
+
+          <p className="text-xs text-gray-700 dark:text-gray-300 italic bg-emerald-50/50 dark:bg-emerald-950/30 p-3 rounded-2xl border border-emerald-100/80 dark:border-emerald-900/40 leading-relaxed">
+            "{dailyHadith.indo}"
+          </p>
+        </section>
+      )}
 
       {/* Daily Wisdom */}
       <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100 flex gap-3 items-start">
