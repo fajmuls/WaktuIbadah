@@ -1,0 +1,173 @@
+{
+  "entities": {
+    "StudentProfile": {
+      "title": "StudentProfile",
+      "description": "Profil mahasiswa yang mensinkronkan seluruh data aplikasi (jadwal, tugas, ibadah, tilawah, preferensi) antar perangkat berdasarkan nama dan PIN 4 digit opsional.",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Nama mahasiswa pemilik data.",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "pin": {
+          "type": "string",
+          "description": "PIN 4 digit opsional untuk pengamanan jika nama sama.",
+          "minLength": 4,
+          "maxLength": 4,
+          "pattern": "^[0-9]{4}$"
+        },
+        "user": {
+          "type": "object",
+          "description": "Data profil dasar dan preferensi pengguna."
+        },
+        "reminderSettings": {
+          "type": "object",
+          "description": "Pengaturan pengingat dan alarm azan."
+        },
+        "schedules": {
+          "type": "array",
+          "description": "Daftar jadwal kuliah dan agenda rutin."
+        },
+        "tasks": {
+          "type": "array",
+          "description": "Daftar tugas kuliah dan deadline."
+        },
+        "prayerLogs": {
+          "type": "object",
+          "description": "Riwayat ceklis salat fardhu dan sunnah per tanggal."
+        },
+        "tilawahLogs": {
+          "type": "array",
+          "description": "Riwayat catatan tilawah Al-Qur'an."
+        },
+        "favoriteVerses": {
+          "type": "array",
+          "description": "Koleksi ayat Al-Qur'an favorit."
+        },
+        "targetKhatam": {
+          "type": "object",
+          "description": "Target program khatam Al-Qur'an."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Waktu terakhir data diperbarui."
+        }
+      },
+      "required": ["name", "updatedAt"]
+    },
+    "WebsiteReview": {
+      "title": "WebsiteReview",
+      "description": "Ulasan dan rating website dari berbagai mahasiswa yang disimpan di Firestore agar dapat dipantau oleh admin.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Identifikator unik review.",
+          "maxLength": 128
+        },
+        "userName": {
+          "type": "string",
+          "description": "Nama mahasiswa pengisi ulasan.",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "rating": {
+          "type": "integer",
+          "description": "Nilai rating 1 sampai 5 bintang."
+        },
+        "ratingLabel": {
+          "type": "string",
+          "description": "Label tingkat kepuasan.",
+          "maxLength": 50
+        },
+        "comment": {
+          "type": "string",
+          "description": "Catatan evaluasi, saran atau testimoni.",
+          "maxLength": 2000
+        },
+        "prayerAspectRating": {
+          "type": "integer",
+          "description": "Penilaian aspek salat dan ibadah."
+        },
+        "scheduleAspectRating": {
+          "type": "integer",
+          "description": "Penilaian aspek jadwal perkuliahan."
+        },
+        "submittedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Waktu pengiriman ulasan."
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "description": "Tanggal pengiriman format YYYY-MM-DD."
+        }
+      },
+      "required": ["id", "userName", "rating", "submittedAt"]
+    },
+    "AdminReviewConfig": {
+      "title": "AdminReviewConfig",
+      "description": "Konfigurasi global sistem ulasan dan kuesioner yang dikelola admin.",
+      "type": "object",
+      "properties": {
+        "reviewMode": {
+          "type": "string",
+          "description": "Mode formulir review: inapp, gform, atau both.",
+          "enum": ["inapp", "gform", "both"]
+        },
+        "gformUrl": {
+          "type": "string",
+          "description": "Tautan kuesioner Google Form alternatif.",
+          "maxLength": 500
+        },
+        "description": {
+          "type": "string",
+          "description": "Deskripsi petunjuk kuesioner.",
+          "maxLength": 500
+        },
+        "isEnabled": {
+          "type": "boolean",
+          "description": "Status aktif formulir evaluasi."
+        },
+        "showBanner": {
+          "type": "boolean",
+          "description": "Apakah banner evaluasi tampil di beranda."
+        },
+        "bannerText": {
+          "type": "string",
+          "description": "Teks ajakan pada banner.",
+          "maxLength": 250
+        },
+        "buttonText": {
+          "type": "string",
+          "description": "Teks tombol evaluasi.",
+          "maxLength": 80
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Waktu pembaruan konfigurasi admin."
+        }
+      },
+      "required": ["reviewMode", "isEnabled"]
+    }
+  },
+  "firestore": {
+    "/student_profiles/{profileId}": {
+      "schema": "StudentProfile",
+      "description": "Data lengkap tiap profil mahasiswa yang disinkronkan antar perangkat berdasarkan nama & PIN."
+    },
+    "/website_reviews/{reviewId}": {
+      "schema": "WebsiteReview",
+      "description": "Koleksi ulasan evaluasi aplikasi dari berbagai mahasiswa untuk dashboard admin."
+    },
+    "/admin_config/{configId}": {
+      "schema": "AdminReviewConfig",
+      "description": "Pengaturan ulasan dan kuesioner global dari admin."
+    }
+  }
+}

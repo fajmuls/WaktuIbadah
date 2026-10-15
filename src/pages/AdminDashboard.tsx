@@ -2,7 +2,8 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Lock, KeyRound, ShieldCheck, Link as LinkIcon, ToggleLeft, ToggleRight, 
   Save, ExternalLink, CheckCircle2, AlertCircle, ArrowLeft, LogOut,
-  BarChart3, Printer, Users, Star, Filter, RefreshCcw, Sparkles, MessageSquareQuote
+  BarChart3, Printer, Users, Star, Filter, RefreshCcw, Sparkles, MessageSquareQuote,
+  Cloud, Database
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { storage } from '../lib/storage';
@@ -11,6 +12,10 @@ import { vibrateSuccess } from '../lib/audio';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid
 } from 'recharts';
+import { 
+  subscribeToReviews, fetchAllReviewsFromCloud, 
+  fetchAdminConfigFromCloud, saveAdminConfigToCloud 
+} from '../lib/cloud-sync';
 
 const ADMIN_TOKEN_SECRET = 'Fajmuls22';
 
@@ -33,15 +38,74 @@ export default function AdminDashboard() {
   // Form config state
   const [config, setConfig] = useState<AdminReviewConfig>(() => storage.getAdminReviewConfig());
   const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isCloudSyncing, setIsCloudSyncing] = useState(false);
+  const [cloudConnected, setCloudConnected] = useState(true);
 
   // Reviews data state
   const [reviews, setReviews] = useState<WebsiteReview[]>([]);
   const [selectedUserFilter, setSelectedUserFilter] = useState<string>('all');
 
   useEffect(() => {
+    // 1. Initial load from local
     setConfig(storage.getAdminReviewConfig());
-    setReviews(storage.getWebsiteReviews());
+    const localList = storage.getWebsiteReviews();
+    setReviews(localList);
+
+    // 2. Fetch cloud config
+    fetchAdminConfigFromCloud().then((cloudCfg) => {
+      if (cloudCfg) {
+        setConfig(cloudCfg);
+        storage.setAdminReviewConfig(cloudCfg);
+      }
+    }).catch(console.error);
+
+    // 3. Real-time subscription to cloud reviews
+    let unsub: (() => void) | null = null;
+    try {
+      unsub = subscribeToReviews((cloudReviews) => {
+        setCloudConnected(true);
+        if (cloudReviews && cloudReviews.length > 0) {
+          // Merge cloud reviews with any local-only seed reviews if needed
+          const mergedMap = new Map<string, WebsiteReview>();
+          // Put local ones first
+          localList.forEach(r => mergedMap.set(r.id, r));
+          // Overwrite/add with real cloud ones
+          cloudReviews.forEach(r => mergedMap.set(r.id, r));
+          const result = Array.from(mergedMap.values());
+          result.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
+          setReviews(result);
+        } else {
+          setReviews(localList);
+        }
+      });
+    } catch (e) {
+      console.warn('Real-time reviews subscription fallback to fetch:', e);
+      fetchAllReviewsFromCloud().then((cloudList) => {
+        if (cloudList.length > 0) {
+          setReviews(cloudList);
+        }
+      }).catch(console.error);
+    }
+
+    return () => {
+      if (unsub) unsub();
+    };
   }, []);
+
+  const handleRefreshCloud = async () => {
+    setIsCloudSyncing(true);
+    try {
+      const cloudList = await fetchAllReviewsFromCloud();
+      if (cloudList && cloudList.length > 0) {
+        setReviews(cloudList);
+        setCloudConnected(true);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsCloudSyncing(false);
+    }
+  };
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,7 +125,7 @@ export default function AdminDashboard() {
     setTokenInput('');
   };
 
-  const handleSaveConfig = (e: React.FormEvent) => {
+  const handleSaveConfig = async (e: React.FormEvent) => {
     e.preventDefault();
     const updated: AdminReviewConfig = {
       ...config,
@@ -71,6 +135,8 @@ export default function AdminDashboard() {
     setConfig(updated);
     setSaveSuccess(true);
     vibrateSuccess();
+    // Also save to Firestore cloud config
+    await saveAdminConfigToCloud(updated).catch(console.error);
     setTimeout(() => setSaveSuccess(false), 3000);
   };
 
@@ -215,13 +281,24 @@ export default function AdminDashboard() {
           {/* Admin Hero Banner */}
           <div className="bg-gradient-to-r from-emerald-800 via-teal-800 to-emerald-950 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden border border-emerald-700/60 print:bg-none print:text-black print:p-2 print:border-b print:border-gray-300">
             <div className="relative z-10">
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[10px] uppercase font-bold tracking-widest bg-white/20 px-2.5 py-0.5 rounded-full text-emerald-100 print:hidden">
                   Akses Terverifikasi
                 </span>
-                <span className="text-xs text-emerald-200 font-semibold print:hidden">
-                  • Sesi Aktif Otomatis
+                <span className="text-[10px] uppercase font-bold tracking-wider bg-emerald-500/30 border border-emerald-400/40 px-2.5 py-0.5 rounded-full text-white flex items-center gap-1 print:hidden">
+                  <Cloud className="w-3 h-3 text-emerald-300" />
+                  Firestore Database Terhubung ({reviews.length} Ulasan Masuk)
                 </span>
+                <button
+                  type="button"
+                  onClick={handleRefreshCloud}
+                  disabled={isCloudSyncing}
+                  className="text-[10px] font-semibold bg-white/10 hover:bg-white/20 px-2 py-0.5 rounded-full text-white flex items-center gap-1 transition-colors print:hidden"
+                  title="Sinkronkan ulang dari Firestore Cloud"
+                >
+                  <RefreshCcw className={`w-2.5 h-2.5 ${isCloudSyncing ? 'animate-spin' : ''}`} />
+                  <span>{isCloudSyncing ? 'Sinkron...' : 'Muat Ulang Cloud'}</span>
+                </button>
               </div>
               <h1 className="text-xl sm:text-2xl font-bold mt-2">
                 Laporan & Grafik Evaluasi Website WaktuIbadah

@@ -4,6 +4,9 @@ export interface User {
   reminderEnabled: boolean;
   useFocusMode: boolean;
   isOnboarded: boolean;
+  pin?: string; // 4-digit PIN for collision avoidance across devices
+  cloudSyncEnabled?: boolean;
+  lastCloudSync?: string;
   theme?: string;
   timeFormat?: '24h' | '12h';
   soundEnabled?: boolean;

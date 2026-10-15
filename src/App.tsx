@@ -7,6 +7,7 @@ import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } fro
 import { format, addDays } from 'date-fns';
 import { playAlarmSound, playPrayerAzan, vibratePrayerAlarm } from './lib/audio';
 import { showPWANotification } from './lib/pwa-service';
+import { testFirestoreConnection, syncAllFromCloud, syncAllToCloud, subscribeToStudentProfile } from './lib/cloud-sync';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -65,9 +66,22 @@ export default function App() {
   const notifiedTimes = useRef<Set<string>>(new Set());
 
   useEffect(() => {
+    // Validate Firestore connection on boot
+    testFirestoreConnection().catch(console.error);
+
     const user = storage.getUser();
     if (user && user.isOnboarded) {
       setHasOnboarded(true);
+
+      // Multi-device sync: pull latest data on boot and listen to cloud updates
+      if (user.name) {
+        syncAllFromCloud(user.name).catch(console.error);
+        const unsub = subscribeToStudentProfile(user.name);
+        // Clean up on unmount
+        if (unsub) {
+          window.addEventListener('beforeunload', () => unsub());
+        }
+      }
     }
     
     // Auto update version in storage if app code is newer
@@ -81,6 +95,15 @@ export default function App() {
     const timer = setTimeout(() => {
       setShowSplash(false);
     }, 1800);
+
+    // Auto-sync local state changes to Firestore Cloud
+    const handleAutoCloudSync = () => {
+      const u = storage.getUser();
+      if (u?.name) {
+        syncAllToCloud().catch(console.error);
+      }
+    };
+    window.addEventListener('wi_auto_cloud_sync', handleAutoCloudSync);
 
     // Check if user has completed all 5 prayers today
     const checkFivePrayersReview = () => {
@@ -202,6 +225,7 @@ export default function App() {
     return () => {
       clearTimeout(timer);
       clearInterval(alarmInterval);
+      window.removeEventListener('wi_auto_cloud_sync', handleAutoCloudSync);
       document.removeEventListener('visibilitychange', handleVisibilityWake);
       window.removeEventListener('focus', handleVisibilityWake);
     };

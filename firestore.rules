@@ -1,8 +1,64 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /{document=**} {
-      allow read, write: if true;
+    
+    // Global helper functions
+    function isValidId(id) {
+      return id is string && id.size() > 0 && id.size() <= 128;
     }
+
+    function isNonEmptyString(val, maxLen) {
+      return val is string && val.size() > 0 && val.size() <= maxLen;
+    }
+
+    // Default safety catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Student Profiles (Multi-device sync based on student name and optional PIN)
+    match /student_profiles/{profileId} {
+      allow read: if isValidId(profileId);
+      
+      allow create: if isValidId(profileId)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && (!('pin' in request.resource.data) || (request.resource.data.pin is string && request.resource.data.pin.size() == 4));
+
+      allow update: if isValidId(profileId)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && (
+          !('pin' in resource.data) || 
+          resource.data.pin == '' || 
+          (request.resource.data.pin == resource.data.pin)
+        );
+
+      allow delete: if false;
+    }
+
+    // Website Reviews (Submitted by students, monitored in Admin Dashboard)
+    match /website_reviews/{reviewId} {
+      allow read: if isValidId(reviewId);
+
+      allow create: if isValidId(reviewId)
+        && isNonEmptyString(request.resource.data.userName, 100)
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5;
+
+      allow update: if false; // Reviews are immutable once submitted
+      allow delete: if isValidId(reviewId); // Allowed for admin cleanup
+    }
+
+    // Admin Review Configuration (Global settings for in-app / Google Form review)
+    match /admin_config/{configId} {
+      allow read: if isValidId(configId);
+      allow write: if isValidId(configId)
+        && request.resource.data.reviewMode in ['inapp', 'gform', 'both'];
+    }
+
   }
 }

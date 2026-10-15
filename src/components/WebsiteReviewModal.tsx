@@ -3,6 +3,7 @@ import { Star, Award, CheckCircle2, X, Send, ExternalLink, ThumbsUp, Lock } from
 import { storage } from '../lib/storage';
 import { StarRatingValue, WebsiteReview } from '../types';
 import { vibrateSuccess } from '../lib/audio';
+import { submitReviewToCloud } from '../lib/cloud-sync';
 
 const STAR_LABELS: Record<StarRatingValue, 'Tidak Membantu' | 'Kurang Membantu' | 'Cukup Membantu' | 'Membantu' | 'Sangat Membantu'> = {
   1: 'Tidak Membantu',
@@ -58,6 +59,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
     };
 
     storage.addWebsiteReview(review);
+    submitReviewToCloud(review).catch((err) => console.error('Cloud review submit failed:', err));
     localStorage.setItem('wi_five_prayers_reviewed', 'true');
     localStorage.setItem('wi_rating_submitted', 'true');
     vibrateSuccess();

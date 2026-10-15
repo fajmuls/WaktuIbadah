@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen, Quote } from 'lucide-react';
+import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen, Quote, Cloud } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
 import { MurottalPlayerWidget } from './MurottalPlayerWidget';
@@ -9,7 +9,18 @@ import { storage } from '../lib/storage';
 
 export const Layout = () => {
   const [isQuickAddOpen, setQuickAddOpen] = useState(false);
+  const [user, setUser] = useState(storage.getUser());
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleStorage = () => setUser(storage.getUser());
+    window.addEventListener('storage', handleStorage);
+    window.addEventListener('wi_cloud_synced', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      window.removeEventListener('wi_cloud_synced', handleStorage);
+    };
+  }, []);
 
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
@@ -81,6 +92,21 @@ export const Layout = () => {
           <Plus className="w-5 h-5" />
           Tambah
         </button>
+
+        {/* Cloud Sync Status Indicator */}
+        <div 
+          onClick={() => navigate('/settings')}
+          className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs cursor-pointer hover:opacity-80 transition-opacity"
+          title="Klik untuk membuka Pengaturan Sinkronisasi Multi-Device"
+        >
+          <div className="flex items-center gap-1.5 truncate">
+            <Cloud className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span className="font-semibold text-gray-700 truncate">{user?.name || 'Mahasiswa'}</span>
+          </div>
+          <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold shrink-0">
+            Cloud Sync
+          </span>
+        </div>
       </aside>
 
       {/* Main Content */}

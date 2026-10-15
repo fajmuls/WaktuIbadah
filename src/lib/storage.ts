@@ -23,7 +23,7 @@ const KEYS = {
   ADMIN_AUTHENTICATED: "wi_admin_authenticated",
 };
 
-export const CURRENT_VERSION = "1.9.0";
+export const CURRENT_VERSION = "2.0.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -46,9 +46,22 @@ function getItem<T>(key: string, defaultValue: T): T {
   }
 }
 
+let autoSyncTimer: any = null;
+function triggerAutoSync() {
+  if (typeof window !== 'undefined') {
+    if (autoSyncTimer) clearTimeout(autoSyncTimer);
+    autoSyncTimer = setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('wi_auto_cloud_sync'));
+    }, 1200);
+  }
+}
+
 function setItem<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    if ([KEYS.USER, KEYS.TASKS, KEYS.SCHEDULES, KEYS.PRAYERS, KEYS.QURAN_LOGS, KEYS.FAVORITE_AYAHS, KEYS.FAVORITE_HADITHS, KEYS.KHATAM_TARGET, KEYS.REMINDER_SETTINGS].includes(key)) {
+      triggerAutoSync();
+    }
   } catch (error) {
     console.error(`Error saving ${key} to localStorage`, error);
   }
