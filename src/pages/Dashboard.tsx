@@ -230,15 +230,12 @@ export default function Dashboard() {
       <AdminReviewBanner />
 
       {/* Memphis Header Section */}
-      <header className="p-4 bg-white border-[2.5px] border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex justify-between items-center flex-wrap gap-2 mb-2">
+      <header className="p-3.5 sm:p-4 bg-white border-2 sm:border-[2.5px] border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex justify-between items-center flex-wrap gap-2 mb-2">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-black uppercase tracking-tight text-[#121212]">
+            <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
               Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Mahasiswa'}! 👋
             </h1>
-            <span className="memphis-badge bg-[#FFE600] text-[#121212]">
-              v{CURRENT_VERSION}
-            </span>
           </div>
           <p className="text-[#121212]/80 mt-1 font-bold text-xs flex items-center gap-2 flex-wrap">
             <span>{format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}</span>
@@ -260,7 +257,7 @@ export default function Dashboard() {
           </Link>
           <Link
             to="/settings"
-            className="w-10 h-10 bg-[#FFE600] border-2 border-black rounded-xl flex items-center justify-center text-black font-black shadow-[2px_2px_0px_#121212]"
+            className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-2 border-black rounded-xl flex items-center justify-center text-black font-black shadow-[2px_2px_0px_#121212]"
             title="Buka Pengaturan"
           >
             {user?.name?.charAt(0).toUpperCase() || 'M'}
@@ -447,9 +444,9 @@ export default function Dashboard() {
       })()}
 
       {/* Daily Quran Tilawah Summary */}
-      <section className="memphis-card p-4 flex items-center justify-between">
+      <section className="memphis-card p-3.5 sm:p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#FFE600] border-2 border-black flex items-center justify-center font-black">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-2 border-black flex items-center justify-center font-black text-black shadow-[2px_2px_0px_#121212]">
             <BookOpen className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
@@ -463,7 +460,7 @@ export default function Dashboard() {
         </div>
         <Link 
           to="/quran" 
-          className="memphis-btn memphis-btn-yellow px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1"
+          className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1"
         >
           <span>{todayQuranLogs.length > 0 ? 'Lanjut' : 'Mulai'}</span>
           <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -472,7 +469,7 @@ export default function Dashboard() {
 
       {/* HADITS PILIHAN HARI INI */}
       {dailyHadith && (
-        <section className="memphis-card p-4 sm:p-5 space-y-2.5">
+        <section className="memphis-card p-3.5 sm:p-5 space-y-2.5">
           <div className="flex items-center justify-between border-b-2 border-black pb-2">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl bg-[#00F0FF] border-2 border-black flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_#121212]">
@@ -497,7 +494,7 @@ export default function Dashboard() {
             </Link>
           </div>
 
-          <div className="text-right font-serif text-lg leading-loose text-[#121212] my-1" dir="rtl">
+          <div className="text-right font-serif text-base sm:text-lg leading-loose text-[#121212] my-1" dir="rtl">
             {dailyHadith.arab}
           </div>
 
@@ -507,9 +504,9 @@ export default function Dashboard() {
         </section>
       )}
 
-      {/* Daily Wisdom */}
-      <section className="memphis-card-yellow p-4 flex gap-3 items-start">
-        <div className="w-8 h-8 bg-black text-[#FFE600] rounded-xl border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#121212] text-sm font-black">
+      {/* Daily Wisdom (Green Multi-Tone Memphis Card) */}
+      <section className="memphis-card-green p-4 flex gap-3 items-start bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400">
+        <div className="w-8 h-8 bg-black text-[#6EE7B7] rounded-xl border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#121212] text-sm font-black">
           💡
         </div>
         <div>
@@ -519,11 +516,11 @@ export default function Dashboard() {
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-5">
         {/* Aktivitas Terdekat */}
-        <section className="memphis-card p-5 space-y-3">
+        <section className="memphis-card p-4 sm:p-5 space-y-3">
           <div className="flex justify-between items-center border-b-2 border-black pb-2">
-            <h3 className="font-black text-sm uppercase tracking-tight flex items-center gap-2">
+            <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight flex items-center gap-2">
               <Calendar className="w-4 h-4 stroke-[2.5]" />
               Jadwal Hari Ini
             </h3>
@@ -541,8 +538,8 @@ export default function Dashboard() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <div key={schedule.id} className="flex gap-3 items-center p-2.5 rounded-xl border-2 border-black bg-[#FFFDF8] shadow-[2px_2px_0px_#121212]">
-                    <div className="text-center min-w-[50px]">
+                  <div key={schedule.id} className="flex gap-2.5 sm:gap-3 items-center p-2.5 rounded-xl border-2 border-black bg-[#FFFDF8] shadow-[2px_2px_0px_#121212]">
+                    <div className="text-center min-w-[46px] sm:min-w-[50px]">
                       <div className="text-xs font-black text-black">{schedule.startTime}</div>
                       <div className="text-[9px] font-bold text-gray-500">{schedule.endTime}</div>
                     </div>
@@ -568,15 +565,15 @@ export default function Dashboard() {
           ) : (
             <div className="text-center py-4 px-4 bg-[#FFFDF8] rounded-xl border-2 border-dashed border-black">
               <p className="text-gray-500 font-bold text-xs mb-1.5">Belum ada aktivitas.</p>
-              <Link to="/jadwal" className="memphis-btn memphis-btn-yellow px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
+              <Link to="/jadwal" className="memphis-btn memphis-btn-green px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
             </div>
           )}
         </section>
 
         {/* Tugas Terdekat */}
-        <section className="memphis-card p-5 space-y-3">
+        <section className="memphis-card p-4 sm:p-5 space-y-3">
           <div className="flex justify-between items-center border-b-2 border-black pb-2">
-            <h3 className="font-black text-sm uppercase tracking-tight flex items-center gap-2">
+            <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-[#FF4B91] stroke-[2.5]" />
               Tugas Mendekat
             </h3>
@@ -593,7 +590,7 @@ export default function Dashboard() {
                   <div className="min-w-0 flex-1">
                     <div className="font-black text-xs truncate">{task.title}</div>
                     <div className="flex gap-2 items-center mt-0.5">
-                      <span className="text-[9px] font-black uppercase bg-[#FFE600] text-black px-1.5 py-0.5 rounded border border-black">
+                      <span className="text-[9px] font-black uppercase bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded border border-black font-bold">
                         {format(new Date(task.deadline), 'dd MMM', { locale: id })}
                       </span>
                     </div>
@@ -604,7 +601,7 @@ export default function Dashboard() {
           ) : (
              <div className="text-center py-4 px-4 bg-[#FFFDF8] rounded-xl border-2 border-dashed border-black">
                <p className="text-gray-500 font-bold text-xs mb-1.5">Semua tugas aman terkendali.</p>
-               <Link to="/tugas" className="memphis-btn memphis-btn-yellow px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
+               <Link to="/tugas" className="memphis-btn memphis-btn-green px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
              </div>
           )}
         </section>

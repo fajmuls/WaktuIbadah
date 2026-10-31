@@ -3,7 +3,7 @@
 @theme {
   --color-primary: #10B981;
   --color-primary-dark: #059669;
-  --color-memphis-yellow: #FFE600;
+  --color-memphis-yellow: #34D399; /* Upgraded to vibrant emerald/mint green */
   --color-memphis-pink: #FF4B91;
   --color-memphis-cyan: #00F0FF;
   --color-memphis-orange: #FF6B35;
@@ -17,7 +17,9 @@
 }
 
 @layer base {
-  body {
+  html, body {
+    max-width: 100vw;
+    overflow-x: hidden;
     background-color: #FFFDF8;
     color: #121212;
     font-family: var(--font-sans);
@@ -25,73 +27,105 @@
   }
 }
 
-/* Memphis Style Utility Classes */
+/* Memphis Style Utility Classes with Solid Borders & Retro Offsets */
 .memphis-card {
   background-color: #ffffff;
-  border: 2.5px solid #121212;
-  box-shadow: 4px 4px 0px #121212;
-  border-radius: 1rem;
+  border: 2px solid #121212;
+  box-shadow: 3px 3px 0px #121212;
+  border-radius: 0.875rem;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+@media (min-width: 640px) {
+  .memphis-card {
+    border-width: 2.5px;
+    box-shadow: 4px 4px 0px #121212;
+    border-radius: 1rem;
+  }
 }
 
 .memphis-card-sm {
   background-color: #ffffff;
   border: 2px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
+  box-shadow: 2px 2px 0px #121212;
   border-radius: 0.75rem;
 }
 
-.memphis-card-yellow {
-  background-color: #FFE600;
-  border: 2.5px solid #121212;
-  box-shadow: 4px 4px 0px #121212;
-  border-radius: 1rem;
+/* Green Multi-tone Gradient Memphis Cards (Replaces solid yellow) */
+.memphis-card-yellow,
+.memphis-card-green {
+  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 40%, #10B981 100%);
+  border: 2px solid #121212;
+  box-shadow: 3px 3px 0px #121212;
+  border-radius: 0.875rem;
+  color: #121212;
+}
+
+@media (min-width: 640px) {
+  .memphis-card-yellow,
+  .memphis-card-green {
+    border-width: 2.5px;
+    box-shadow: 4px 4px 0px #121212;
+    border-radius: 1rem;
+  }
 }
 
 .memphis-card-pink {
   background-color: #FF4B91;
-  border: 2.5px solid #121212;
-  box-shadow: 4px 4px 0px #121212;
-  border-radius: 1rem;
+  border: 2px solid #121212;
+  box-shadow: 3px 3px 0px #121212;
+  border-radius: 0.875rem;
   color: #ffffff;
 }
 
 .memphis-card-cyan {
   background-color: #00F0FF;
-  border: 2.5px solid #121212;
-  box-shadow: 4px 4px 0px #121212;
-  border-radius: 1rem;
+  border: 2px solid #121212;
+  box-shadow: 3px 3px 0px #121212;
+  border-radius: 0.875rem;
+  color: #121212;
 }
 
+/* Tactile Memphis Buttons */
 .memphis-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 700;
-  border: 2.5px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
-  border-radius: 0.875rem;
+  font-weight: 800;
+  border: 2px solid #121212;
+  box-shadow: 2.5px 2.5px 0px #121212;
+  border-radius: 0.75rem;
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
 
+@media (min-width: 640px) {
+  .memphis-btn {
+    border-width: 2.5px;
+    box-shadow: 3px 3px 0px #121212;
+    border-radius: 0.875rem;
+  }
+}
+
 .memphis-btn:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0px #121212;
+  box-shadow: 3.5px 3.5px 0px #121212;
 }
 
 .memphis-btn:active {
-  transform: translate(2px, 2px);
+  transform: translate(1.5px, 1.5px);
   box-shadow: 1px 1px 0px #121212;
 }
 
-.memphis-btn-primary {
-  background-color: #10B981;
+.memphis-btn-primary,
+.memphis-btn-green {
+  background: linear-gradient(135deg, #10B981, #059669);
   color: #ffffff;
 }
 
+/* Green Multi-tone Gradient for Buttons (Replaces raw yellow) */
 .memphis-btn-yellow {
-  background-color: #FFE600;
+  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 50%, #10B981 100%);
   color: #121212;
 }
 
@@ -116,8 +150,8 @@
 }
 
 .memphis-input {
-  border: 2.5px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
+  border: 2px solid #121212;
+  box-shadow: 2.5px 2.5px 0px #121212;
   border-radius: 0.75rem;
   background-color: #ffffff;
   color: #121212;
@@ -128,20 +162,20 @@
 .memphis-input:focus {
   outline: none;
   border-color: #121212;
-  box-shadow: 4px 4px 0px #FFE600;
+  box-shadow: 3.5px 3.5px 0px #10B981;
   transform: translate(-1px, -1px);
 }
 
 .memphis-badge {
   display: inline-flex;
   align-items: center;
-  padding: 0.2rem 0.6rem;
-  font-size: 0.7rem;
-  font-weight: 800;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border: 2px solid #121212;
-  box-shadow: 2px 2px 0px #121212;
+  border: 1.5px solid #121212;
+  box-shadow: 1.5px 1.5px 0px #121212;
   border-radius: 9999px;
 }
 
@@ -158,4 +192,24 @@
     rgba(18, 18, 18, 0.06) 10px,
     rgba(18, 18, 18, 0.06) 20px
   );
+}
+
+/* Mobile Minimalist Scale & Overflow Prevention */
+@media (max-width: 640px) {
+  h1 {
+    font-size: 1.15rem !important;
+  }
+  h2 {
+    font-size: 1.05rem !important;
+  }
+  h3 {
+    font-size: 0.95rem !important;
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }

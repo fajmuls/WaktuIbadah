@@ -18,19 +18,24 @@ export default function Hadis() {
   }, [searchQuery, selectedNarrator]);
 
   return (
-    <div className="space-y-4 pb-20 animate-in fade-in duration-300">
-      <header className="flex items-center gap-3">
-        <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-          <BookOpen className="w-5 h-5" />
+    <div className="space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
+      {/* Memphis Header */}
+      <header className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex items-center gap-3">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-2 border-black rounded-xl flex items-center justify-center text-black font-black shadow-[2px_2px_0px_#121212] shrink-0">
+          <BookOpen className="w-5 h-5 stroke-[2.5]" />
         </div>
         <div>
-          <h1 className="text-xl font-bold text-text-main">Kumpulan Hadis</h1>
-          <p className="text-text-muted text-xs font-medium mt-0.5">Jelajahi dan pelajari 50 hadis pilihan</p>
+          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+            Kumpulan Hadis
+          </h1>
+          <p className="text-gray-600 text-xs font-bold mt-0.5">
+            Jelajahi dan pelajari hadis pilihan perawi terpercaya
+          </p>
         </div>
       </header>
 
-      {/* Search & Filter */}
-      <div className="flex gap-2 mb-4">
+      {/* Search & Filter (Memphis Style) */}
+      <div className="flex gap-2">
         <div className="relative flex-1">
           <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
           <input 
@@ -38,15 +43,15 @@ export default function Hadis() {
             placeholder="Cari hadis atau topik..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary focus:ring-1 focus:ring-primary/20 text-sm"
+            className="w-full pl-9 pr-3 py-2 memphis-input text-xs sm:text-sm"
           />
         </div>
         <div className="relative shrink-0">
-          <Filter className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <Filter className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400" />
           <select 
             value={selectedNarrator}
             onChange={(e) => setSelectedNarrator(e.target.value)}
-            className="pl-9 pr-8 py-2.5 bg-white border border-gray-200 rounded-xl outline-none focus:border-primary appearance-none text-sm font-medium text-text-main min-w-[120px]"
+            className="pl-7 pr-6 py-2 memphis-input text-xs font-black uppercase appearance-none min-w-[100px] cursor-pointer"
           >
             {narrators.map(n => (
               <option key={n} value={n}>{n}</option>
@@ -55,28 +60,28 @@ export default function Hadis() {
         </div>
       </div>
 
-      {/* Hadith List */}
-      <div className="space-y-3">
+      {/* Hadith List (Memphis Cards) */}
+      <div className="space-y-2.5">
         {filteredHadiths.length > 0 ? (
           filteredHadiths.map(hadith => (
-            <div key={hadith.id} className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
-              <div className="flex justify-between items-start mb-2 gap-2">
-                <span className="text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+            <div key={hadith.id} className="memphis-card p-3 sm:p-4 shadow-[2.5px_2.5px_0px_#121212] hover:translate-x-0.5 transition-all">
+              <div className="flex justify-between items-start mb-2 gap-2 flex-wrap">
+                <span className="memphis-badge bg-[#00F0FF] text-black text-[9px]">
                   HR. {hadith.narrator}
                 </span>
-                <span className="text-xs text-text-muted font-medium bg-gray-50 border border-gray-100 px-2 py-0.5 rounded-md">
+                <span className="memphis-badge bg-gradient-to-r from-emerald-400 to-teal-400 text-black text-[9px]">
                   {hadith.topic}
                 </span>
               </div>
-              <p className="text-text-main font-medium leading-relaxed text-sm">
+              <p className="text-black font-bold leading-relaxed text-xs sm:text-sm italic">
                 "{hadith.text}"
               </p>
             </div>
           ))
         ) : (
-          <div className="text-center py-10 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-            <BookOpen className="w-8 h-8 text-gray-300 mx-auto mb-2" />
-            <p className="text-text-muted text-sm">Tidak ada hadis yang cocok dengan pencarian.</p>
+          <div className="text-center py-12 px-4 memphis-card bg-[#FFFDF8]">
+            <BookOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+            <p className="text-gray-600 font-bold text-xs">Tidak ada hadis yang cocok dengan pencarian.</p>
           </div>
         )}
       </div>

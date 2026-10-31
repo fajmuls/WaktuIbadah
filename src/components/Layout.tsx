@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen, Quote, Cloud, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
@@ -11,6 +11,7 @@ export const Layout = () => {
   const [isQuickAddOpen, setQuickAddOpen] = useState(false);
   const [user, setUser] = useState(storage.getUser());
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const handleStorage = () => setUser(storage.getUser());
@@ -43,11 +44,11 @@ export const Layout = () => {
   }, []);
 
   const navItems = [
-    { label: 'Home', icon: Home, path: '/', color: '#FFE600' },
+    { label: 'Home', icon: Home, path: '/', color: '#10B981' },
     { label: 'Jadwal', icon: Calendar, path: '/jadwal', color: '#00F0FF' },
     { label: 'Ibadah', icon: Clock, path: '/ibadah', color: '#FF4B91' },
     { label: 'Progress', icon: BarChart2, path: '/progress', color: '#10B981' },
-    { label: 'Qur\'an', icon: BookOpen, path: '/quran', color: '#FFE600' },
+    { label: 'Qur\'an', icon: BookOpen, path: '/quran', color: '#34D399' },
     { label: 'Hadis', icon: Quote, path: '/hadis', color: '#00F0FF' },
     { label: 'Menu', icon: Menu, path: '/menu', color: '#FF4B91' },
   ];
@@ -62,18 +63,18 @@ export const Layout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFFDF8] text-[#121212] flex">
+    <div className="min-h-screen bg-[#FFFDF8] text-[#121212] flex overflow-x-hidden w-full max-w-full">
       {/* Desktop Sidebar (Memphis Retro Style) */}
       <aside className="hidden md:flex flex-col w-64 bg-white border-r-[3px] border-[#121212] p-5 fixed h-full z-10 shadow-[4px_0px_0px_#121212]">
         {/* Brand Header */}
-        <div className="flex items-center gap-3 mb-6 p-2 bg-[#FFE600] border-2 border-[#121212] rounded-xl shadow-[3px_3px_0px_#121212]">
-          <div className="w-9 h-9 bg-black text-[#FFE600] rounded-lg flex items-center justify-center font-black">
+        <div className="flex items-center gap-3 mb-6 p-2.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-2 border-[#121212] rounded-xl shadow-[3px_3px_0px_#121212]">
+          <div className="w-9 h-9 bg-black text-[#6EE7B7] rounded-lg flex items-center justify-center font-black">
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <h1 className="text-lg font-black tracking-tight uppercase">WaktuIbadah</h1>
-            <span className="text-[10px] font-black uppercase tracking-wider bg-black text-white px-1.5 py-0.5 rounded">
-              v2.0.0 Memphis
+            <h1 className="text-base font-black tracking-tight uppercase">WaktuIbadah</h1>
+            <span className="text-[9px] font-black uppercase tracking-wider bg-black text-[#6EE7B7] px-1.5 py-0.5 rounded">
+              Islamic Planner
             </span>
           </div>
         </div>
@@ -89,8 +90,8 @@ export const Layout = () => {
                 cn(
                   "flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-100",
                   isActive 
-                    ? "bg-[#FFE600] text-[#121212] border-2 border-[#121212] shadow-[3px_3px_0px_#121212] translate-x-1" 
-                    : "text-gray-700 hover:bg-[#00F0FF]/20 hover:text-black hover:border-2 hover:border-[#121212]"
+                    ? "bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-[#121212] border-2 border-[#121212] shadow-[3px_3px_0px_#121212] translate-x-1 font-black" 
+                    : "text-gray-700 hover:bg-emerald-500/10 hover:text-black hover:border-2 hover:border-[#121212]"
                 )
               }
             >
@@ -100,19 +101,21 @@ export const Layout = () => {
           ))}
         </nav>
 
-        {/* Quick Add Button */}
-        <button 
-          onClick={() => setQuickAddOpen(true)}
-          className="mt-4 memphis-btn memphis-btn-yellow py-3 w-full gap-2 text-sm uppercase tracking-wider"
-        >
-          <Plus className="w-5 h-5 stroke-[3]" />
-          Tambah Agenda
-        </button>
+        {/* Quick Add Button - Hidden when on /jadwal so there is no duplicate button on PC */}
+        {location.pathname !== '/jadwal' && (
+          <button 
+            onClick={() => setQuickAddOpen(true)}
+            className="mt-4 memphis-btn memphis-btn-green py-2.5 w-full gap-2 text-xs uppercase tracking-wider"
+          >
+            <Plus className="w-4 h-4 stroke-[3]" />
+            Tambah Agenda
+          </button>
+        )}
 
         {/* Cloud Sync Status Indicator */}
         <div 
           onClick={() => navigate('/settings')}
-          className="mt-3 p-2.5 bg-[#FFFDF8] border-2 border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-[#00F0FF]/20 transition-all"
+          className="mt-3 p-2.5 bg-[#FFFDF8] border-2 border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-emerald-500/10 transition-all"
           title="Klik untuk membuka Pengaturan Sinkronisasi Multi-Device"
         >
           <div className="flex items-center gap-2 truncate">
@@ -125,15 +128,15 @@ export const Layout = () => {
         </div>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 md:ml-64 pb-24 md:pb-8 min-h-screen max-w-5xl mx-auto w-full relative">
-        <div className="p-4 sm:p-6 lg:p-8">
+      {/* Main Content - Guaranteed No Horizontal Overflow & Compact Mobile Padding */}
+      <main className="flex-1 md:ml-64 pb-20 md:pb-8 min-h-screen max-w-5xl mx-auto w-full relative overflow-x-hidden">
+        <div className="p-3 sm:p-6 lg:p-8 w-full max-w-full overflow-x-hidden">
           <Outlet />
         </div>
       </main>
 
       {/* Mobile Bottom Navigation (Memphis Style) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-[#121212] flex justify-around items-center px-1 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-40 shadow-[0px_-3px_0px_#121212]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-[#121212] flex justify-around items-center px-1 py-1.5 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] z-40 shadow-[0px_-3px_0px_#121212]">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
@@ -141,27 +144,20 @@ export const Layout = () => {
             data-nav="true"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center px-2 py-1 rounded-xl transition-all",
+                "flex flex-col items-center justify-center px-1.5 py-1 rounded-xl transition-all",
                 isActive 
-                  ? "bg-[#FFE600] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] text-black font-black -translate-y-1" 
+                  ? "bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-2 border-[#121212] shadow-[2px_2px_0px_#121212] text-black font-black -translate-y-0.5" 
                   : "text-gray-600 hover:text-black font-bold"
               )
             }
           >
-            <item.icon className="w-5 h-5 stroke-[2.5]" />
-            <span className="text-[10px] uppercase tracking-tight mt-0.5">{item.label}</span>
+            <item.icon className="w-4 h-4 stroke-[2.5]" />
+            <span className="text-[9px] uppercase tracking-tight mt-0.5">{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* Mobile Floating Action Button (Memphis Style) */}
-      <button
-        onClick={() => setQuickAddOpen(true)}
-        className="md:hidden fixed bottom-20 right-4 w-13 h-13 memphis-btn memphis-btn-yellow rounded-2xl z-40"
-        aria-label="Tambah Aktivitas"
-      >
-        <Plus className="w-6 h-6 stroke-[3]" />
-      </button>
+      {/* Mobile Floating Action Button REMOVED as requested by user to eliminate duplicate button */}
 
       <QuickAddModal 
         isOpen={isQuickAddOpen} 

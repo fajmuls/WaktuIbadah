@@ -5,7 +5,7 @@ import { storage, CURRENT_VERSION } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } from './lib/prayer-times';
 import { format, addDays } from 'date-fns';
-import { playAlarmSound, playPrayerAzan, vibratePrayerAlarm } from './lib/audio';
+import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm } from './lib/audio';
 import { showPWANotification } from './lib/pwa-service';
 import { testFirestoreConnection, syncAllFromCloud, syncAllToCloud, subscribeToStudentProfile } from './lib/cloud-sync';
 
@@ -37,24 +37,56 @@ const SplashScreen = () => (
     initial={{ opacity: 1 }}
     exit={{ opacity: 0 }}
     transition={{ duration: 0.5 }}
-    className="fixed inset-0 bg-primary flex flex-col items-center justify-center z-50"
+    className="fixed inset-0 bg-[#FFFDF8] flex flex-col items-center justify-center z-50 p-4"
   >
-    <motion.img 
-      initial={{ scale: 0.8, opacity: 0 }}
-      animate={{ scale: 1, opacity: 1 }}
-      transition={{ duration: 0.8, ease: "easeOut" }}
-      src="https://files.catbox.moe/3b6dqo.png" 
-      alt="WaktuIbadah Logo" 
-      className="w-32 h-32 rounded-2xl shadow-2xl mb-6"
-    />
-    <motion.h1 
+    {/* Geometric Memphis background accents */}
+    <div className="absolute inset-0 memphis-pattern-dots opacity-20 pointer-events-none" />
+    <div className="absolute top-8 left-8 w-12 h-12 rounded-full border-2 border-black bg-[#00F0FF] shadow-[2px_2px_0px_#121212]" />
+    <div className="absolute bottom-10 right-10 w-10 h-10 border-2 border-black bg-[#FF4B91] rotate-12 shadow-[2px_2px_0px_#121212]" />
+    <div className="absolute top-16 right-12 w-8 h-8 rounded-lg border-2 border-black bg-[#10B981] shadow-[2px_2px_0px_#121212]" />
+
+    {/* Memphis bordered bouncing container with jumping animation */}
+    <motion.div
+      initial={{ scale: 0.6, opacity: 0 }}
+      animate={{ 
+        scale: [0.75, 1.08, 0.94, 1.05, 1],
+        opacity: 1,
+        x: [0, -35, 35, -18, 18, 0],
+        y: [0, -40, 16, -22, 12, 0],
+        rotate: [0, -10, 10, -6, 6, 0]
+      }}
+      transition={{ 
+        duration: 2.6, 
+        ease: "easeInOut",
+        times: [0, 0.25, 0.5, 0.75, 1]
+      }}
+      className="p-3 sm:p-4 rounded-3xl border-[3.5px] border-[#121212] bg-gradient-to-br from-emerald-400 via-teal-400 to-green-500 shadow-[6px_6px_0px_#121212] flex flex-col items-center justify-center relative"
+    >
+      <img 
+        src="/icon-waktuibadah.png" 
+        alt="WaktuIbadah Logo" 
+        className="w-24 h-24 sm:w-28 sm:h-28 object-contain rounded-2xl drop-shadow-md"
+        onError={(e) => {
+          (e.target as HTMLImageElement).src = "https://files.catbox.moe/3b6dqo.png";
+        }}
+      />
+    </motion.div>
+
+    <motion.div 
       initial={{ y: 20, opacity: 0 }}
       animate={{ y: 0, opacity: 1 }}
-      transition={{ duration: 0.8, delay: 0.2 }}
-      className="text-white text-3xl font-bold tracking-tight"
+      transition={{ duration: 0.7, delay: 0.3 }}
+      className="mt-6 text-center"
     >
-      WaktuIbadah
-    </motion.h1>
+      <div className="inline-block bg-[#121212] text-white px-4 py-1.5 rounded-xl border-2 border-[#121212] shadow-[3px_3px_0px_#10B981] mb-2">
+        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider">
+          WaktuIbadah
+        </h1>
+      </div>
+      <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">
+        Pengingat Salat & Jadwal Terpadu
+      </p>
+    </motion.div>
   </motion.div>
 );
 
@@ -63,6 +95,7 @@ export default function App() {
   const [showSplash, setShowSplash] = useState(true);
   const [hasOnboarded, setHasOnboarded] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
+  const [activeAzanAlert, setActiveAzanAlert] = useState<{ prayer: string; time: string } | null>(null);
   const notifiedTimes = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -94,7 +127,7 @@ export default function App() {
 
     const timer = setTimeout(() => {
       setShowSplash(false);
-    }, 1800);
+    }, 2600);
 
     // Auto-sync local state changes to Firestore Cloud
     const handleAutoCloudSync = () => {
@@ -158,6 +191,7 @@ export default function App() {
           const prayerTime = times[prayer];
           if (prayerTime === currentHHMM && !notifiedTimes.current.has(`prayer-${prayer}-${today}`)) {
             notifiedTimes.current.add(`prayer-${prayer}-${today}`);
+            setActiveAzanAlert({ prayer, time: prayerTime });
             triggerAlarmEffect(prayer);
             showPWANotification(`Waktu Salat ${prayer} Tiba`, {
               body: `Allahu Akbar! Saatnya menunaikan ibadah salat ${prayer}.`,
@@ -271,6 +305,34 @@ export default function App() {
               </Route>
             )}
           </Routes>
+
+          {/* Live In-App Azan Notification Banner (Functional even without PWA installed) */}
+          {activeAzanAlert && (
+            <div className="fixed top-3 left-3 right-3 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md z-50 memphis-card p-3 sm:p-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-green-500 shadow-[4px_4px_0px_#121212] flex items-center justify-between gap-3 animate-bounce">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-[#121212] text-[#34D399] flex items-center justify-center font-black text-xl border-2 border-black shrink-0">
+                  🕌
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs sm:text-sm font-black uppercase text-[#121212] truncate">
+                    Waktu Salat {activeAzanAlert.prayer} Telah Tiba!
+                  </h4>
+                  <p className="text-[10px] sm:text-[11px] font-bold text-[#121212]/80 truncate">
+                    Suara Azan berkumandang ({activeAzanAlert.time})
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  stopAlarmSound();
+                  setActiveAzanAlert(null);
+                }}
+                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-black uppercase tracking-wider shrink-0"
+              >
+                Hentikan
+              </button>
+            </div>
+          )}
 
           {/* Polite Battery-Efficient Background Sync Prompt Modal */}
           <BackgroundSyncModal />

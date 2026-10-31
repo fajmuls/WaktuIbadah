@@ -251,6 +251,33 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.1.0',
+    releaseDate: '31 Oktober 2026',
+    title: 'Pembaruan UI Memphis Konsisten, Multi-tone Green Gradients & Animasi Opening',
+    highlights: [
+      'Penerapan Menyeluruh Memphis Design: Jadwal, Iqra, Progres, Al-Quran, dan Hadits kini bersatu padu menggunakan Memphis Classic Style (black solid borders, offset dropshadows, tactile tap response).',
+      'Gradasi Multi-Tone Hijau: Menggantikan warna kuning dengan perpaduan gradasi hijau emerald, mint, dan teal bernuansa segar khas dashboard.',
+      'Opening Website & Splash Screen: Logo Icon WaktuIbadah beranimasi melompat taktil (bouncing Memphis style) 2.6 detik sebelum membuka antarmuka utama.',
+      'Suara Azan Otomatis & Notifikasi Sinkron: Azan Subuh (Shubuh.mp3) dan 4 salat fardhu (Fardhu.mp3) berbunyi serentak dengan Web Notifications dan in-app banner tanpa harus instalasi PWA.',
+      'Perbaikan Tombol Jadwal & FAB: Menghilangkan tombol ganda Tambah Aktivitas di PC dan tombol melayang (FAB) di HP.',
+      'Optimalisasi Mobile Responsif: Rasio elemen dan font diperkecil 1.4x - 1.5x lebih fit-screen tanpa adanya celah scroll ke samping (zero horizontal overflow).'
+    ],
+    soundPackUpdates: [
+      'Pengintegrasian audio file Shubuh.mp3 khusus salat Subuh dan Fardhu.mp3 untuk Zuhur, Asar, Magrib, dan Isya',
+      'Notifikasi audio browser otomatis tersinkron langsung ke dashboard saat waktu salat tiba'
+    ],
+    uiOverhaul: [
+      'Pembersihan badge versi: Versi aplikasi kini secara eksklusif hanya dapat dilihat di halaman Pengaturan',
+      'Desain minimalis fit-screen untuk HP pada Jadwal, Ibadah, Al-Quran, Progres, dan Menu',
+      'Memphis Card Green Gradient berkarakter retro modern'
+    ],
+    recommendations: [
+      'Saran #1: Tambahkan fitur Bookmark Terakhir Baca otomatis tersinkron ke cloud agar posisi tilawah antar-device tidak hilang',
+      'Saran #2: Tambahkan Quick Widget Jadwal Kuliah Hari Ini di lockscreen/homescreen via PWA Shortcut',
+      'Saran #3: Buat fitur mode senyap otomatis (Mute Azan / Do Not Disturb) saat mendeteksi jadwal kuliah sedang aktif'
+    ]
+  },
+  {
     version: '2.0.0',
     releaseDate: '31 Oktober 2026',
     title: 'Pembaruan Akbar: Memphis Design System & Local Audio Pack',

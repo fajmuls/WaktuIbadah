@@ -132,57 +132,57 @@ export default function Progress() {
 
   return (
     <div className="space-y-4 pb-20 animate-in fade-in duration-300">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      {/* Memphis Page Header */}
+      <div className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
             Evaluasi & Progres Ibadah
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-0.5">
+          <p className="text-gray-600 text-xs font-bold mt-0.5">
             Pelacakan lengkap salat 5 waktu dan tilawah Al-Qur'an berbasis kalender harian
           </p>
         </div>
 
         {/* View Filter Pill and Export Button */}
-        <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
-          <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl overflow-x-auto max-w-full">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 self-start sm:self-auto">
+          <div className="flex p-1 rounded-xl border-2 border-black bg-white shadow-[2px_2px_0px_#121212] overflow-x-auto max-w-full">
             <button
               onClick={() => setFilterMode('kalender')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${
                 filterMode === 'kalender'
-                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
+                  : 'text-gray-600 hover:text-black'
               }`}
             >
               <Calendar className="w-3.5 h-3.5" />
-              <span>Kalender Ibadah</span>
+              <span>Kalender</span>
             </button>
             <button
               onClick={() => setFilterMode('mingguan')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                 filterMode === 'mingguan'
-                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
+                  : 'text-gray-600 hover:text-black'
               }`}
             >
               Mingguan
             </button>
             <button
               onClick={() => setFilterMode('bulanan')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                 filterMode === 'bulanan'
-                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
+                  : 'text-gray-600 hover:text-black'
               }`}
             >
               Bulanan
             </button>
             <button
               onClick={() => setFilterMode('harian')}
-              className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
                 filterMode === 'harian'
-                  ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                  : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                  ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
+                  : 'text-gray-600 hover:text-black'
               }`}
             >
               Ringkasan
@@ -192,11 +192,11 @@ export default function Progress() {
           {/* Export PAI Button */}
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="px-3.5 py-2 rounded-2xl text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs shrink-0"
+            className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5 shrink-0"
             title="Ekspor rekap salat & tilawah untuk tugas mata kuliah PAI"
           >
             <Printer className="w-3.5 h-3.5" />
-            <span>Ekspor Laporan PAI (PDF/CSV)</span>
+            <span>Ekspor PAI</span>
           </button>
         </div>
       </div>
@@ -209,21 +209,21 @@ export default function Progress() {
         const totalAyatRead = relevantLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
         const pct = Math.min(100, Math.round((totalAyatRead / 6236) * 100));
         return (
-          <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/40 dark:to-emerald-950/40 rounded-2xl p-3.5 border border-teal-200 dark:border-teal-800 flex items-center justify-between gap-3 shadow-xs">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl bg-teal-600 text-white flex items-center justify-center shrink-0">
-                <BookOpen className="w-4 h-4" />
+          <div className="memphis-card p-3 sm:p-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 flex items-center justify-between gap-3 shadow-[3px_3px_0px_#121212]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-black text-[#6EE7B7] border border-black flex items-center justify-center shrink-0">
+                <BookOpen className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-bold text-gray-900 dark:text-white">
+                  <span className="text-xs font-black text-black uppercase tracking-tight">
                     {khatam.title}
                   </span>
-                  <span className="text-[10px] font-bold bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-300 px-1.5 py-0.5 rounded">
+                  <span className="memphis-badge bg-black text-white text-[9px]">
                     {pct}%
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
+                <p className="text-[10px] sm:text-[11px] font-bold text-black/80 mt-0.5">
                   Telah membaca {totalAyatRead} dari 6.236 Ayat • Target {khatam.dailyTargetUnits} ayat/hari
                 </p>
               </div>
@@ -232,57 +232,57 @@ export default function Progress() {
         );
       })()}
 
-      {/* KPI Stats Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-        <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs">
-          <div className="w-8 h-8 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-xl flex items-center justify-center mb-2">
-            <Heart className="w-4 h-4" />
+      {/* KPI Stats Cards (Memphis Style) */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-2.5">
+        <div className="memphis-card p-3 sm:p-3.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-400 to-teal-400 border border-black text-black rounded-lg flex items-center justify-center mb-1.5 shadow-[1.5px_1.5px_0px_#121212]">
+            <Heart className="w-4 h-4 stroke-[2.5]" />
           </div>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Konsistensi Salat</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{stats.consistency}%</p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Konsistensi Salat</p>
+          <p className="text-base sm:text-lg font-black text-black mt-0.5">{stats.consistency}%</p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs">
-          <div className="w-8 h-8 bg-teal-50 dark:bg-teal-950 text-teal-600 dark:text-teal-400 rounded-xl flex items-center justify-center mb-2">
-            <BookOpen className="w-4 h-4" />
+        <div className="memphis-card p-3 sm:p-3.5">
+          <div className="w-8 h-8 bg-[#00F0FF] border border-black text-black rounded-lg flex items-center justify-center mb-1.5 shadow-[1.5px_1.5px_0px_#121212]">
+            <BookOpen className="w-4 h-4 stroke-[2.5]" />
           </div>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Tilawah Al-Qur'an</p>
-          <p className="text-xl font-bold text-teal-700 dark:text-teal-300 mt-0.5">
-            {stats.totalAyat} <span className="text-xs font-normal text-gray-400">Ayat</span>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tilawah Al-Qur'an</p>
+          <p className="text-base sm:text-lg font-black text-black mt-0.5">
+            {stats.totalAyat} <span className="text-xs font-bold text-gray-400">Ayat</span>
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs">
-          <div className="w-8 h-8 bg-blue-50 dark:bg-blue-950 text-blue-600 dark:text-blue-400 rounded-xl flex items-center justify-center mb-2">
-            <CheckCircle2 className="w-4 h-4" />
+        <div className="memphis-card p-3 sm:p-3.5">
+          <div className="w-8 h-8 bg-[#FF4B91] border border-black text-white rounded-lg flex items-center justify-center mb-1.5 shadow-[1.5px_1.5px_0px_#121212]">
+            <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
           </div>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Tugas Selesai</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">
-            {stats.completedTasks} <span className="text-xs font-normal text-gray-400">/ {stats.totalTasks}</span>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tugas Selesai</p>
+          <p className="text-base sm:text-lg font-black text-black mt-0.5">
+            {stats.completedTasks} <span className="text-xs font-bold text-gray-400">/ {stats.totalTasks}</span>
           </p>
         </div>
 
-        <div className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-xs">
-          <div className="w-8 h-8 bg-amber-50 dark:bg-amber-950 text-amber-600 dark:text-amber-400 rounded-xl flex items-center justify-center mb-2">
-            <Clock className="w-4 h-4" />
+        <div className="memphis-card p-3 sm:p-3.5">
+          <div className="w-8 h-8 bg-gradient-to-br from-emerald-300 to-teal-500 border border-black text-black rounded-lg flex items-center justify-center mb-1.5 shadow-[1.5px_1.5px_0px_#121212]">
+            <Clock className="w-4 h-4 stroke-[2.5]" />
           </div>
-          <p className="text-[11px] text-gray-500 dark:text-gray-400 font-medium">Sesi Fokus</p>
-          <p className="text-xl font-bold text-gray-900 dark:text-white mt-0.5">{stats.focusSessions} <span className="text-xs font-normal text-gray-400">kali</span></p>
+          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sesi Fokus</p>
+          <p className="text-base sm:text-lg font-black text-black mt-0.5">{stats.focusSessions} <span className="text-xs font-bold text-gray-400">kali</span></p>
         </div>
       </div>
 
       {/* ======================= VISUAL WEEKLY PROGRESS CHART (RECHARTS) ======================= */}
-      <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
-              <Sparkles className="w-5 h-5" />
+      <div className="memphis-card p-3.5 sm:p-5 space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-black pb-2.5">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-black text-emerald-800 flex items-center justify-center font-bold shadow-[1.5px_1.5px_0px_#121212]">
+              <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">
+              <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight text-black">
                 Tren Penyelesaian Ibadah 7 Hari Terakhir
               </h3>
-              <p className="text-xs text-gray-400">
+              <p className="text-[11px] font-bold text-gray-500">
                 Visualisasi dinamika kedisiplinan salat 5 waktu & tilawah Al-Qur'an harian
               </p>
             </div>
@@ -428,9 +428,9 @@ export default function Progress() {
                 </button>
                 <button
                   onClick={() => setCurrentCalendarMonth(addMonths(currentCalendarMonth, 1))}
-                  className="p-1.5 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="w-8 h-8 rounded-lg border-2 border-black bg-white flex items-center justify-center shadow-[1.5px_1.5px_0px_#121212] hover:bg-gray-100"
                 >
-                  <ChevronRight className="w-4 h-4 text-gray-600 dark:text-gray-300" />
+                  <ChevronRight className="w-4 h-4 text-black stroke-[3]" />
                 </button>
               </div>
             </div>
@@ -438,13 +438,13 @@ export default function Progress() {
             {/* Weekdays Label */}
             <div className="grid grid-cols-7 gap-1 text-center mb-1">
               {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Ahad'].map((day) => (
-                <div key={day} className="text-[11px] font-bold text-gray-400 py-1">
+                <div key={day} className="text-[10px] sm:text-[11px] font-black uppercase text-gray-500 py-1">
                   {day}
                 </div>
               ))}
             </div>
 
-            {/* Days Grid */}
+            {/* Days Grid (Memphis Retro Style) */}
             <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
               {calendarDays.map((day) => {
                 const dateStr = format(day, 'yyyy-MM-dd');
@@ -462,31 +462,29 @@ export default function Progress() {
                   <button
                     key={dateStr}
                     onClick={() => setSelectedCalendarDate(dateStr)}
-                    className={`min-h-[58px] sm:min-h-[66px] p-1.5 rounded-xl text-left border flex flex-col justify-between transition-all relative ${
+                    className={`min-h-[52px] sm:min-h-[64px] p-1 rounded-xl text-left border-2 border-black flex flex-col justify-between transition-all relative ${
                       isSelected
-                        ? 'border-emerald-600 bg-emerald-50/60 dark:bg-emerald-950/40 ring-2 ring-emerald-500/20'
+                        ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-black shadow-[3px_3px_0px_#121212] -translate-y-0.5'
                         : isCurrentMonth
-                          ? 'border-gray-100 dark:border-gray-700/60 bg-white dark:bg-gray-800/80 hover:border-emerald-300'
-                          : 'border-transparent bg-gray-50/50 dark:bg-gray-800/20 opacity-40'
+                          ? 'bg-white shadow-[1.5px_1.5px_0px_#121212] hover:bg-gray-50'
+                          : 'bg-gray-100 opacity-40 shadow-none'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-xs font-bold ${
+                      <span className={`text-[11px] sm:text-xs font-black ${
                         dayToday 
-                          ? 'w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center text-[11px]' 
-                          : isSelected 
-                            ? 'text-emerald-800 dark:text-emerald-300' 
-                            : 'text-gray-700 dark:text-gray-300'
+                          ? 'w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-black text-white flex items-center justify-center text-[10px]' 
+                          : 'text-black'
                       }`}>
                         {format(day, 'd')}
                       </span>
 
                       {/* Prayer Badge indicator */}
                       {prayersDone > 0 && (
-                        <span className={`text-[9px] font-bold px-1 rounded ${
+                        <span className={`text-[8px] sm:text-[9px] font-black px-1 rounded border border-black ${
                           prayersDone === 5 
-                            ? 'bg-emerald-600 text-white' 
-                            : 'bg-emerald-100 dark:bg-emerald-900 text-emerald-800 dark:text-emerald-300'
+                            ? 'bg-[#10B981] text-white' 
+                            : 'bg-[#00F0FF] text-black'
                         }`}>
                           {prayersDone}/5
                         </span>
@@ -494,9 +492,9 @@ export default function Progress() {
                     </div>
 
                     {/* Quran Badge indicator if any */}
-                    <div className="mt-1">
+                    <div className="mt-0.5">
                       {ayahsRead > 0 && (
-                        <div className="flex items-center gap-0.5 text-[9px] font-bold text-teal-700 dark:text-teal-300 bg-teal-50 dark:bg-teal-950/80 px-1 py-0.5 rounded truncate">
+                        <div className="flex items-center gap-0.5 text-[8px] sm:text-[9px] font-black text-black bg-[#6EE7B7] border border-black px-1 py-0.2 rounded truncate">
                           <BookOpen className="w-2.5 h-2.5 shrink-0" />
                           <span>{ayahsRead} ay</span>
                         </div>
@@ -509,22 +507,22 @@ export default function Progress() {
           </div>
 
           {/* Detailed breakdown for selectedCalendarDate */}
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-5 border border-gray-100 dark:border-gray-700 shadow-xs space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-gray-700 pb-3">
+          <div className="memphis-card p-3.5 sm:p-5 space-y-3.5">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-black pb-2.5">
               <div>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">
                   Rincian Tanggal Terpilih
                 </span>
-                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                <h3 className="text-xs sm:text-sm font-black uppercase text-black">
                   {format(new Date(selectedCalendarDate), 'EEEE, d MMMM yyyy', { locale: id })}
                 </h3>
               </div>
 
-              <div className="flex gap-2">
-                <span className="px-2.5 py-1 bg-emerald-50 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 rounded-xl text-xs font-bold">
+              <div className="flex gap-1.5 flex-wrap">
+                <span className="memphis-badge bg-[#00F0FF] text-black text-[9px]">
                   Salat: {selectedDatePrayerCount} / 5 Waktu
                 </span>
-                <span className="px-2.5 py-1 bg-teal-50 dark:bg-teal-950 text-teal-800 dark:text-teal-300 rounded-xl text-xs font-bold">
+                <span className="memphis-badge bg-gradient-to-r from-emerald-400 to-teal-400 text-black text-[9px]">
                   Tilawah: {selectedDateTotalAyat} Ayat
                 </span>
               </div>
@@ -532,28 +530,28 @@ export default function Progress() {
 
             {/* 1. Status 5 Waktu Salat */}
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">
                 Status Salat 5 Waktu
               </h4>
-              <div className="grid grid-cols-5 gap-2 text-center">
+              <div className="grid grid-cols-5 gap-1.5 sm:gap-2 text-center">
                 {(['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'] as const).map(p => {
                   const done = selectedDatePrayers.prayers[p];
                   return (
                     <div
                       key={p}
-                      className={`p-2.5 rounded-2xl border transition-all ${
+                      className={`p-2 rounded-xl border-2 border-black transition-all ${
                         done
-                          ? 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-800 dark:text-emerald-300'
-                          : 'bg-gray-50 dark:bg-gray-900/40 border-gray-100 dark:border-gray-800 text-gray-400'
+                          ? 'bg-[#10B981] text-white shadow-[2px_2px_0px_#121212]'
+                          : 'bg-[#FFFDF8] text-gray-500 shadow-[1.5px_1.5px_0px_#121212]'
                       }`}
                     >
-                      <div className={`w-5 h-5 mx-auto rounded-full flex items-center justify-center text-xs mb-1 ${
-                        done ? 'bg-emerald-600 text-white' : 'bg-gray-200 dark:bg-gray-700 text-transparent'
+                      <div className={`w-5 h-5 mx-auto rounded-full border border-black flex items-center justify-center text-xs mb-1 ${
+                        done ? 'bg-white text-black' : 'bg-gray-100 text-transparent'
                       }`}>
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                       </div>
-                      <span className="text-xs font-bold block">{p}</span>
-                      <span className="text-[10px]">{done ? 'Selesai' : 'Belum'}</span>
+                      <span className="text-[11px] font-black block">{p}</span>
+                      <span className="text-[9px] font-bold">{done ? 'Selesai' : 'Belum'}</span>
                     </div>
                   );
                 })}

@@ -23,7 +23,7 @@ const KEYS = {
   ADMIN_AUTHENTICATED: "wi_admin_authenticated",
 };
 
-export const CURRENT_VERSION = "2.0.0";
+export const CURRENT_VERSION = "2.1.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',

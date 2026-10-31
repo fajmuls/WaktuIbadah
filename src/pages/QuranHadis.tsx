@@ -336,46 +336,46 @@ export default function QuranHadis() {
   ];
 
   return (
-    <div className="space-y-5 pb-20 animate-in fade-in duration-300">
-      {/* Header */}
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+    <div className="space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
+      {/* Memphis Header */}
+      <header className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
             Al-Qur'an & Hadis
           </h1>
-          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-0.5">
+          <p className="text-gray-600 text-xs font-bold mt-0.5">
             Baca firman Allah & hadits dengan penanda nomor ayat, audio murottal, dan penyimpanan offline
           </p>
         </div>
 
-        {/* Tab Toggle */}
-        <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-2xl self-start sm:self-auto overflow-x-auto max-w-full">
+        {/* Tab Toggle (Memphis Style) */}
+        <div className="flex p-1 rounded-xl border-2 border-black bg-white shadow-[2px_2px_0px_#121212] self-start sm:self-auto overflow-x-auto max-w-full gap-1">
           <button
             onClick={() => handleTabChange('quran')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === 'quran'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
+                : 'text-gray-600 hover:text-black'
             }`}
           >
             Al-Qur'an
           </button>
           <button
             onClick={() => handleTabChange('hadis')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === 'hadis'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
+                : 'text-gray-600 hover:text-black'
             }`}
           >
             Hadits Arba'in
           </button>
           <button
             onClick={() => handleTabChange('favorit')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${
               activeTab === 'favorit'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
+                : 'text-gray-600 hover:text-black'
             }`}
           >
             <Heart className="w-3 h-3 text-red-500 fill-red-500" />
@@ -383,19 +383,19 @@ export default function QuranHadis() {
           </button>
           <button
             onClick={() => handleTabChange('doa')}
-            className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap ${
+            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
               activeTab === 'doa'
-                ? 'bg-white dark:bg-gray-700 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                : 'text-gray-600 dark:text-gray-300 hover:text-gray-900'
+                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
+                : 'text-gray-600 hover:text-black'
             }`}
           >
-            Doa Kemenag
+            Doa
           </button>
           <button
             onClick={() => setIsKhatamModalOpen(true)}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-teal-50 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-200 dark:border-teal-800 hover:bg-teal-100 whitespace-nowrap shadow-xs ml-1"
+            className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black gap-1 whitespace-nowrap"
           >
-            <Sparkles className="w-3.5 h-3.5 text-teal-600" />
+            <Sparkles className="w-3 h-3 text-teal-600" />
             <span>Target Khatam</span>
           </button>
           <button
@@ -403,17 +403,17 @@ export default function QuranHadis() {
               murottalPlayer.togglePlay();
               vibrateSuccess();
             }}
-            className="px-3 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white whitespace-nowrap shadow-xs ml-1"
+            className="memphis-btn memphis-btn-green px-2 py-0.5 text-[10px] uppercase font-black gap-1 whitespace-nowrap"
           >
-            <Headphones className="w-3.5 h-3.5" />
-            <span>Putar Murottal 30 Juz</span>
+            <Headphones className="w-3 h-3" />
+            <span>Murottal</span>
           </button>
         </div>
       </header>
 
       {/* ======================= TAB 1: AL-QUR'AN ======================= */}
       {activeTab === 'quran' && (
-        <div className="space-y-4">
+        <div className="space-y-3.5">
           {/* Quick Target Khatam Banner */}
           {(() => {
             const target = storage.getKhatamTarget();
@@ -422,56 +422,56 @@ export default function QuranHadis() {
             const totalRead = relevantLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
             const pct = Math.min(100, Math.round((totalRead / 6236) * 100));
             return (
-              <div className="bg-gradient-to-r from-teal-50 to-emerald-50 dark:from-teal-950/40 dark:to-emerald-950/40 border border-teal-200 dark:border-teal-800/80 rounded-2xl p-3 sm:p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-teal-600 text-white rounded-xl flex items-center justify-center shrink-0">
+              <div className="memphis-card p-3 sm:p-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-2 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-[3px_3px_0px_#121212]">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-8 h-8 bg-black text-[#6EE7B7] rounded-xl border border-black flex items-center justify-center shrink-0">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-teal-900 dark:text-teal-200">
+                      <span className="text-xs font-black text-black uppercase tracking-tight">
                         {target.title}
                       </span>
-                      <span className="text-[10px] font-semibold bg-teal-100 dark:bg-teal-900/60 text-teal-800 dark:text-teal-300 px-1.5 py-0.5 rounded-md">
-                        {pct}% Tercapai
+                      <span className="memphis-badge bg-black text-white text-[9px]">
+                        {pct}%
                       </span>
                     </div>
-                    <p className="text-[11px] text-teal-700 dark:text-teal-300 mt-0.5">
+                    <p className="text-[10px] sm:text-[11px] font-bold text-black/80 mt-0.5">
                       Sudah dibaca <strong>{totalRead}</strong> dari 6.236 Ayat (~{(totalRead / 208).toFixed(1)} Juz)
                     </p>
                   </div>
                 </div>
                 <button
                   onClick={() => setIsKhatamModalOpen(true)}
-                  className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors self-start sm:self-auto shadow-xs"
+                  className="memphis-btn memphis-btn-white px-3 py-1 text-xs font-black uppercase tracking-wider self-start sm:self-auto"
                 >
-                  Lihat Hitungan Target
+                  Hitungan Target
                 </button>
               </div>
             );
           })()}
 
-          {/* Last Read & Quick Surah Banner */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          {/* Last Read & Quick Surah Banner (Compact Mobile Scale) */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3">
             {/* Last read card */}
-            <div className="bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-2xl p-4 shadow-md flex items-center justify-between">
+            <div className="memphis-card p-3 sm:p-4 bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white shadow-[3px_3px_0px_#121212] flex items-center justify-between">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 px-2 py-0.5 rounded-md inline-block mb-1.5">
+                <span className="memphis-badge bg-white text-black text-[9px] mb-1">
                   Terakhir Dibaca
                 </span>
                 {lastReadSurah ? (
                   <div>
-                    <h3 className="text-base font-bold">
+                    <h3 className="text-sm sm:text-base font-black uppercase tracking-tight">
                       Surah {lastReadSurah.name}
                     </h3>
-                    <p className="text-xs text-emerald-100 mt-0.5">
-                      {lastReadSurah.lastAyah ? `Sampai Ayat ke-${lastReadSurah.lastAyah}` : 'Klik untuk melanjutkan baca'}
+                    <p className="text-[11px] font-bold text-emerald-200 mt-0.5">
+                      {lastReadSurah.lastAyah ? `Sampai Ayat ke-${lastReadSurah.lastAyah}` : 'Klik untuk melanjutkan'}
                     </p>
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-base font-bold">Al-Fatihah</h3>
-                    <p className="text-xs text-emerald-100 mt-0.5">Mulai membaca surat pertama</p>
+                    <h3 className="text-sm sm:text-base font-black uppercase tracking-tight">Al-Fatihah</h3>
+                    <p className="text-[11px] font-bold text-emerald-200 mt-0.5">Mulai membaca surat pertama</p>
                   </div>
                 )}
               </div>
@@ -481,23 +481,23 @@ export default function QuranHadis() {
                   const surahObj = surahs.find(s => s.nomor === num);
                   if (surahObj) openSurah(surahObj, lastReadSurah?.lastAyah);
                 }}
-                className="px-3 py-1.5 bg-white text-emerald-800 rounded-xl text-xs font-bold hover:bg-emerald-50 transition-colors shadow-xs shrink-0"
+                className="memphis-btn memphis-btn-white px-2.5 py-1 text-xs font-black uppercase tracking-wider shrink-0"
               >
-                Lanjut Baca
+                Lanjut
               </button>
             </div>
 
             {/* Quick Surat Pilihan & Offline Shortcuts */}
-            <div className="md:col-span-2 bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 shadow-xs flex flex-col justify-center">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <div className="md:col-span-2 memphis-card p-3 sm:p-4 shadow-[3px_3px_0px_#121212] flex flex-col justify-center">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-wider">
                   Surat Sering Dibaca (Bisa Offline)
                 </span>
-                <span className="text-[11px] text-emerald-600 dark:text-emerald-400 font-medium">
-                  {Object.keys(offlineSurahsMap).length} Tersimpan Offline
+                <span className="memphis-badge bg-emerald-100 text-emerald-800 text-[9px]">
+                  {Object.keys(offlineSurahsMap).length} Offline
                 </span>
               </div>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-1.5">
                 {popularSurahs.map((ps) => {
                   const isSaved = !!offlineSurahsMap[ps.no.toString()];
                   return (
@@ -507,14 +507,14 @@ export default function QuranHadis() {
                         const s = surahs.find(item => item.nomor === ps.no);
                         if (s) openSurah(s);
                       }}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                      className={`memphis-btn px-2.5 py-1 text-[11px] uppercase font-black gap-1 ${
                         isSaved
-                          ? 'bg-emerald-50 dark:bg-emerald-950/60 border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
-                          : 'bg-gray-50 dark:bg-gray-700/50 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-emerald-400'
+                          ? 'memphis-btn-green'
+                          : 'memphis-btn-white'
                       }`}
                     >
                       <span>{ps.name}</span>
-                      {isSaved && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />}
+                      {isSaved && <CheckCircle2 className="w-3 h-3 text-white" />}
                     </button>
                   );
                 })}
@@ -524,71 +524,71 @@ export default function QuranHadis() {
 
           {/* Search Bar */}
           <div className="relative">
-            <Search className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               placeholder="Cari surat atau nomor surat (contoh: Al-Baqarah, Yasin, 18)..."
               value={quranSearch}
               onChange={(e) => setQuranSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/20 text-xs sm:text-sm text-gray-900 dark:text-white shadow-xs transition-all"
+              className="w-full pl-9 pr-3 py-2 memphis-input text-xs sm:text-sm"
             />
           </div>
 
-          {/* Surah List */}
+          {/* Surah List (Memphis Cards) */}
           {isLoadingSurahs ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="h-20 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+                <div key={i} className="h-16 bg-gray-100 rounded-xl border-2 border-black animate-pulse" />
               ))}
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
               {filteredSurahs.map((surah) => {
                 const isOffline = !!offlineSurahsMap[surah.nomor.toString()];
                 return (
                   <div
                     key={surah.nomor}
                     onClick={() => openSurah(surah)}
-                    className="bg-white dark:bg-gray-800 p-3.5 rounded-2xl border border-gray-100 dark:border-gray-700/80 shadow-xs hover:shadow-md hover:border-emerald-400/50 transition-all cursor-pointer group flex items-center justify-between relative"
+                    className="memphis-card p-2.5 sm:p-3 shadow-[2px_2px_0px_#121212] hover:translate-x-0.5 transition-all cursor-pointer flex items-center justify-between relative group"
                   >
-                    <div className="flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 font-bold flex items-center justify-center border border-emerald-100 dark:border-emerald-900 group-hover:bg-emerald-600 group-hover:text-white transition-colors text-xs">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-400 border border-black text-black font-black flex items-center justify-center text-xs shrink-0 shadow-[1px_1px_0px_#121212]">
                         {surah.nomor}
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <h3 className="font-bold text-gray-900 dark:text-white group-hover:text-emerald-600 transition-colors text-xs sm:text-sm">
+                          <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight text-black truncate">
                             {surah.namaLatin}
                           </h3>
                           {isOffline && (
-                            <span className="text-[9px] bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300 px-1 py-0.2 rounded font-semibold">
-                              Offline
+                            <span className="memphis-badge bg-[#10B981] text-white text-[8px] py-0 px-1">
+                              Off
                             </span>
                           )}
                         </div>
-                        <p className="text-[11px] text-gray-400 mt-0.5">
+                        <p className="text-[10px] font-bold text-gray-500 truncate">
                           {surah.arti} • {surah.jumlahAyat} Ayat
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-1.5 shrink-0 ml-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           murottalPlayer.setSurah(surah.nomor, true);
                           vibrateSuccess();
                         }}
-                        className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/80 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-600 hover:text-white transition-colors"
+                        className="memphis-btn memphis-btn-white p-1.5 text-black"
                         title={`Putar Audio QS ${surah.namaLatin}`}
                       >
-                        <Volume2 className="w-4 h-4" />
+                        <Volume2 className="w-3.5 h-3.5" />
                       </button>
                       <div className="text-right">
-                        <span className="font-serif text-base font-bold text-gray-700 dark:text-gray-200">
+                        <span className="font-serif text-sm sm:text-base font-bold text-black block">
                           {surah.nama}
                         </span>
-                        <span className="block text-[10px] text-gray-400 capitalize">
+                        <span className="block text-[9px] font-bold text-gray-500 capitalize">
                           {surah.tempatTurun}
                         </span>
                       </div>

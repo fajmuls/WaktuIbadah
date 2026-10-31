@@ -134,120 +134,134 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
   const categories: ScheduleCategory[] = ['Kuliah', 'Tugas', 'Ibadah', 'Istirahat', 'Pribadi', 'Lainnya'];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-4 animate-in fade-in duration-300 pb-16 w-full max-w-full overflow-x-hidden">
       
-      <div className="flex justify-between items-center">
+      {/* Memphis Header */}
+      <div className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Jadwal & Agenda Kuliah</h1>
-          <p className="text-text-muted text-sm mt-1">Sinkronisasi otomatis dengan deteksi bentrok waktu salat fardhu</p>
+          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+            Jadwal & Agenda Kuliah
+          </h1>
+          <p className="text-gray-600 text-xs font-bold mt-0.5">
+            Sinkronisasi otomatis dengan deteksi bentrok waktu salat fardhu
+          </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           {schedules.length > 0 && (
             <button
               onClick={() => {
                 downloadICSFile(schedules, prayerTimes, `jadwal-kuliah-${selectedDate}.ics`);
                 vibrateSuccess();
               }}
-              className="px-3.5 py-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/60 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-colors shadow-2xs"
+              className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
               title="Ekspor seluruh jadwal ke Google Calendar / Apple Calendar (.ics) dengan pengingat jeda salat"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Ekspor Kalender (.ics)</span>
+              <span>Ekspor .ics</span>
             </button>
           )}
 
           {!showForm && (
             <button 
               onClick={() => setShowForm(true)}
-              className="bg-primary text-white p-2 px-3.5 rounded-xl flex items-center gap-1.5 font-bold text-xs hover:bg-primary/90 transition-colors shadow-xs"
+              className="memphis-btn memphis-btn-green px-3.5 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
             >
-              <Plus className="w-4 h-4" /> 
-              <span>Tambah Aktivitas</span>
+              <Plus className="w-4 h-4 stroke-[3]" /> 
+              <span>Tambah Jadwal</span>
             </button>
           )}
         </div>
       </div>
 
       {showForm ? (
-        <div className="bg-surface rounded-3xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 animate-in slide-in-from-bottom-4">
-          <div className="flex justify-between items-center mb-6">
+        <div className="memphis-card p-4 sm:p-6 space-y-4">
+          <div className="flex justify-between items-center border-b-2 border-black pb-3">
             <div>
-              <h2 className="text-xl font-bold">{formData.id ? 'Edit' : 'Tambah'} Aktivitas</h2>
-              <p className="text-xs text-text-muted">Aplikasi otomatis menganalisis keselarasan jadwal dengan waktu salat</p>
+              <h2 className="text-base sm:text-lg font-black uppercase tracking-tight">
+                {formData.id ? 'Edit' : 'Tambah'} Aktivitas Kuliah
+              </h2>
+              <p className="text-[11px] font-bold text-gray-500">
+                Aplikasi otomatis menganalisis keselarasan jadwal dengan waktu salat
+              </p>
             </div>
-            <button onClick={() => { setShowForm(false); if(isNew) navigate('/jadwal'); }} className="text-gray-400 hover:text-gray-600 p-2 bg-gray-50 dark:bg-gray-800 rounded-full">
-              <X className="w-5 h-5" />
+            <button 
+              onClick={() => { setShowForm(false); if(isNew) navigate('/jadwal'); }} 
+              className="w-8 h-8 rounded-lg border-2 border-black bg-white flex items-center justify-center font-black shadow-[2px_2px_0px_#121212] hover:bg-red-100"
+            >
+              <X className="w-4 h-4" />
             </button>
           </div>
           
-          <form onSubmit={handleSave} className="space-y-4">
+          <form onSubmit={handleSave} className="space-y-3.5">
             <div>
-              <label className="block text-sm font-medium mb-1">Nama Aktivitas / Mata Kuliah</label>
+              <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                Nama Aktivitas / Mata Kuliah
+              </label>
               <input 
                 type="text" 
                 required
                 value={formData.title}
                 onChange={e => setFormData({...formData, title: e.target.value})}
-                className="w-full p-3 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary outline-none"
+                className="w-full p-2.5 memphis-input text-xs sm:text-sm"
                 placeholder="Misal: Praktikum Algoritma / Kuliah PAI"
               />
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3">
               <div>
-                <label className="block text-sm font-medium mb-1">Jam Mulai</label>
+                <label className="block text-xs font-black uppercase tracking-wider mb-1">Jam Mulai</label>
                 <div className="relative">
-                  <Clock className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                  <Clock className="absolute left-2.5 top-3 w-4 h-4 text-gray-400" />
                   <input 
                     type="time" 
                     required
                     value={formData.startTime}
                     onChange={e => setFormData({...formData, startTime: e.target.value})}
-                    className="w-full p-3 pl-9 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full p-2.5 pl-8 memphis-input text-xs sm:text-sm"
                   />
                 </div>
               </div>
               <div>
-                <label className="block text-sm font-medium mb-1">Jam Selesai</label>
+                <label className="block text-xs font-black uppercase tracking-wider mb-1">Jam Selesai</label>
                 <div className="relative">
-                  <Clock className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                  <Clock className="absolute left-2.5 top-3 w-4 h-4 text-gray-400" />
                   <input 
                     type="time" 
                     required
                     value={formData.endTime}
                     onChange={e => setFormData({...formData, endTime: e.target.value})}
-                    className="w-full p-3 pl-9 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full p-2.5 pl-8 memphis-input text-xs sm:text-sm"
                   />
                 </div>
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Tanggal</label>
+              <label className="block text-xs font-black uppercase tracking-wider mb-1">Tanggal</label>
               <div className="relative">
-                <CalendarIcon className="absolute left-3 top-3.5 w-4 h-4 text-gray-400" />
+                <CalendarIcon className="absolute left-2.5 top-3 w-4 h-4 text-gray-400" />
                 <input 
                   type="date" 
                   required
                   value={formData.date}
                   onChange={e => setFormData({...formData, date: e.target.value})}
-                  className="w-full p-3 pl-9 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl outline-none focus:ring-2 focus:ring-primary/50"
+                  className="w-full p-2.5 pl-8 memphis-input text-xs sm:text-sm"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Kategori</label>
-              <div className="flex flex-wrap gap-2">
+              <label className="block text-xs font-black uppercase tracking-wider mb-1.5">Kategori</label>
+              <div className="flex flex-wrap gap-1.5">
                 {categories.map(cat => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setFormData({...formData, category: cat})}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors border ${
+                    className={`memphis-btn px-2.5 py-1 text-[11px] uppercase font-black ${
                       formData.category === cat 
-                      ? 'bg-primary text-white border-primary shadow-xs' 
-                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700 hover:bg-gray-50'
+                      ? 'memphis-btn-green' 
+                      : 'memphis-btn-white'
                     }`}
                   >
                     {cat}
@@ -258,38 +272,41 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
 
             {/* REAL-TIME CONFLICT ALERT IN FORM */}
             {formConflicts.length > 0 ? (
-              <div className="p-4 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl space-y-2 animate-in fade-in">
-                <div className="flex items-center gap-2 text-amber-900 dark:text-amber-200 font-bold text-xs sm:text-sm">
+              <div className="p-3 bg-amber-100 border-2 border-black rounded-xl space-y-1.5 shadow-[2px_2px_0px_#121212]">
+                <div className="flex items-center gap-1.5 text-amber-950 font-black text-xs">
                   <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
-                  <span>Peringatan Deteksi Bentrok Waktu Salat ({formConflicts.map(c => `${c.prayerName} ${c.prayerTime}`).join(', ')})</span>
+                  <span>Peringatan Bentrok Waktu Salat ({formConflicts.map(c => `${c.prayerName} ${c.prayerTime}`).join(', ')})</span>
                 </div>
                 {formConflicts.map((conf, idx) => (
-                  <div key={idx} className="bg-white/80 dark:bg-gray-900/80 p-3 rounded-xl border border-amber-200/60 dark:border-amber-900/60 text-xs space-y-1">
-                    <p className="font-semibold text-amber-950 dark:text-amber-300">
-                      ⚠️ Waktu salat <strong>{conf.prayerName} ({conf.prayerTime})</strong> {conf.conflictType === 'overlap' ? 'berada tepat di rentang waktu jadwal ini' : 'sangat berdekatan dengan jam mulai/selesai'}.
+                  <div key={idx} className="bg-white p-2.5 rounded-lg border border-black text-xs space-y-0.5">
+                    <p className="font-bold text-amber-950 text-[11px]">
+                      ⚠️ Waktu salat <strong>{conf.prayerName} ({conf.prayerTime})</strong> {conf.conflictType === 'overlap' ? 'berada di rentang jadwal ini' : 'sangat berdekatan'}.
                     </p>
-                    <p className="text-gray-700 dark:text-gray-300 text-[11px] leading-relaxed">
-                      💡 <strong>Saran Jeda Ibadah:</strong> {conf.suggestion}
+                    <p className="text-gray-800 text-[10px] font-semibold leading-relaxed">
+                      💡 <strong>Saran:</strong> {conf.suggestion}
                     </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="p-3 bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-900/60 rounded-xl flex items-center gap-2 text-xs text-emerald-800 dark:text-emerald-300">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <div className="p-2.5 bg-emerald-100 border-2 border-black rounded-xl flex items-center gap-2 text-xs font-bold text-emerald-950 shadow-[2px_2px_0px_#121212]">
+                <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
                 <span>Jadwal ini selaras & tidak bertabrakan dengan waktu salat fardhu.</span>
               </div>
             )}
 
-            <button type="submit" className="w-full py-4 mt-4 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors shadow-lg shadow-primary/20">
-              Simpan Jadwal
+            <button 
+              type="submit" 
+              className="w-full py-3 mt-3 memphis-btn memphis-btn-green text-xs sm:text-sm uppercase tracking-wider"
+            >
+              Simpan Jadwal Kuliah
             </button>
           </form>
         </div>
       ) : (
         <>
-          {/* Date Selector */}
-          <div className="flex gap-2 overflow-x-auto pb-2 -mx-4 px-4 md:mx-0 md:px-0 hide-scrollbar">
+          {/* Date Selector (Memphis Compact Fit) */}
+          <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full hide-scrollbar">
             {[-2, -1, 0, 1, 2, 3].map(offset => {
               const d = new Date();
               d.setDate(d.getDate() + offset);
@@ -301,16 +318,16 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
                 <button
                   key={dateStr}
                   onClick={() => setSelectedDate(dateStr)}
-                  className={`flex flex-col items-center justify-center min-w-[70px] py-3 rounded-2xl border transition-all ${
+                  className={`flex flex-col items-center justify-center min-w-[54px] sm:min-w-[66px] py-2 px-1 rounded-xl border-2 border-black transition-all ${
                     isSelected 
-                      ? 'bg-primary text-white border-primary shadow-md shadow-primary/20' 
+                      ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-black shadow-[3px_3px_0px_#121212] -translate-y-0.5' 
                       : isToday 
-                        ? 'bg-primary/5 border-primary/20 text-primary hover:bg-primary/10'
-                        : 'bg-surface border-gray-100 text-gray-500 hover:bg-gray-50'
+                        ? 'bg-emerald-50 text-emerald-900 font-bold shadow-[2px_2px_0px_#121212]'
+                        : 'bg-white text-gray-700 font-bold shadow-[2px_2px_0px_#121212] hover:bg-gray-50'
                   }`}
                 >
-                  <span className="text-xs mb-1 font-medium">{format(d, 'EEE', { locale: id })}</span>
-                  <span className="text-xl font-bold">{format(d, 'd')}</span>
+                  <span className="text-[10px] mb-0.5 uppercase tracking-wider">{format(d, 'EEE', { locale: id })}</span>
+                  <span className="text-base sm:text-lg font-black">{format(d, 'd')}</span>
                 </button>
               );
             })}
@@ -318,94 +335,94 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
 
           {/* DAY CONFLICT SUMMARY BANNER */}
           {dayConflicts.length > 0 && (
-            <div className="bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/40 dark:to-orange-950/40 border border-amber-200 dark:border-amber-800/80 rounded-2xl p-4 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-xs sm:text-sm text-amber-950 dark:text-amber-200">
-                    Perhatian: {dayConflicts.length} Jadwal Hari Ini Bersinggungan Dengan Waktu Salat
-                  </h4>
-                  <p className="text-xs text-amber-800 dark:text-amber-300 mt-0.5">
-                    Silakan cek rekomendasi jeda ibadah di bawah agar tetap dapat menunaikan salat tepat waktu di sela perkuliahan/tugas.
-                  </p>
-                </div>
+            <div className="bg-amber-100 border-2 border-black rounded-xl p-3 shadow-[3px_3px_0px_#121212] flex items-start gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-amber-500 text-white border border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#121212]">
+                <AlertTriangle className="w-4 h-4" />
+              </div>
+              <div>
+                <h4 className="font-black text-xs sm:text-sm text-amber-950">
+                  Perhatian: {dayConflicts.length} Jadwal Hari Ini Bersinggungan Dengan Waktu Salat
+                </h4>
+                <p className="text-[11px] font-semibold text-amber-900 mt-0.5">
+                  Cek rekomendasi jeda ibadah di bawah agar tetap salat tepat waktu di sela perkuliahan.
+                </p>
               </div>
             </div>
           )}
 
-          {/* Timeline */}
-          <div className="bg-surface rounded-3xl p-4 sm:p-6 shadow-sm border border-gray-100 dark:border-gray-800 min-h-[400px]">
-            <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
-              <CalendarIcon className="w-5 h-5 text-secondary" />
+          {/* Timeline in Memphis Card */}
+          <div className="memphis-card p-3.5 sm:p-5 min-h-[360px]">
+            <h3 className="font-black text-sm sm:text-base uppercase tracking-tight mb-4 flex items-center gap-2 border-b-2 border-black pb-2">
+              <CalendarIcon className="w-4 h-4 stroke-[2.5]" />
               {format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: id })}
             </h3>
 
             {currentSchedules.length > 0 ? (
-              <div className="relative border-l-2 border-gray-100 dark:border-gray-800 ml-6 sm:ml-8 space-y-6 pb-6">
+              <div className="relative border-l-2 border-black ml-4 sm:ml-6 space-y-4 pb-4">
                 {currentSchedules.map((schedule) => {
                   const conflicts = checkSchedulePrayerConflicts(schedule, prayerTimes);
                   const hasConflict = conflicts.length > 0;
 
                   return (
-                    <div key={schedule.id} className="relative pl-6 sm:pl-8 group">
+                    <div key={schedule.id} className="relative pl-4 sm:pl-6 group">
                       {/* Timeline Node */}
                       <button 
                         onClick={() => handleToggleComplete(schedule)}
-                        className={`absolute -left-[11px] top-1 w-5 h-5 rounded-full border-2 flex items-center justify-center bg-white dark:bg-gray-900 transition-colors ${
-                          schedule.completed ? 'border-primary bg-primary text-white' : 'border-gray-300 group-hover:border-primary'
+                        className={`absolute -left-[10px] top-1 w-5 h-5 rounded-full border-2 border-black flex items-center justify-center transition-all ${
+                          schedule.completed ? 'bg-[#10B981] text-white shadow-[1px_1px_0px_#121212]' : 'bg-white hover:bg-gray-100'
                         }`}
+                        title={schedule.completed ? 'Tandai belum selesai' : 'Tandai selesai'}
                       >
-                        {schedule.completed && <Check className="w-3 h-3" />}
+                        {schedule.completed && <Check className="w-3 h-3 stroke-[3]" />}
                       </button>
 
-                      <div className={`bg-gray-50 dark:bg-gray-800/80 border ${hasConflict ? 'border-amber-300/80 dark:border-amber-800/80' : 'border-gray-100 dark:border-gray-700/80'} rounded-2xl p-4 transition-all ${schedule.completed ? 'opacity-60' : 'hover:shadow-md'}`}>
-                        <div className="flex justify-between items-start mb-2">
-                          <div className="flex items-center gap-2">
-                            <span className="font-bold text-lg text-primary">{schedule.startTime}</span>
-                            <span className="text-text-muted text-sm">- {schedule.endTime}</span>
-                          </div>
+                      <div className={`border-2 border-black rounded-xl p-3 transition-all ${
+                        hasConflict ? 'bg-amber-50 shadow-[3px_3px_0px_#121212]' : 'bg-[#FFFDF8] shadow-[2.5px_2.5px_0px_#121212]'
+                      } ${schedule.completed ? 'opacity-65' : ''}`}>
+                        <div className="flex justify-between items-start mb-1.5 gap-2">
                           <div className="flex items-center gap-1.5">
+                            <span className="font-black text-sm sm:text-base text-black">{schedule.startTime}</span>
+                            <span className="text-gray-500 font-bold text-xs">- {schedule.endTime}</span>
+                          </div>
+                          <div className="flex items-center gap-1 shrink-0">
                             <a
                               href={generateGoogleCalendarUrl(schedule, conflicts)}
                               target="_blank"
                               rel="noreferrer"
-                              className="text-xs text-emerald-700 dark:text-emerald-300 font-medium hover:underline bg-emerald-50 dark:bg-emerald-950/60 px-2 py-1 rounded-md flex items-center gap-1"
+                              className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black gap-1"
                               title="Buka / Tambahkan langsung ke Google Calendar"
                             >
                               <CalendarPlus className="w-3 h-3" />
-                              <span className="hidden sm:inline">Google Cal</span>
+                              <span className="hidden sm:inline">G-Cal</span>
                             </a>
                             <button 
                               onClick={() => { setFormData(schedule); setShowForm(true); }}
-                              className="text-xs text-blue-600 font-medium hover:underline bg-blue-50 dark:bg-blue-950/60 px-2 py-1 rounded-md"
+                              className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black text-blue-700"
                             >
                               Edit
                             </button>
                             <button 
                               onClick={() => handleDelete(schedule.id)}
-                              className="text-xs text-red-600 font-medium hover:underline bg-red-50 dark:bg-red-950/60 px-2 py-1 rounded-md"
+                              className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black text-red-600"
                             >
                               Hapus
                             </button>
                           </div>
                         </div>
                         
-                        <h4 className={`text-base sm:text-lg font-semibold mb-1 ${schedule.completed ? 'line-through text-gray-500' : 'text-text-main'}`}>
+                        <h4 className={`text-xs sm:text-sm font-black mb-1 ${schedule.completed ? 'line-through text-gray-500' : 'text-black'}`}>
                           {schedule.title}
                         </h4>
                         
-                        <div className="flex flex-wrap items-center gap-2 mt-2">
-                          <div className="flex items-center gap-1">
-                            <Tag className="w-3 h-3 text-gray-400" />
-                            <span className="text-xs text-gray-500 font-medium">{schedule.category}</span>
-                          </div>
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                          <span className="memphis-badge bg-[#00F0FF] text-black text-[9px]">
+                            {schedule.category}
+                          </span>
 
                           {/* CONFLICT BADGE */}
                           {hasConflict && (
-                            <span className="inline-flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-lg bg-amber-100 dark:bg-amber-950/80 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
-                              <AlertTriangle className="w-3 h-3 text-amber-600" />
+                            <span className="memphis-badge bg-[#FF4B91] text-white text-[9px] flex items-center gap-1">
+                              <AlertTriangle className="w-2.5 h-2.5" />
                               Bentrok {conflicts.map(c => `${c.prayerName} (${c.prayerTime})`).join(', ')}
                             </span>
                           )}
@@ -413,14 +430,14 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
 
                         {/* CONFLICT SUGGESTION CARD */}
                         {hasConflict && (
-                          <div className="mt-3 p-3 bg-amber-50/90 dark:bg-amber-950/50 rounded-xl border border-amber-200/80 dark:border-amber-900/60 space-y-1">
+                          <div className="mt-2.5 p-2.5 bg-white rounded-lg border border-black space-y-1">
                             {conflicts.map((c, i) => (
-                              <div key={i} className="text-xs text-amber-950 dark:text-amber-200">
-                                <span className="font-bold flex items-center gap-1 text-amber-800 dark:text-amber-400 mb-0.5">
-                                  <Sparkles className="w-3 h-3" />
+                              <div key={i} className="text-[11px] text-amber-950">
+                                <span className="font-bold flex items-center gap-1 text-amber-900 mb-0.5">
+                                  <Sparkles className="w-3 h-3 text-amber-600" />
                                   Saran Jeda Ibadah ({c.prayerName}):
                                 </span>
-                                <p className="text-[11px] text-gray-700 dark:text-gray-300 leading-relaxed">
+                                <p className="text-[10px] text-gray-800 leading-relaxed font-medium">
                                   {c.suggestion}
                                 </p>
                               </div>
@@ -433,16 +450,16 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
                 })}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-20 px-4 text-center">
-                <div className="w-16 h-16 bg-gray-50 dark:bg-gray-800 rounded-full flex items-center justify-center mb-4">
-                  <CalendarIcon className="w-8 h-8 text-gray-300" />
+              <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                <div className="w-14 h-14 bg-emerald-100 border-2 border-black rounded-2xl flex items-center justify-center mb-3 shadow-[2px_2px_0px_#121212]">
+                  <CalendarIcon className="w-7 h-7 text-emerald-800" />
                 </div>
-                <p className="text-gray-500 font-medium mb-4">Belum ada aktivitas hari ini.</p>
+                <p className="text-gray-600 font-bold text-xs mb-3">Belum ada aktivitas pada tanggal ini.</p>
                 <button 
                   onClick={() => setShowForm(true)}
-                  className="px-6 py-2 bg-primary/10 text-primary font-bold rounded-full hover:bg-primary/20 transition-colors"
+                  className="memphis-btn memphis-btn-green px-4 py-1.5 text-xs uppercase tracking-wider"
                 >
-                  Tambah Aktivitas
+                  + Tambah Jadwal
                 </button>
               </div>
             )}
