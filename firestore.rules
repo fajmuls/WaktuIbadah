@@ -24,7 +24,7 @@ service cloud.firestore {
         && request.resource.data.name is string
         && request.resource.data.name.size() >= 2
         && request.resource.data.name.size() <= 100
-        && (!('pin' in request.resource.data) || (request.resource.data.pin is string && request.resource.data.pin.size() == 4));
+        && (!('pin' in request.resource.data) || (request.resource.data.pin is string && (request.resource.data.pin.size() == 4 || request.resource.data.pin == '')));
 
       allow update: if isValidId(profileId)
         && request.resource.data.name is string
@@ -33,7 +33,8 @@ service cloud.firestore {
         && (
           !('pin' in resource.data) || 
           resource.data.pin == '' || 
-          (request.resource.data.pin == resource.data.pin)
+          (request.resource.data.pin == resource.data.pin) ||
+          ('pin' in request.resource.data && (request.resource.data.pin.size() == 4 || request.resource.data.pin == ''))
         );
 
       allow delete: if false;
@@ -53,11 +54,11 @@ service cloud.firestore {
       allow delete: if isValidId(reviewId); // Allowed for admin cleanup
     }
 
-    // Admin Review Configuration (Global settings for in-app / Google Form review)
+    // Admin Review Configuration (Global settings for website review / Google Form review)
     match /admin_config/{configId} {
       allow read: if isValidId(configId);
       allow write: if isValidId(configId)
-        && request.resource.data.reviewMode in ['inapp', 'gform', 'both'];
+        && request.resource.data.reviewMode in ['website', 'inapp', 'gform', 'both'];
     }
 
   }

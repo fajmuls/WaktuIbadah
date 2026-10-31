@@ -11,12 +11,16 @@ export default defineConfig(() => {
       tailwindcss(),
       VitePWA({
         registerType: 'autoUpdate',
+        workbox: {
+          maximumFileSizeToCacheInBytes: 6 * 1024 * 1024,
+          globPatterns: ['**/*.{js,css,html,ico,png,svg}']
+        },
         manifest: {
           name: 'WaktuIbadah',
           short_name: 'WaktuIbadah',
           description: 'Aplikasi manajemen waktu dan ibadah untuk mahasiswa Muslim.',
-          theme_color: '#166534',
-          background_color: '#fdfbf7',
+          theme_color: '#FFE600',
+          background_color: '#FFFDF8',
           display: 'standalone',
           icons: [
             {

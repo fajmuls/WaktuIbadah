@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen, Quote, Cloud } from 'lucide-react';
+import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, BookOpen, Quote, Cloud, Sparkles } from 'lucide-react';
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
 import { MurottalPlayerWidget } from './MurottalPlayerWidget';
-import { playClickSound } from '../lib/audio';
+import { playButtonTapSound, playTabSwitchSound } from '../lib/audio';
 import { storage } from '../lib/storage';
 
 export const Layout = () => {
@@ -25,10 +25,15 @@ export const Layout = () => {
   useEffect(() => {
     const handleGlobalClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (target.closest('button') || target.closest('a')) {
-        const user = storage.getUser();
-        if (user && user.soundEnabled !== false) {
-          playClickSound();
+      const clickable = target.closest('button') || target.closest('a');
+      if (clickable) {
+        const currentUser = storage.getUser();
+        if (currentUser && currentUser.soundEnabled !== false) {
+          if (clickable.getAttribute('data-nav') === 'true' || clickable.tagName === 'A') {
+            playTabSwitchSound();
+          } else {
+            playButtonTapSound();
+          }
         }
       }
     };
@@ -38,13 +43,13 @@ export const Layout = () => {
   }, []);
 
   const navItems = [
-    { label: 'Home', icon: Home, path: '/' },
-    { label: 'Jadwal', icon: Calendar, path: '/jadwal' },
-    { label: 'Ibadah', icon: Clock, path: '/ibadah' },
-    { label: 'Progress', icon: BarChart2, path: '/progress' },
-    { label: 'Qur\'an', icon: BookOpen, path: '/quran' },
-    { label: 'Hadis', icon: Quote, path: '/hadis' },
-    { label: 'Menu', icon: Menu, path: '/menu' },
+    { label: 'Home', icon: Home, path: '/', color: '#FFE600' },
+    { label: 'Jadwal', icon: Calendar, path: '/jadwal', color: '#00F0FF' },
+    { label: 'Ibadah', icon: Clock, path: '/ibadah', color: '#FF4B91' },
+    { label: 'Progress', icon: BarChart2, path: '/progress', color: '#10B981' },
+    { label: 'Qur\'an', icon: BookOpen, path: '/quran', color: '#FFE600' },
+    { label: 'Hadis', icon: Quote, path: '/hadis', color: '#00F0FF' },
+    { label: 'Menu', icon: Menu, path: '/menu', color: '#FF4B91' },
   ];
 
   const mobileNavItems = [
@@ -57,91 +62,105 @@ export const Layout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background flex">
-      {/* Desktop Sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-surface border-r border-gray-100 p-6 fixed h-full z-10">
-        <div className="flex items-center gap-2 mb-10">
-          <Clock className="w-8 h-8 text-primary" />
-          <h1 className="text-xl font-bold text-primary">WaktuIbadah</h1>
+    <div className="min-h-screen bg-[#FFFDF8] text-[#121212] flex">
+      {/* Desktop Sidebar (Memphis Retro Style) */}
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r-[3px] border-[#121212] p-5 fixed h-full z-10 shadow-[4px_0px_0px_#121212]">
+        {/* Brand Header */}
+        <div className="flex items-center gap-3 mb-6 p-2 bg-[#FFE600] border-2 border-[#121212] rounded-xl shadow-[3px_3px_0px_#121212]">
+          <div className="w-9 h-9 bg-black text-[#FFE600] rounded-lg flex items-center justify-center font-black">
+            <Clock className="w-5 h-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-black tracking-tight uppercase">WaktuIbadah</h1>
+            <span className="text-[10px] font-black uppercase tracking-wider bg-black text-white px-1.5 py-0.5 rounded">
+              v2.0.0 Memphis
+            </span>
+          </div>
         </div>
         
-        <nav className="flex-1 flex flex-col gap-2">
+        {/* Nav Items */}
+        <nav className="flex-1 flex flex-col gap-2 overflow-y-auto pr-1">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
+              data-nav="true"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-xl transition-colors",
+                  "flex items-center gap-3 px-3.5 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-100",
                   isActive 
-                    ? "bg-primary text-white font-medium shadow-md shadow-primary/20" 
-                    : "text-text-muted hover:bg-gray-50 hover:text-primary"
+                    ? "bg-[#FFE600] text-[#121212] border-2 border-[#121212] shadow-[3px_3px_0px_#121212] translate-x-1" 
+                    : "text-gray-700 hover:bg-[#00F0FF]/20 hover:text-black hover:border-2 hover:border-[#121212]"
                 )
               }
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-4 h-4 stroke-[2.5]" />
               <span>{item.label}</span>
             </NavLink>
           ))}
         </nav>
 
+        {/* Quick Add Button */}
         <button 
           onClick={() => setQuickAddOpen(true)}
-          className="mt-4 flex items-center justify-center gap-2 w-full bg-primary text-white py-3 rounded-xl font-medium shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all active:scale-95"
+          className="mt-4 memphis-btn memphis-btn-yellow py-3 w-full gap-2 text-sm uppercase tracking-wider"
         >
-          <Plus className="w-5 h-5" />
-          Tambah
+          <Plus className="w-5 h-5 stroke-[3]" />
+          Tambah Agenda
         </button>
 
         {/* Cloud Sync Status Indicator */}
         <div 
           onClick={() => navigate('/settings')}
-          className="mt-4 pt-3 border-t border-gray-100 flex items-center justify-between text-xs cursor-pointer hover:opacity-80 transition-opacity"
+          className="mt-3 p-2.5 bg-[#FFFDF8] border-2 border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-[#00F0FF]/20 transition-all"
           title="Klik untuk membuka Pengaturan Sinkronisasi Multi-Device"
         >
-          <div className="flex items-center gap-1.5 truncate">
-            <Cloud className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span className="font-semibold text-gray-700 truncate">{user?.name || 'Mahasiswa'}</span>
+          <div className="flex items-center gap-2 truncate">
+            <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-black"></div>
+            <span className="font-bold text-[#121212] truncate text-[11px]">{user?.name || 'Mahasiswa'}</span>
           </div>
-          <span className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full font-bold shrink-0">
-            Cloud Sync
+          <span className="text-[9px] bg-black text-white px-2 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
+            Cloud
           </span>
         </div>
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 md:ml-64 pb-24 md:pb-0 min-h-screen max-w-5xl mx-auto w-full relative">
+      <main className="flex-1 md:ml-64 pb-24 md:pb-8 min-h-screen max-w-5xl mx-auto w-full relative">
         <div className="p-4 sm:p-6 lg:p-8">
           <Outlet />
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-surface border-t border-gray-100 flex justify-around items-center p-2 pb-[env(safe-area-inset-bottom)] z-40">
+      {/* Mobile Bottom Navigation (Memphis Style) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-[#121212] flex justify-around items-center px-1 py-2 pb-[calc(env(safe-area-inset-bottom)+0.5rem)] z-40 shadow-[0px_-3px_0px_#121212]">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
+            data-nav="true"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center w-16 h-14 rounded-xl transition-all",
-                isActive ? "text-primary" : "text-gray-400 hover:text-primary"
+                "flex flex-col items-center justify-center px-2 py-1 rounded-xl transition-all",
+                isActive 
+                  ? "bg-[#FFE600] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] text-black font-black -translate-y-1" 
+                  : "text-gray-600 hover:text-black font-bold"
               )
             }
           >
-            <item.icon className={cn("w-6 h-6 mb-1")} />
-            <span className="text-[10px] font-medium">{item.label}</span>
+            <item.icon className="w-5 h-5 stroke-[2.5]" />
+            <span className="text-[10px] uppercase tracking-tight mt-0.5">{item.label}</span>
           </NavLink>
         ))}
       </nav>
 
-      {/* Mobile Floating Action Button */}
+      {/* Mobile Floating Action Button (Memphis Style) */}
       <button
         onClick={() => setQuickAddOpen(true)}
-        className="md:hidden fixed bottom-20 right-4 w-14 h-14 bg-primary text-white rounded-full flex items-center justify-center shadow-xl shadow-primary/30 z-40 active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-20 right-4 w-13 h-13 memphis-btn memphis-btn-yellow rounded-2xl z-40"
         aria-label="Tambah Aktivitas"
       >
-        <Plus className="w-6 h-6" />
+        <Plus className="w-6 h-6 stroke-[3]" />
       </button>
 
       <QuickAddModal 

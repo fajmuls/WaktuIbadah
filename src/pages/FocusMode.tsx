@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { storage } from '../lib/storage';
 import { Task } from '../types';
-import { Play, Pause, Square, RefreshCcw } from 'lucide-react';
+import { Play, Pause, Square, RefreshCcw, Music } from 'lucide-react';
+import { playFocusSound, toggleAmbientLoop, isAmbientPlaying } from '../lib/audio';
+import { showPWANotification } from '../lib/pwa-service';
 
 export default function FocusMode() {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -10,11 +12,13 @@ export default function FocusMode() {
   const [duration, setDuration] = useState(25 * 60); // in seconds
   const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
+  const [ambientActive, setAmbientActive] = useState(false);
 
   useEffect(() => {
     const activeTasks = storage.getTasks().filter(t => t.status !== 'Selesai');
     setTasks(activeTasks);
     if (activeTasks.length > 0) setSelectedTaskId(activeTasks[0].id);
+    setAmbientActive(isAmbientPlaying());
   }, []);
 
   useEffect(() => {
@@ -25,8 +29,8 @@ export default function FocusMode() {
         setTimeLeft(time => time - 1);
       }, 1000);
     } else if (isActive && timeLeft === 0) {
-      // Timer finished
       setIsActive(false);
+      playFocusSound('end');
       
       // Save session
       storage.addFocusSession({
@@ -36,17 +40,21 @@ export default function FocusMode() {
         completedAt: new Date().toISOString()
       });
 
-      if ('Notification' in window && Notification.permission === 'granted') {
-        new Notification('Sesi Fokus Selesai!', { body: 'Waktunya istirahat sejenak.' });
-      } else {
-        alert('Sesi Fokus Selesai! Waktunya istirahat sejenak.');
-      }
+      showPWANotification('🎉 Sesi Fokus Selesai!', {
+        body: 'Alhamdulillah, target fokus tercapai! Waktunya istirahat sejenak dan salat.',
+        tag: 'focus-session-completed'
+      });
     }
 
     return () => clearInterval(interval);
   }, [isActive, timeLeft, duration, selectedTaskId]);
 
-  const toggleTimer = () => setIsActive(!isActive);
+  const toggleTimer = () => {
+    if (!isActive) {
+      playFocusSound('start');
+    }
+    setIsActive(!isActive);
+  };
   
   const resetTimer = () => {
     setIsActive(false);
@@ -68,69 +76,110 @@ export default function FocusMode() {
   const progress = ((duration - timeLeft) / duration) * 100;
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-md mx-auto pb-20">
       
-      <div className="text-center mb-8">
-        <h1 className="text-2xl font-bold text-text-main">Focus Mode</h1>
-        <p className="text-text-muted text-sm mt-1">Jauhkan distraksi, selesaikan lebih cepat</p>
+      {/* Header */}
+      <div className="p-4 bg-[#00F0FF] border-[2.5px] border-black rounded-2xl shadow-[4px_4px_0px_#121212] text-center">
+        <h1 className="text-xl font-black uppercase tracking-tight text-black">Focus Pomodoro</h1>
+        <p className="text-xs font-bold text-black/80 mt-0.5">Jauhkan distraksi, seimbangkan waktu ibadah & produktivitas</p>
       </div>
 
-      <div className="bg-surface rounded-3xl p-8 border border-gray-100 shadow-sm flex flex-col items-center justify-center max-w-sm mx-auto">
+      <div className="memphis-card p-6 flex flex-col items-center justify-center space-y-5">
         
-        {/* Circular Progress (Simplified) */}
-        <div className="relative w-64 h-64 mb-8 flex items-center justify-center">
+        {/* Circular Progress (Memphis Styling) */}
+        <div className="relative w-56 h-56 flex items-center justify-center">
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-            <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="4" />
+            <circle cx="50" cy="50" r="44" fill="none" stroke="#e5e7eb" strokeWidth="6" />
             <circle 
-              cx="50" cy="50" r="45" 
+              cx="50" cy="50" r="44" 
               fill="none" 
-              stroke="#166534" 
-              strokeWidth="4"
-              strokeDasharray="283"
-              strokeDashoffset={283 - (283 * progress) / 100}
-              className="transition-all duration-1000 ease-linear"
+              stroke="#FFE600" 
+              strokeWidth="6"
+              strokeDasharray="276"
+              strokeDashoffset={276 - (276 * progress) / 100}
               strokeLinecap="round"
+              className="transition-all duration-300"
             />
           </svg>
-          <div className="absolute text-5xl font-bold text-text-main tracking-tighter">
-            {formatTime(timeLeft)}
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <span className="text-4xl font-black text-[#121212] font-mono tracking-tight">
+              {formatTime(timeLeft)}
+            </span>
+            <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 mt-1">
+              {isActive ? 'Sedang Fokus' : 'Siap Mulai'}
+            </span>
           </div>
         </div>
 
-        <div className="flex gap-4 mb-8">
-          <button 
-            onClick={toggleTimer}
-            className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-lg transition-transform active:scale-95 ${isActive ? 'bg-amber-500 hover:bg-amber-600' : 'bg-primary hover:bg-primary/90'}`}
-          >
-            {isActive ? <Pause className="w-8 h-8 fill-current" /> : <Play className="w-8 h-8 fill-current ml-1" />}
-          </button>
-          <button 
-            onClick={resetTimer}
-            className="w-16 h-16 rounded-full flex items-center justify-center bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors active:scale-95"
-          >
-            <RefreshCcw className="w-6 h-6" />
-          </button>
-        </div>
+        {/* Task Selection */}
+        {tasks.length > 0 && (
+          <div className="w-full">
+            <label className="block text-xs font-black uppercase tracking-wider mb-1">
+              Fokus Mengerjakan Tugas:
+            </label>
+            <select 
+              value={selectedTaskId}
+              onChange={(e) => setSelectedTaskId(e.target.value)}
+              className="memphis-input w-full p-2.5 text-xs font-bold"
+            >
+              <option value="">(Tanpa Tugas Spesifik)</option>
+              {tasks.map(t => (
+                <option key={t.id} value={t.id}>{t.title}</option>
+              ))}
+            </select>
+          </div>
+        )}
 
-        <div className="flex gap-2 w-full">
-          <button onClick={() => setPreset(25)} className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${duration === 25*60 ? 'bg-primary/10 text-primary' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>25 mnt</button>
-          <button onClick={() => setPreset(50)} className={`flex-1 py-2 rounded-xl text-sm font-bold transition-colors ${duration === 50*60 ? 'bg-primary/10 text-primary' : 'bg-gray-50 text-gray-500 hover:bg-gray-100'}`}>50 mnt</button>
-        </div>
-      </div>
-
-      <div className="bg-surface rounded-3xl p-6 border border-gray-100 shadow-sm max-w-sm mx-auto">
-        <label className="block text-sm font-bold mb-2 text-text-main">Sedang Mengerjakan:</label>
-        <select 
-          value={selectedTaskId}
-          onChange={(e) => setSelectedTaskId(e.target.value)}
-          disabled={isActive}
-          className="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50"
-        >
-          <option value="">Pilih Tugas...</option>
-          {tasks.map(t => (
-            <option key={t.id} value={t.id}>{t.title}</option>
+        {/* Presets */}
+        <div className="flex gap-2">
+          {[15, 25, 45, 60].map(mins => (
+            <button
+              key={mins}
+              onClick={() => setPreset(mins)}
+              className={`memphis-btn px-3 py-1 text-xs font-black uppercase ${
+                duration === mins * 60 ? 'memphis-btn-yellow' : 'memphis-btn-white'
+              }`}
+            >
+              {mins}m
+            </button>
           ))}
-        </select>
+        </div>
+
+        {/* Action Controls */}
+        <div className="flex items-center gap-3 w-full pt-2">
+          <button
+            onClick={toggleTimer}
+            className={`memphis-btn flex-1 py-3 text-xs font-black uppercase tracking-wider gap-2 ${
+              isActive ? 'memphis-btn-pink' : 'memphis-btn-primary'
+            }`}
+          >
+            {isActive ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 fill-current" />}
+            <span>{isActive ? 'Jeda' : 'Mulai Fokus'}</span>
+          </button>
+          
+          <button
+            onClick={resetTimer}
+            className="memphis-btn memphis-btn-white p-3"
+            title="Reset Timer"
+          >
+            <RefreshCcw className="w-4 h-4 stroke-[2.5]" />
+          </button>
+        </div>
+
+        {/* Instrumental Ambient Music Toggle */}
+        <button
+          onClick={() => {
+            const playing = toggleAmbientLoop(0.4);
+            setAmbientActive(playing);
+          }}
+          className={`memphis-btn w-full py-2.5 text-xs font-black uppercase tracking-wider gap-2 ${
+            ambientActive ? 'memphis-btn-yellow' : 'memphis-btn-white'
+          }`}
+        >
+          <Music className="w-4 h-4" />
+          <span>{ambientActive ? 'Musik Relaksasi Ambient: ON' : 'Putar Musik Ambient 90s'}</span>
+        </button>
+
       </div>
 
     </div>

@@ -1,14 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { storage, CURRENT_VERSION } from '../lib/storage';
-import { User, AppVersion, ReminderSettings } from '../types';
+import { User, AppVersion, ReminderSettings, APP_PATCH_NOTES } from '../types';
 import { 
   User as UserIcon, Bell, Trash2, Info, ChevronRight, Check, 
   Clock, Vibrate, Volume2, Sparkles, Shield, Moon, CheckCircle2,
   Calendar, BookOpen, AlertTriangle, Lock, Play, Cloud, KeyRound,
-  ShieldCheck, RefreshCw, Smartphone, Laptop, ArrowRightLeft, Send
+  ShieldCheck, RefreshCw, Smartphone, Laptop, ArrowRightLeft, Send,
+  Music, CheckSquare, Layers, HelpCircle, X
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm } from '../lib/audio';
+import { 
+  playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm,
+  playButtonTapSound, playToggleSound, playSaveSuccessSound, playDhikrTapSound,
+  playTaskStateSound, toggleAmbientLoop, isAmbientPlaying, stopAmbientLoop
+} from '../lib/audio';
 import { showPWANotification, requestNotificationPermission } from '../lib/pwa-service';
 import { 
   syncAllToCloud, syncAllFromCloud, updateProfilePin, 
@@ -21,6 +26,8 @@ export default function Settings() {
   const [nameInput, setNameInput] = useState('');
   const [reminderSettings, setReminderSettings] = useState<ReminderSettings>(storage.getReminderSettings());
   const [stopAlarmFn, setStopAlarmFn] = useState<(() => void) | null>(null);
+  const [isAmbientOn, setIsAmbientOn] = useState(false);
+  const [showPatchNotesModal, setShowPatchNotesModal] = useState(false);
   const navigate = useNavigate();
 
   // Cloud Sync states
@@ -44,13 +51,13 @@ export default function Settings() {
     const loadedUser = storage.getUser();
     setUser(loadedUser);
     if (loadedUser) setNameInput(loadedUser.name);
-    
-    // Refresh version
     setVersion(storage.getVersion());
+    setIsAmbientOn(isAmbientPlaying());
   }, []);
 
   const handleToggleMasterReminder = () => {
     if (user) {
+      playToggleSound();
       const updated = { ...user, reminderEnabled: !user.reminderEnabled };
       storage.setUser(updated);
       setUser(updated);
@@ -62,6 +69,7 @@ export default function Settings() {
   };
 
   const updateReminderSetting = <K extends keyof ReminderSettings>(key: K, value: ReminderSettings[K]) => {
+    playToggleSound();
     const updated = { ...reminderSettings, [key]: value };
     setReminderSettings(updated);
     storage.setReminderSettings(updated);
@@ -102,6 +110,11 @@ export default function Settings() {
     }
   };
 
+  const handleToggleAmbient = () => {
+    const nowPlaying = toggleAmbientLoop(0.45);
+    setIsAmbientOn(nowPlaying);
+  };
+
   const handleClearData = () => {
     if (confirm('PERINGATAN: Apakah kamu yakin ingin menghapus seluruh data lokal (jadwal, catatan tilawah, ayat favorit)? Tindakan ini tidak dapat dibatalkan.')) {
       storage.clearAll();
@@ -118,6 +131,7 @@ export default function Settings() {
     try {
       const ok = await syncAllToCloud();
       if (ok) {
+        playSaveSuccessSound();
         setSyncMessage({
           text: 'Seluruh data aplikasi (jadwal, tugas, salat sunnah & fardhu, tilawah) berhasil diunggah ke cloud!',
           type: 'success'
@@ -140,6 +154,7 @@ export default function Settings() {
     try {
       const ok = await syncAllFromCloud();
       if (ok) {
+        playSaveSuccessSound();
         const refreshedUser = storage.getUser();
         setUser(refreshedUser);
         setSyncMessage({
@@ -170,6 +185,7 @@ export default function Settings() {
 
     try {
       await updateProfilePin(user.name, cleanPin);
+      playSaveSuccessSound();
       setUser({ ...user, pin: cleanPin });
       setShowPinModal(false);
       setPinInput('');
@@ -196,6 +212,7 @@ export default function Settings() {
     try {
       const res = await connectCloudProfile(targetName, switchPin.trim());
       if (res.success) {
+        playSaveSuccessSound();
         setUser(storage.getUser());
         setShowSwitchModal(false);
         setSwitchName('');
@@ -213,432 +230,362 @@ export default function Settings() {
   if (!user) return null;
 
   return (
-    <div className="space-y-5 pb-20 animate-in fade-in duration-300 max-w-2xl mx-auto">
+    <div className="space-y-6 pb-24 animate-in fade-in duration-300 max-w-3xl mx-auto">
       
-      {/* Header */}
-      <div>
-        <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
-          Pengaturan Aplikasi
-        </h1>
-        <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-0.5">
-          Atur sinkronisasi multi-device, profil, sistem pengingat salat & getaran HP
-        </p>
+      {/* Memphis Header */}
+      <div className="p-4 bg-[#FFE600] border-[2.5px] border-[#121212] rounded-2xl shadow-[4px_4px_0px_#121212] flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#121212]">
+              Pengaturan & Sinkronisasi
+            </h1>
+            <span className="memphis-badge bg-black text-[#FFE600]">
+              v{CURRENT_VERSION}
+            </span>
+          </div>
+          <p className="text-xs font-bold text-[#121212]/80 mt-0.5">
+            Manajemen multi-device, style Memphis Classic, audio pack asli & notifikasi latar
+          </p>
+        </div>
+
+        <button
+          onClick={() => setShowPatchNotesModal(true)}
+          className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
+        >
+          <Sparkles className="w-4 h-4 text-[#FF4B91]" />
+          Catatan Versi v2.0.0
+        </button>
       </div>
 
       {syncMessage && (
-        <div className={`p-4 rounded-2xl border text-xs font-semibold flex items-center gap-2.5 animate-in slide-in-from-top-2 duration-200 ${
+        <div className={`p-4 rounded-xl border-[2.5px] border-[#121212] shadow-[3px_3px_0px_#121212] text-xs font-bold flex items-center gap-2.5 ${
           syncMessage.type === 'success' 
-            ? 'bg-emerald-50 dark:bg-emerald-950/70 border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200'
+            ? 'bg-[#10B981] text-white'
             : syncMessage.type === 'error'
-            ? 'bg-rose-50 dark:bg-rose-950/70 border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200'
-            : 'bg-blue-50 dark:bg-blue-950/70 border-blue-200 dark:border-blue-800 text-blue-800 dark:text-blue-200'
+            ? 'bg-[#FF4B91] text-white'
+            : 'bg-[#00F0FF] text-[#121212]'
         }`}>
-          <CheckCircle2 className="w-4 h-4 shrink-0" />
+          <CheckCircle2 className="w-5 h-5 shrink-0" />
           <span>{syncMessage.text}</span>
         </div>
       )}
 
-      <div className="bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-xs overflow-hidden">
-        
-        {/* Profil */}
-        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 rounded-2xl flex items-center justify-center font-bold">
-              <UserIcon className="w-5 h-5" />
+      {/* Profil & Multi-Device Sync Card */}
+      <div className="memphis-card p-5 space-y-5">
+        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 bg-[#00F0FF] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+              <UserIcon className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <div className="flex-1">
-              <div className="flex items-center gap-1.5">
-                <h3 className="text-xs font-semibold text-gray-400">Nama Pengguna (Terkunci)</h3>
-                <span className="text-[10px] bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-2 py-0.5 rounded-full font-bold flex items-center gap-1">
-                  <Lock className="w-2.5 h-2.5" /> Akun Mahasiswa Tetap
-                </span>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="font-black text-base uppercase tracking-tight">{user.name}</h3>
+                {user.pin ? (
+                  <span className="memphis-badge bg-[#10B981] text-white text-[9px] py-0.5">
+                    <Lock className="w-2.5 h-2.5 mr-1" /> Terproteksi PIN
+                  </span>
+                ) : (
+                  <span className="memphis-badge bg-[#FFE600] text-[#121212] text-[9px] py-0.5">
+                    Nama Terbuka
+                  </span>
+                )}
               </div>
-              <div className="flex items-center gap-2 mt-0.5">
-                <p className="font-bold text-base text-gray-900 dark:text-white">{user.name}</p>
-              </div>
+              <p className="text-xs font-bold text-gray-500">
+                Gunakan nama yang sama di HP/Laptop untuk membuka database yang sama
+              </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                setPinInput(user.pin || '');
+                setShowPinModal(true);
+              }}
+              className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
+            >
+              <KeyRound className="w-3.5 h-3.5" />
+              {user.pin ? 'Ubah PIN' : 'Pasang PIN'}
+            </button>
+            <button
+              onClick={() => setShowSwitchModal(true)}
+              className="memphis-btn memphis-btn-yellow px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
+            >
+              <ArrowRightLeft className="w-3.5 h-3.5" />
+              Ganti Akun
+            </button>
           </div>
         </div>
 
-        {/* ==================== SINKRONISASI MULTI-DEVICE & CLOUD FIRESTORE ==================== */}
-        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 bg-emerald-50/30 dark:bg-emerald-950/20 space-y-3.5">
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-emerald-600 text-white rounded-xl flex items-center justify-center shrink-0 shadow-md shadow-emerald-600/20">
-                <Cloud className="w-5 h-5" />
-              </div>
-              <div>
-                <div className="flex items-center gap-1.5">
-                  <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                    Sinkronisasi Multi-Device
-                  </h3>
-                  <span className="text-[10px] font-bold bg-emerald-100 dark:bg-emerald-900/60 text-emerald-700 dark:text-emerald-300 px-2 py-0.5 rounded-full flex items-center gap-1">
-                    <CheckCircle2 className="w-2.5 h-2.5" /> Firestore Cloud
-                  </span>
-                </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                  Buka data yang sama di berbagai device tanpa ribet login.
-                </p>
-              </div>
+        {/* Sync Controls */}
+        <div className="p-4 bg-[#FFFDF8] border-2 border-[#121212] rounded-xl shadow-[3px_3px_0px_#121212] space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Cloud className="w-5 h-5 text-[#10B981] stroke-[2.5]" />
+              <span className="font-black text-sm uppercase tracking-wide">Sinkronisasi Firestore Cloud</span>
             </div>
-
-            <button
-              onClick={() => setShowSwitchModal(true)}
-              className="text-xs font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-950 hover:bg-emerald-200 px-2.5 py-1.5 rounded-xl transition-colors flex items-center gap-1 shrink-0"
-              title="Sambungkan perangkat lain atau ganti nama akun"
-            >
-              <ArrowRightLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Ganti Akun</span>
-            </button>
+            <span className="text-[10px] font-bold text-gray-500">
+              {user.lastCloudSync ? `Terakhir: ${new Date(user.lastCloudSync).toLocaleTimeString('id-ID')}` : 'Belum pernah sync'}
+            </span>
           </div>
 
-          {/* Device & Security Chips */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-            <div className="p-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200/80 dark:border-gray-700 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <KeyRound className="w-4 h-4 text-emerald-600 shrink-0" />
-                <div>
-                  <span className="text-[10px] text-gray-400 uppercase font-bold block">PIN Keamanan 4 Digit</span>
-                  <span className="font-bold text-gray-800 dark:text-gray-200">
-                    {user.pin ? '•••• (Aktif - Anti Bentrok)' : 'Belum Diatur (Disarankan)'}
-                  </span>
-                </div>
-              </div>
-              <button
-                onClick={() => {
-                  setPinInput(user.pin || '');
-                  setShowPinModal(true);
-                }}
-                className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline"
-              >
-                {user.pin ? 'Ubah' : 'Atur'}
-              </button>
-            </div>
+          <p className="text-xs font-semibold text-gray-600">
+            Semua data (jadwal kuliah, tugas countdown, salat fardhu & sunnah, tilawah Qur'an, target khatam) tersimpan aman di Firestore cloud.
+          </p>
 
-            <div className="p-2.5 bg-white dark:bg-gray-800 rounded-xl border border-gray-200/80 dark:border-gray-700 flex items-center gap-2">
-              <Smartphone className="w-4 h-4 text-emerald-600 shrink-0" />
-              <div>
-                <span className="text-[10px] text-gray-400 uppercase font-bold block">Status Koneksi Perangkat</span>
-                <span className="font-bold text-emerald-700 dark:text-emerald-300 flex items-center gap-1">
-                  HP & Laptop Terhubung
-                </span>
-              </div>
-            </div>
-          </div>
-
-          {/* Quick Sync Action Buttons */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             <button
               onClick={handlePushToCloud}
-              disabled={isSyncingToCloud || isPullingCloud}
-              className="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-xs disabled:opacity-50"
+              disabled={isSyncingToCloud}
+              className="memphis-btn memphis-btn-primary py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-50"
             >
-              <Send className={`w-3.5 h-3.5 ${isSyncingToCloud ? 'animate-bounce' : ''}`} />
-              <span>{isSyncingToCloud ? 'Mengunggah ke Cloud...' : 'Kirim Data ke Cloud'}</span>
+              <RefreshCw className={`w-4 h-4 ${isSyncingToCloud ? 'animate-spin' : ''}`} />
+              {isSyncingToCloud ? 'Mengunggah Data...' : 'Unggah Data ke Cloud'}
             </button>
 
             <button
               onClick={handlePullFromCloud}
-              disabled={isSyncingToCloud || isPullingCloud}
-              className="py-2.5 px-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              disabled={isPullingCloud}
+              className="memphis-btn memphis-btn-cyan py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-50"
             >
-              <RefreshCw className={`w-3.5 h-3.5 ${isPullingCloud ? 'animate-spin' : ''}`} />
-              <span>{isPullingCloud ? 'Menarik Data...' : 'Tarik Data dari Cloud'}</span>
+              <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
+              {isPullingCloud ? 'Menyinkronkan...' : 'Tarik Data dari Cloud'}
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Multi-Device Explainer Card */}
-          <div className="p-3 bg-white/80 dark:bg-gray-800/80 rounded-2xl border border-emerald-100 dark:border-emerald-900/40 text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-            <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5 mb-1">
-              <Laptop className="w-3.5 h-3.5 text-emerald-600" />
-              Cara Menggunakan di Perangkat Lain:
-            </p>
-            Di laptop atau HP lain, buka website ini dan masukkan nama yang sama persis: <strong>"{user.name}"</strong>{user.pin ? <> beserta PIN 4 digit Anda <strong>({user.pin})</strong></> : ''}. Seluruh jadwal kuliah, checklist salat sunnah & fardhu, dan tilawah Anda akan otomatis tersinkronkan!
+      {/* Audio Pack & Sound Effects Testing Rack (New Feature Requested by User) */}
+      <div className="memphis-card p-5 space-y-4">
+        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#FFE600] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+              <Volume2 className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="font-black text-sm uppercase tracking-tight">Audio Pack & Sound Effects Asli</h3>
+              <p className="text-xs font-bold text-gray-500">26 Audio Lokal dari Pack WaktuIbadah diaktifkan</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleToggleAmbient}
+              className={`memphis-btn px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5 ${
+                isAmbientOn ? 'memphis-btn-pink' : 'memphis-btn-white'
+              }`}
+            >
+              <Music className="w-3.5 h-3.5" />
+              {isAmbientOn ? 'Musik Ambient: ON' : 'Putar Musik Ambient'}
+            </button>
           </div>
         </div>
 
-        {/* Master Notifikasi Toggle */}
-        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-amber-50 dark:bg-amber-950/60 text-amber-500 rounded-xl flex items-center justify-center">
-              <Bell className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-bold text-sm text-gray-900 dark:text-white">Master Pengingat</h3>
-              <p className="text-xs text-gray-400">Aktifkan jadwal notifikasi salat & agenda</p>
-            </div>
-          </div>
-          <button 
-            onClick={handleToggleMasterReminder}
-            className={`w-12 h-6 rounded-full transition-colors relative ${user.reminderEnabled ? 'bg-emerald-600' : 'bg-gray-200 dark:bg-gray-700'}`}
+        <p className="text-xs font-semibold text-gray-600">
+          Uji langsung kualitas audio lokal yang terpasang pada tombol aplikasi, adzan, dzikir, dan pengingat:
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <button
+            onClick={() => playButtonTapSound()}
+            className="memphis-btn memphis-btn-yellow py-2 text-xs font-black uppercase"
           >
-            <div className={`w-5 h-5 bg-white rounded-full absolute top-0.5 left-0.5 transition-transform shadow-xs ${user.reminderEnabled ? 'translate-x-6' : 'translate-x-0'}`} />
+            Button Tap
+          </button>
+          <button
+            onClick={() => playToggleSound()}
+            className="memphis-btn memphis-btn-cyan py-2 text-xs font-black uppercase"
+          >
+            UI Toggle
+          </button>
+          <button
+            onClick={() => playSaveSuccessSound()}
+            className="memphis-btn memphis-btn-primary py-2 text-xs font-black uppercase"
+          >
+            Save Success
+          </button>
+          <button
+            onClick={() => playDhikrTapSound()}
+            className="memphis-btn memphis-btn-pink py-2 text-xs font-black uppercase"
+          >
+            Tasbih Dzikir
+          </button>
+          <button
+            onClick={() => playTaskStateSound('completed')}
+            className="memphis-btn memphis-btn-white py-2 text-xs font-black uppercase"
+          >
+            Tugas Selesai
+          </button>
+          <button
+            onClick={() => playTaskStateSound('urgent')}
+            className="memphis-btn memphis-btn-orange py-2 text-xs font-black uppercase"
+          >
+            Deadline Urgent
+          </button>
+          <button
+            onClick={() => handleTestPrayerAzan('Subuh')}
+            className="memphis-btn memphis-btn-white py-2 text-xs font-black uppercase col-span-1"
+          >
+            {stopAlarmFn ? 'Stop Adzan' : 'Adzan Subuh'}
+          </button>
+          <button
+            onClick={() => handleTestPrayerAzan('Zuhur')}
+            className="memphis-btn memphis-btn-yellow py-2 text-xs font-black uppercase col-span-1"
+          >
+            {stopAlarmFn ? 'Stop Adzan' : 'Adzan Fardhu'}
           </button>
         </div>
+      </div>
 
-        {/* Reminder Details (Only shown if reminder is enabled) */}
-        {user.reminderEnabled && (
-          <div className="bg-gray-50/60 dark:bg-gray-900/40 p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 space-y-4">
-            <h4 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider">
-              Opsi Suara & Getaran HP (Haptic)
-            </h4>
-
-            {/* Mode Pengingat Selector */}
-            <div className="space-y-2">
-              <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block">
-                Tipe Sinyal Pengingat
-              </label>
-              <div className="grid grid-cols-3 gap-2">
-                {[
-                  { id: 'sound_and_vibrate', label: 'Suara & Getar', icon: Volume2 },
-                  { id: 'vibrate_only', label: 'Hanya Getar', icon: Vibrate },
-                  { id: 'sound_only', label: 'Hanya Suara', icon: Volume2 },
-                ].map(opt => {
-                  const isSelected = reminderSettings.reminderType === opt.id;
-                  return (
-                    <button
-                      key={opt.id}
-                      type="button"
-                      onClick={() => updateReminderSetting('reminderType', opt.id as any)}
-                      className={`p-2.5 rounded-xl border text-center transition-all flex flex-col items-center gap-1 ${
-                        isSelected
-                          ? 'border-emerald-600 bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 shadow-xs ring-1 ring-emerald-500'
-                          : 'border-gray-200 dark:border-gray-700 bg-white/60 dark:bg-gray-800/60 text-gray-500'
-                      }`}
-                    >
-                      <opt.icon className="w-4 h-4" />
-                      <span className="text-[11px] font-bold">{opt.label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Alarm Tone Type Selector */}
-            {reminderSettings.reminderType !== 'vibrate_only' && (
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-700 dark:text-gray-300 block">
-                  Pilihan Nada Alarm
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  {[
-                    { id: 'azan_makkah', label: 'Azan Makkah' },
-                    { id: 'chime_peaceful', label: 'Chime Damai' },
-                    { id: 'beep_classic', label: 'Beep Klasik' },
-                  ].map(tone => {
-                    const isSelected = reminderSettings.alarmTone === tone.id;
-                    return (
-                      <button
-                        key={tone.id}
-                        type="button"
-                        onClick={() => updateReminderSetting('alarmTone', tone.id as any)}
-                        className={`p-2 rounded-xl border text-xs font-semibold transition-all ${
-                          isSelected
-                            ? 'border-emerald-600 bg-white dark:bg-gray-800 text-emerald-700 dark:text-emerald-300 shadow-xs'
-                            : 'border-gray-200 dark:border-gray-700 text-gray-500'
-                        }`}
-                      >
-                        {tone.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            )}
-
-            {/* Specific Reminders: Imsak & Puasa Sunnah */}
-            <div className="space-y-2 pt-2 border-t border-gray-200/60 dark:border-gray-700">
-              <div className="flex items-center justify-between py-1">
-                <div>
-                  <h5 className="text-xs font-bold text-gray-800 dark:text-gray-200">Pengingat Waktu Imsak & Sahur</h5>
-                  <p className="text-[11px] text-gray-400">Peringatan sebelum fajar tiba</p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={reminderSettings.reminderImsak !== false}
-                  onChange={(e) => updateReminderSetting('reminderImsak', e.target.checked)}
-                  className="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
-                />
-              </div>
-
-              <div className="flex items-center justify-between py-1">
-                <div>
-                  <h5 className="text-xs font-bold text-gray-800 dark:text-gray-200">Pengingat Puasa Sunnah</h5>
-                  <p className="text-[11px] text-gray-400">Notifikasi malam sebelum Senin, Kamis & Ayyamul Bidh</p>
-                </div>
-                <input 
-                  type="checkbox" 
-                  checked={reminderSettings.reminderPuasa !== false}
-                  onChange={(e) => updateReminderSetting('reminderPuasa', e.target.checked)}
-                  className="w-4 h-4 rounded text-emerald-600 accent-emerald-600 cursor-pointer"
-                />
-              </div>
-            </div>
-
-            {/* Test Alarm & Real Azan Audio Buttons */}
-            <div className="pt-2 space-y-2">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button 
-                  onClick={() => handleTestPrayerAzan('Subuh')}
-                  className="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-xs"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>{stopAlarmFn ? 'Hentikan Audio' : 'Uji Azan Subuh (Lokal)'}</span>
-                </button>
-
-                <button 
-                  onClick={() => handleTestPrayerAzan('Zuhur')}
-                  className="w-full py-2.5 px-3 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-2 shadow-xs"
-                >
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  <span>{stopAlarmFn ? 'Hentikan Audio' : 'Uji Azan Fardhu (Lokal)'}</span>
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <button 
-                  onClick={handleTestAlarm}
-                  className="w-full py-2 bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-200 rounded-xl text-xs font-bold hover:bg-emerald-200 dark:hover:bg-emerald-900 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Vibrate className="w-3.5 h-3.5" />
-                  <span>{stopAlarmFn ? 'Hentikan Uji Alarm' : 'Uji Getaran & Nada HP'}</span>
-                </button>
-
-                <button 
-                  onClick={async () => {
-                    await requestNotificationPermission();
-                    showPWANotification('Uji Notifikasi PWA Latar Belakang', {
-                      body: 'Notifikasi Service Worker WaktuIbadah aktif & siap memicu adzan saat layar mati/terkunci.',
-                      tag: 'test-pwa-notification'
-                    });
-                  }}
-                  className="w-full py-2 bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200 rounded-xl text-xs font-bold hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
-                >
-                  <Bell className="w-3.5 h-3.5" />
-                  <span>Uji Notifikasi PWA Latar</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Format Waktu */}
-        <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950 text-blue-500 rounded-xl flex items-center justify-center">
-              <Clock className="w-5 h-5" />
+      {/* PWA & Background Notifications Setup */}
+      <div className="memphis-card p-5 space-y-4">
+        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#FF4B91] text-white border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+              <Bell className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-gray-900 dark:text-white">Format Tampilan Waktu</h3>
-              <p className="text-xs text-gray-400">Format jam 12 Jam (AM/PM) atau 24 Jam</p>
+              <h3 className="font-black text-sm uppercase tracking-tight">Notifikasi PWA Latar Belakang</h3>
+              <p className="text-xs font-bold text-gray-500">Service Worker & Push Alerts saat Chrome/browser ditutup</p>
             </div>
           </div>
-          <select 
-            value={user.timeFormat || '24h'}
-            onChange={(e) => {
-              const updated = { ...user, timeFormat: e.target.value as '12h' | '24h' };
-              storage.setUser(updated);
-              setUser(updated);
-            }}
-            className="p-1.5 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold text-gray-700 dark:text-gray-200 outline-none focus:border-emerald-500"
-          >
-            <option value="24h">24 Jam (14:30)</option>
-            <option value="12h">12 Jam (02:30 PM)</option>
-          </select>
+
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={user.reminderEnabled}
+              onChange={handleToggleMasterReminder}
+              className="sr-only peer"
+            />
+            <div className="w-12 h-6 bg-gray-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-black after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-2 after:border-black after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#10B981] border-2 border-black"></div>
+          </label>
         </div>
 
-        {/* Reset / Hapus Data */}
-        <button 
-          onClick={handleClearData}
-          className="w-full p-4 sm:p-5 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between hover:bg-red-50 dark:hover:bg-red-950/20 transition-colors text-left group"
-        >
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 bg-red-50 dark:bg-red-950 text-red-500 rounded-xl flex items-center justify-center group-hover:bg-red-100 transition-colors">
-              <Trash2 className="w-5 h-5" />
+        <p className="text-xs font-semibold text-gray-600">
+          Notifikasi Service Worker WaktuIbadah menggunakan Web Notifications API resmi dengan aksi langsung buka aplikasi dan getaran taktil HP.
+        </p>
+
+        {/* Test Background Notification Button */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <button
+            onClick={async () => {
+              playButtonTapSound();
+              const perm = await requestNotificationPermission();
+              if (perm === 'granted') {
+                showPWANotification('🕌 Waktu Salat Tiba (Uji PWA)', {
+                  body: 'Pengingat latar belakang aktif! Suara adzan dan countdown jadwal siap berbunyi.',
+                  tag: 'test-pwa-alert',
+                  vibrate: [500, 200, 500]
+                });
+                setSyncMessage({
+                  text: 'Notifikasi uji PWA dikirim ke perangkat Anda! Periksa bilah status notifikasi HP/laptop.',
+                  type: 'success'
+                });
+              } else {
+                setSyncMessage({
+                  text: 'Izin notifikasi belum diberikan di browser. Mohon izinkan notifikasi pada pop-up browser.',
+                  type: 'error'
+                });
+              }
+            }}
+            className="memphis-btn memphis-btn-yellow py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
+          >
+            <Bell className="w-4 h-4 stroke-[2.5]" />
+            Kirim Uji Notifikasi Latar (PWA)
+          </button>
+
+          <button
+            onClick={handleTestAlarm}
+            className="memphis-btn memphis-btn-cyan py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
+          >
+            <Vibrate className="w-4 h-4 stroke-[2.5]" />
+            {stopAlarmFn ? 'Hentikan Alarm HP' : 'Uji Pola Getar & Nada HP'}
+          </button>
+        </div>
+      </div>
+
+      {/* Version & Admin Dashboard Link */}
+      <div className="memphis-card-yellow p-5 space-y-4">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-black text-[#FFE600] rounded-xl flex items-center justify-center font-black">
+              <Info className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="font-bold text-sm text-red-600">Hapus Data & Riwayat Lokal</h3>
-              <p className="text-xs text-red-400">Reset seluruh progress, jadwal, dan tilawah</p>
+              <h3 className="font-black text-sm uppercase tracking-tight text-[#121212]">
+                Versi Aplikasi: v{CURRENT_VERSION}
+              </h3>
+              <p className="text-xs font-bold text-[#121212]/80">
+                WaktuIbadah Memphis Release • Update Berkala Otomatis
+              </p>
             </div>
           </div>
-          <ChevronRight className="w-4 h-4 text-red-300" />
-        </button>
 
-        {/* Info Versi Aplikasi Terupdate v2.0.0 */}
-        <div className="p-4 sm:p-5 bg-gray-50/70 dark:bg-gray-900/60">
-          <div className="flex items-center justify-between mb-3">
-            <div className="flex items-center gap-3.5">
-              <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 rounded-xl flex items-center justify-center font-bold text-xs">
-                <Info className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="font-bold text-sm text-gray-900 dark:text-white">Versi Aplikasi</h3>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  WaktuIbadah v{CURRENT_VERSION}
-                  <span className="text-[10px] ml-2 text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-950 px-2 py-0.5 rounded-full font-bold">
-                    Terbaru
-                  </span>
-                </p>
-              </div>
-            </div>
-
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowPatchNotesModal(true)}
+              className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider"
+            >
+              Lihat Patch Notes
+            </button>
             <button
               onClick={() => navigate('/admin')}
-              className="text-xs font-bold px-3 py-1.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition-colors shadow-2xs"
+              className="memphis-btn bg-black text-white hover:bg-black/90 px-3 py-1.5 text-xs font-black uppercase tracking-wider"
             >
               Admin Dashboard
             </button>
           </div>
+        </div>
+      </div>
 
-          {/* Changelog Card for Version 2.0.0 */}
-          <div className="p-3.5 bg-white dark:bg-gray-800 rounded-2xl border border-gray-200 dark:border-gray-700 text-xs space-y-2 text-gray-600 dark:text-gray-300">
-            <p className="font-bold text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5" />
-              Catatan Pembaruan v{CURRENT_VERSION} (Rilis Utama Multi-Device):
-            </p>
-            <ul className="list-disc list-inside space-y-1.5 text-[11px] text-gray-500 dark:text-gray-400 pl-1">
-              <li><strong>Sinkronisasi Multi-Device Otomatis Berbasis Nama</strong>: Anda dapat membuka database dan seluruh data ibadah serta jadwal yang sama persis di HP maupun Laptop cukup dengan menggunakan nama yang sama tanpa perlu login email/password yang rumit.</li>
-              <li><strong>PIN Keamanan 4 Digit Opsional</strong>: Mencegah bentrok data jika ada mahasiswa lain yang kebetulan memiliki nama yang persis sama di perangkat berbeda.</li>
-              <li><strong>Sinkronisasi Seluruh Data Aplikasi (All Data Sync)</strong>: Seluruh jadwal kuliah & agenda, tugas & countdown deadline, riwayat salat 5 waktu & salat sunnah (Dhuha, Tahajud, Witir), tilawah Qur'an, dan target khatam tersinkronkan penuh ke Firestore cloud.</li>
-              <li><strong>Database Ulasan Terpusat untuk Admin</strong>: Penilaian bintang dan ulasan kini otomatis masuk ke database Firestore sehingga admin dapat memantau respons dari berbagai mahasiswa dengan nama berbeda di dashboard secara real-time.</li>
-            </ul>
+      {/* Danger Zone: Reset Data */}
+      <div className="memphis-card p-5 border-rose-500 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-rose-100 text-rose-700 border-2 border-black rounded-xl flex items-center justify-center font-black">
+            <Trash2 className="w-5 h-5 stroke-[2.5]" />
           </div>
-
-          {/* Saran Pembaruan & Fitur Bermanfaat Berikutnya */}
-          <div className="mt-3 p-3 bg-emerald-50/60 dark:bg-emerald-950/40 rounded-2xl border border-emerald-100 dark:border-emerald-800 text-xs space-y-1.5">
-            <p className="font-bold text-emerald-900 dark:text-emerald-200 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              Saran Update Bermanfaat & Temuan Pengembangan Berikutnya:
-            </p>
-            <ul className="space-y-1 text-[11px] text-emerald-800/80 dark:text-emerald-300/80">
-              <li>• <strong>Offline Sync Queue (Background Auto-Retry)</strong>: Penyimpanan antrian offline yang otomatis mengirimkan perubahan ke Firestore begitu perangkat kembali terhubung internet.</li>
-              <li>• <strong>Indikator Banner Konflik Jadwal vs Waktu Azan Cloud-Aware</strong>: Jika ada perubahan jadwal kuliah mendadak di laptop, alarm azan di HP otomatis menyesuaikan tanpa perlu membuka aplikasi ulang.</li>
-              <li>• <strong>Ekspor Rekap Evaluasi & Laporan Ibadah PDF Siap Cetak</strong>: Pembuatan dokumen rekapitulasi penilaian dan capaian ibadah mahasiswa dalam format PDF resmi untuk tugas proyek PAI.</li>
-            </ul>
+          <div>
+            <h3 className="font-black text-sm uppercase tracking-tight text-rose-700">Zona Hati-Hati</h3>
+            <p className="text-xs font-bold text-gray-500">Bersihkan cache lokal pada peramban ini</p>
           </div>
         </div>
 
+        <button
+          onClick={handleClearData}
+          className="memphis-btn bg-rose-600 text-white hover:bg-rose-700 py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
+        >
+          <Trash2 className="w-4 h-4 stroke-[2.5]" />
+          Reset & Hapus Seluruh Data Lokal
+        </button>
       </div>
-      
+
       {/* ==================== MODAL ATUR / UBAH PIN ==================== */}
       {showPinModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-emerald-100 dark:border-emerald-900 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
-                <KeyRound className="w-5 h-5" />
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="memphis-card bg-white w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#FFE600] border-2 border-[#121212] flex items-center justify-center font-black">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm uppercase tracking-tight">
+                    {user.pin ? 'Ubah PIN Keamanan' : 'Atur PIN 4 Digit'}
+                  </h3>
+                  <p className="text-[11px] font-bold text-gray-500">Proteksi akun dari nama sama</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-base text-gray-900 dark:text-white">
-                  {user.pin ? 'Ubah PIN Keamanan' : 'Atur PIN 4 Digit'}
-                </h3>
-                <p className="text-xs text-gray-400">Proteksi akun dari nama mahasiswa yang sama</p>
-              </div>
+              <button 
+                onClick={() => setShowPinModal(false)}
+                className="w-8 h-8 rounded-lg border-2 border-[#121212] flex items-center justify-center font-black hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <form onSubmit={handleSavePin} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                <label className="block text-xs font-black uppercase tracking-wider mb-1">
                   PIN 4 Digit (Angka)
                 </label>
                 <input
@@ -652,31 +599,28 @@ export default function Settings() {
                     setPinInput(e.target.value.replace(/\D/g, '').slice(0, 4));
                     setPinError('');
                   }}
-                  placeholder="Misal: 1234 (atau kosongkan untuk nonaktif)"
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-center text-lg font-bold tracking-widest text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  placeholder="Misal: 1234 (kosongkan = nonaktif)"
+                  className="memphis-input w-full px-4 py-3 text-center text-xl font-black tracking-widest"
                 />
-                <p className="text-[11px] text-gray-400 mt-1 text-center">
-                  Kosongkan jika ingin menonaktifkan proteksi PIN.
-                </p>
               </div>
 
               {pinError && (
-                <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300">
+                <div className="p-2.5 bg-[#FF4B91] text-white border-2 border-[#121212] rounded-xl text-xs font-bold">
                   {pinError}
                 </div>
               )}
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 pt-1">
                 <button
                   type="button"
                   onClick={() => setShowPinModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-bold hover:bg-gray-200 transition-colors"
+                  className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs uppercase"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs"
+                  className="memphis-btn memphis-btn-primary flex-1 py-2.5 text-xs uppercase"
                 >
                   Simpan PIN
                 </button>
@@ -686,25 +630,31 @@ export default function Settings() {
         </div>
       )}
 
-      {/* ==================== MODAL GANTI / SAMBUNGKAN AKUN ==================== */}
+      {/* ==================== MODAL SAMBUNGKAN AKUN ==================== */}
       {showSwitchModal && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl p-6 shadow-2xl border border-emerald-100 dark:border-emerald-900 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold">
-                <ArrowRightLeft className="w-5 h-5" />
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="memphis-card bg-white w-full max-w-sm p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#00F0FF] border-2 border-[#121212] flex items-center justify-center font-black">
+                  <ArrowRightLeft className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-black text-sm uppercase tracking-tight">Sambungkan Akun</h3>
+                  <p className="text-[11px] font-bold text-gray-500">Buka database nama lain</p>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-base text-gray-900 dark:text-white">
-                  Sambungkan Akun Mahasiswa
-                </h3>
-                <p className="text-xs text-gray-400">Buka database akun dari perangkat lain</p>
-              </div>
+              <button 
+                onClick={() => setShowSwitchModal(false)}
+                className="w-8 h-8 rounded-lg border-2 border-[#121212] flex items-center justify-center font-black hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
 
             <form onSubmit={handleSwitchAccount} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
+                <label className="block text-xs font-black uppercase tracking-wider mb-1">
                   Nama Mahasiswa
                 </label>
                 <input
@@ -717,13 +667,13 @@ export default function Settings() {
                     setSwitchError('');
                   }}
                   placeholder="Contoh: Budi Santoso"
-                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  className="memphis-input w-full px-3.5 py-2.5 text-xs font-bold"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
-                  PIN 4 Digit (Jika Diproteksi)
+                <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                  PIN 4 Digit (Jika Ada)
                 </label>
                 <input
                   type="password"
@@ -736,12 +686,12 @@ export default function Settings() {
                     setSwitchError('');
                   }}
                   placeholder="Misal: 1234"
-                  className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs font-semibold tracking-widest text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
+                  className="memphis-input w-full px-3.5 py-2.5 text-xs font-bold tracking-widest"
                 />
               </div>
 
               {switchError && (
-                <div className="p-2.5 bg-rose-50 dark:bg-rose-950/40 rounded-xl border border-rose-200 dark:border-rose-900 text-xs text-rose-700 dark:text-rose-300">
+                <div className="p-2.5 bg-[#FF4B91] text-white border-2 border-[#121212] rounded-xl text-xs font-bold">
                   {switchError}
                 </div>
               )}
@@ -750,14 +700,14 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={() => setShowSwitchModal(false)}
-                  className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-bold hover:bg-gray-200 transition-colors"
+                  className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs uppercase"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSwitching}
-                  className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition-colors shadow-xs disabled:opacity-50"
+                  className="memphis-btn memphis-btn-primary flex-1 py-2.5 text-xs uppercase disabled:opacity-50"
                 >
                   {isSwitching ? 'Menyambungkan...' : 'Buka Akun'}
                 </button>
@@ -766,10 +716,90 @@ export default function Settings() {
           </div>
         </div>
       )}
-      
+
+      {/* ==================== MODAL PATCH NOTES / CHANGELOG ==================== */}
+      {showPatchNotesModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="memphis-card bg-white w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-[#FFE600] border-2 border-[#121212] rounded-xl flex items-center justify-center font-black">
+                  <Sparkles className="w-5 h-5 text-[#121212]" />
+                </div>
+                <div>
+                  <h3 className="font-black text-base uppercase tracking-tight">
+                    Catatan Rilis v{APP_PATCH_NOTES[0].version}
+                  </h3>
+                  <p className="text-xs font-bold text-gray-500">{APP_PATCH_NOTES[0].releaseDate}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowPatchNotesModal(false)}
+                className="w-8 h-8 rounded-lg border-2 border-[#121212] flex items-center justify-center font-black hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Highlights */}
+            <div className="space-y-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+                <CheckSquare className="w-4 h-4 text-[#10B981]" /> Sorotan Pembaruan:
+              </h4>
+              <ul className="space-y-1.5 text-xs font-semibold text-gray-700 pl-2">
+                {APP_PATCH_NOTES[0].highlights.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-black mt-1.5 shrink-0"></span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Audio Pack Details */}
+            <div className="p-3.5 bg-[#00F0FF]/20 border-2 border-[#121212] rounded-xl space-y-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+                <Volume2 className="w-4 h-4" /> Integrasi Audio Pack Lokal:
+              </h4>
+              <ul className="space-y-1 text-xs font-semibold text-gray-800 pl-2">
+                {APP_PATCH_NOTES[0].soundPackUpdates.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-[#FF4B91] font-black">✓</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            {/* Suggestions & Recommendations for Next Update */}
+            <div className="p-3.5 bg-[#FFE600]/30 border-2 border-[#121212] rounded-xl space-y-2">
+              <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+                <Sparkles className="w-4 h-4 text-[#FF6B35]" /> Saran Pembaruan & Temuan Berguna Berikutnya:
+              </h4>
+              <ul className="space-y-1 text-xs font-semibold text-gray-800 pl-2">
+                {APP_PATCH_NOTES[0].recommendations.map((item, idx) => (
+                  <li key={idx} className="flex items-start gap-2">
+                    <span className="text-black font-black">★</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <button
+              onClick={() => setShowPatchNotesModal(false)}
+              className="memphis-btn memphis-btn-primary w-full py-2.5 text-xs font-black uppercase tracking-wider"
+            >
+              Tutup Catatan
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Footer */}
       <div className="text-center pt-2">
-        <p className="text-[11px] text-gray-400">
-          WaktuIbadah • Aplikasi Asisten Ibadah & Manajemen Waktu Mahasiswa Muslim
+        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+          WaktuIbadah v{CURRENT_VERSION} • Memphis Edition • PWA Offline Ready
         </p>
       </div>
 

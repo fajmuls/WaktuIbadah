@@ -239,3 +239,44 @@ export interface WebsiteReview {
   date: string; // YYYY-MM-DD
 }
 
+export interface PatchNoteItem {
+  version: string;
+  releaseDate: string;
+  title: string;
+  highlights: string[];
+  soundPackUpdates: string[];
+  uiOverhaul: string[];
+  recommendations: string[];
+}
+
+export const APP_PATCH_NOTES: PatchNoteItem[] = [
+  {
+    version: '2.0.0',
+    releaseDate: '31 Oktober 2026',
+    title: 'Pembaruan Akbar: Memphis Design System & Local Audio Pack',
+    highlights: [
+      'Desain UI Memphis Classic: Garis tepi hitam tegas (bold solid borders), offset shadow retro, dan palet warna berdaya kontras tinggi.',
+      'Audio Pack Lokal Penuh: 26 efek suara asli diintegrasikan langsung untuk sentuhan tombol, tasbih dzikir, tilawah Qur\'an, adzan, dan perubahan status tugas/jadwal.',
+      'PWA Background Notifications: Pengingat salat dan deadline tugas tetap andal muncul via Web Notifications API & Service Worker.',
+      'Sinkronisasi Multi-Device Tanpa Login Rumit: Database terhubung otomatis via Nama Mahasiswa dengan opsional PIN 4-digit proteksi.',
+      'Ulasan & Evaluasi Terpusat: Review 5-bintang tersinkron otomatis ke Firestore cloud dan dapat dipantau oleh Admin.'
+    ],
+    soundPackUpdates: [
+      'UI Tap, Toggle, dan Tab Switch dengan latensi nol dari audio lokal',
+      'Efek suara khusus adzan per waktu salat (Subuh, Zuhur, Asar, Magrib, Isya, Imsak)',
+      'Haptic feedback getar smartphone presisi mendampingi setiap sentuhan',
+      'Musik relaksasi ambient instrumental 90s loop untuk sesi fokus dan tilawah'
+    ],
+    uiOverhaul: [
+      'Memphis Card, Memphis Button, dan Memphis Input di seluruh halaman aplikasi',
+      'Efek tombol taktil dengan perpindahan koordinat 2px saat ditekan',
+      'Badge status retro geometri dan indikator cloud sync memphis-badge'
+    ],
+    recommendations: [
+      'Saran #1: Tambahkan Offline Sync Queue dengan background auto-retry saat koneksi internet pulih',
+      'Saran #2: Banner dynamic alert jika ada perubahan jadwal kuliah mendadak dari perangkat lain',
+      'Saran #3: Fitur cetak rekap ibadah & evaluasi PDF resmi untuk tugas proyek PAI'
+    ]
+  }
+];
+

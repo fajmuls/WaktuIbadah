@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { storage } from '../lib/storage';
+import { storage, CURRENT_VERSION } from '../lib/storage';
 import { User, Task, Schedule, PrayerName } from '../types';
 import { format, differenceInMinutes, parse } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -229,16 +229,22 @@ export default function Dashboard() {
       {/* Admin Review Banner (Google Form Evaluation) */}
       <AdminReviewBanner />
 
-      {/* Header section */}
-      <header className="flex justify-between items-start mb-2">
+      {/* Memphis Header Section */}
+      <header className="p-4 bg-white border-[2.5px] border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex justify-between items-center flex-wrap gap-2 mb-2">
         <div>
-          <h1 className="text-xl font-bold text-text-main">
-            Assalamu'alaikum, {user?.name?.split(' ')[0]}!
-          </h1>
-          <p className="text-text-muted mt-1 font-medium text-xs flex items-center gap-2">
-            {format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl font-black uppercase tracking-tight text-[#121212]">
+              Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Mahasiswa'}! 👋
+            </h1>
+            <span className="memphis-badge bg-[#FFE600] text-[#121212]">
+              v{CURRENT_VERSION}
+            </span>
+          </div>
+          <p className="text-[#121212]/80 mt-1 font-bold text-xs flex items-center gap-2 flex-wrap">
+            <span>{format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}</span>
+            <span>•</span>
             {prayerData && (
-              <span className="text-primary bg-primary/10 px-2 py-0.5 rounded-md text-[10px] font-bold">
+              <span className="bg-[#00F0FF] text-black px-2 py-0.5 rounded border border-black text-[10px] font-black uppercase">
                 {prayerData.hijri.day} {prayerData.hijri.month} {prayerData.hijri.year.replace(/\s*H\s*$/i, '')} H
               </span>
             )}
@@ -247,19 +253,23 @@ export default function Dashboard() {
         <div className="flex items-center gap-2">
           <Link
             to="/admin"
-            className="text-[11px] font-bold px-2.5 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 rounded-xl hover:bg-gray-200 transition-colors"
+            className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] uppercase font-black"
             title="Akses Admin Dashboard"
           >
             Admin
           </Link>
-          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold shadow-sm">
-            {user?.name?.charAt(0).toUpperCase()}
-          </div>
+          <Link
+            to="/settings"
+            className="w-10 h-10 bg-[#FFE600] border-2 border-black rounded-xl flex items-center justify-center text-black font-black shadow-[2px_2px_0px_#121212]"
+            title="Buka Pengaturan"
+          >
+            {user?.name?.charAt(0).toUpperCase() || 'M'}
+          </Link>
         </div>
       </header>
 
       {/* PRAYER FOCUS HERO SECTION WITH GRAND MOSQUE VECTOR BACKGROUND */}
-      <section className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-3xl p-5 sm:p-6 shadow-xl shadow-emerald-900/25 relative overflow-hidden border border-emerald-700/60">
+      <section className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-3xl p-5 sm:p-6 shadow-[5px_5px_0px_#121212] relative overflow-hidden border-[3px] border-[#121212]">
         
         {/* GRAND MOSQUE SILHOUETTE VECTOR ART BACKGROUND */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
@@ -437,14 +447,14 @@ export default function Dashboard() {
       })()}
 
       {/* Daily Quran Tilawah Summary */}
-      <section className="bg-white dark:bg-gray-800 rounded-2xl p-4 border border-gray-100 dark:border-gray-700 shadow-xs flex items-center justify-between">
+      <section className="memphis-card p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-950 text-emerald-600 dark:text-emerald-400 flex items-center justify-center">
-            <BookOpen className="w-5 h-5" />
+          <div className="w-10 h-10 rounded-xl bg-[#FFE600] border-2 border-black flex items-center justify-center font-black">
+            <BookOpen className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Tilawah Qur'an Hari Ini</div>
-            <div className="text-sm font-bold text-gray-900 dark:text-white mt-0.5">
+            <div className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Tilawah Qur'an Hari Ini</div>
+            <div className="text-xs sm:text-sm font-black text-[#121212] mt-0.5">
               {todayQuranLogs.length > 0 
                 ? `${todayQuranLogs.length} Sesi Dibaca (${todayQuranLogs.reduce((acc, l) => acc + (l.endAyah - l.startAyah + 1), 0)} Ayat)` 
                 : 'Belum ada catatan membaca hari ini'}
@@ -453,26 +463,26 @@ export default function Dashboard() {
         </div>
         <Link 
           to="/quran" 
-          className="flex items-center gap-1 text-xs font-semibold text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 px-3 py-2 rounded-xl transition-colors"
+          className="memphis-btn memphis-btn-yellow px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1"
         >
           <span>{todayQuranLogs.length > 0 ? 'Lanjut' : 'Mulai'}</span>
-          <ChevronRight className="w-3.5 h-3.5" />
+          <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
         </Link>
       </section>
 
-      {/* HADITS PILIHAN HARI INI (DIPISAHKAN DI BAWAH QURAN) */}
+      {/* HADITS PILIHAN HARI INI */}
       {dailyHadith && (
-        <section className="bg-white dark:bg-gray-800 rounded-3xl p-4 sm:p-5 border border-emerald-100 dark:border-emerald-900/50 shadow-xs space-y-2.5">
-          <div className="flex items-center justify-between border-b border-gray-100 dark:border-gray-700/80 pb-2.5">
+        <section className="memphis-card p-4 sm:p-5 space-y-2.5">
+          <div className="flex items-center justify-between border-b-2 border-black pb-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 flex items-center justify-center font-bold text-xs">
-                <Quote className="w-4 h-4" />
+              <div className="w-8 h-8 rounded-xl bg-[#00F0FF] border-2 border-black flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_#121212]">
+                <Quote className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider block">
+                <span className="text-[10px] font-black text-[#FF4B91] uppercase tracking-wider block">
                   Hadits Pilihan Hari Ini (API MyQuran)
                 </span>
-                <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
+                <h4 className="text-xs sm:text-sm font-black text-[#121212]">
                   Hadits #{dailyHadith.no}: {dailyHadith.judul}
                 </h4>
               </div>
@@ -480,48 +490,50 @@ export default function Dashboard() {
 
             <Link
               to="/hadis"
-              className="text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1"
+              className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-black uppercase tracking-wider gap-1"
             >
-              <span>Semua Hadis</span>
-              <ChevronRight className="w-3.5 h-3.5" />
+              <span>Semua</span>
+              <ChevronRight className="w-3 h-3 stroke-[3]" />
             </Link>
           </div>
 
-          <div className="text-right font-serif text-lg leading-loose text-gray-900 dark:text-gray-100 my-1" dir="rtl">
+          <div className="text-right font-serif text-lg leading-loose text-[#121212] my-1" dir="rtl">
             {dailyHadith.arab}
           </div>
 
-          <p className="text-xs text-gray-700 dark:text-gray-300 italic bg-emerald-50/50 dark:bg-emerald-950/30 p-3 rounded-2xl border border-emerald-100/80 dark:border-emerald-900/40 leading-relaxed">
+          <p className="text-xs text-gray-800 italic bg-[#FFFDF8] p-3 rounded-xl border-2 border-black font-semibold leading-relaxed">
             "{dailyHadith.indo}"
           </p>
         </section>
       )}
 
       {/* Daily Wisdom */}
-      <section className="bg-gradient-to-r from-amber-50 to-orange-50 rounded-2xl p-4 border border-amber-100 flex gap-3 items-start">
-        <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center shrink-0 shadow-sm text-sm">
+      <section className="memphis-card-yellow p-4 flex gap-3 items-start">
+        <div className="w-8 h-8 bg-black text-[#FFE600] rounded-xl border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#121212] text-sm font-black">
           💡
         </div>
         <div>
-          <h3 className="text-xs font-bold text-secondary mb-1">Daily Wisdom</h3>
-          <p className="text-text-main italic text-xs leading-relaxed mb-1.5">"{wisdomOfTheDay.text}"</p>
-          <p className="text-[10px] text-text-muted font-medium">— {wisdomOfTheDay.source}</p>
+          <h3 className="text-xs font-black uppercase tracking-wider text-black mb-1">Daily Wisdom</h3>
+          <p className="text-[#121212] font-bold italic text-xs leading-relaxed mb-1">"{wisdomOfTheDay.text}"</p>
+          <p className="text-[10px] text-[#121212]/80 font-black uppercase tracking-wider">— {wisdomOfTheDay.source}</p>
         </div>
       </section>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Aktivitas Terdekat */}
-        <section className="bg-surface rounded-3xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Calendar className="w-5 h-5 text-secondary" />
+        <section className="memphis-card p-5 space-y-3">
+          <div className="flex justify-between items-center border-b-2 border-black pb-2">
+            <h3 className="font-black text-sm uppercase tracking-tight flex items-center gap-2">
+              <Calendar className="w-4 h-4 stroke-[2.5]" />
               Jadwal Hari Ini
             </h3>
-            <Link to="/jadwal" className="text-sm text-primary font-medium hover:underline">Semua</Link>
+            <Link to="/jadwal" className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black">
+              Semua
+            </Link>
           </div>
           
           {schedules.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {schedules.map(schedule => {
                 const conflicts = prayerData?.times 
                   ? checkSchedulePrayerConflicts(schedule, prayerData.times)
@@ -529,21 +541,21 @@ export default function Dashboard() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <div key={schedule.id} className="flex gap-3.5 items-start p-3 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800/60 transition-colors border border-transparent hover:border-gray-100 dark:hover:border-gray-700/60">
-                    <div className="text-center min-w-[54px] pt-0.5">
-                      <div className="text-sm font-bold text-text-main">{schedule.startTime}</div>
-                      <div className="text-[10px] text-text-muted">{schedule.endTime}</div>
+                  <div key={schedule.id} className="flex gap-3 items-center p-2.5 rounded-xl border-2 border-black bg-[#FFFDF8] shadow-[2px_2px_0px_#121212]">
+                    <div className="text-center min-w-[50px]">
+                      <div className="text-xs font-black text-black">{schedule.startTime}</div>
+                      <div className="text-[9px] font-bold text-gray-500">{schedule.endTime}</div>
                     </div>
-                    <div className="w-1 bg-gray-200 dark:bg-gray-700 h-10 rounded-full shrink-0" />
+                    <div className="w-0.5 bg-black h-8 shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-text-main truncate">{schedule.title}</div>
-                      <div className="flex flex-wrap items-center gap-1.5 mt-1">
-                        <span className="text-[10px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-md">
+                      <div className="font-black text-xs truncate">{schedule.title}</div>
+                      <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                        <span className="text-[9px] font-black uppercase bg-[#00F0FF] text-black px-1.5 py-0.5 rounded border border-black">
                           {schedule.category}
                         </span>
                         {hasConflict && (
-                          <span className="text-[10px] font-bold text-amber-700 dark:text-amber-300 bg-amber-50 dark:bg-amber-950/80 px-1.5 py-0.5 rounded flex items-center gap-1">
-                            <AlertTriangle className="w-2.5 h-2.5 text-amber-600" />
+                          <span className="text-[9px] font-black uppercase bg-[#FF4B91] text-white px-1.5 py-0.5 rounded border border-black flex items-center gap-1">
+                            <AlertTriangle className="w-2.5 h-2.5" />
                             Bentrok {conflicts[0].prayerName}
                           </span>
                         )}
@@ -554,32 +566,34 @@ export default function Dashboard() {
               })}
             </div>
           ) : (
-            <div className="text-center py-4 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-              <p className="text-text-muted text-sm mb-2">Belum ada aktivitas.</p>
-              <Link to="/jadwal/baru" className="text-primary font-semibold text-sm hover:underline">+ Tambah</Link>
+            <div className="text-center py-4 px-4 bg-[#FFFDF8] rounded-xl border-2 border-dashed border-black">
+              <p className="text-gray-500 font-bold text-xs mb-1.5">Belum ada aktivitas.</p>
+              <Link to="/jadwal" className="memphis-btn memphis-btn-yellow px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
             </div>
           )}
         </section>
 
         {/* Tugas Terdekat */}
-        <section className="bg-surface rounded-3xl p-6 border border-gray-100 shadow-sm">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-red-500" />
+        <section className="memphis-card p-5 space-y-3">
+          <div className="flex justify-between items-center border-b-2 border-black pb-2">
+            <h3 className="font-black text-sm uppercase tracking-tight flex items-center gap-2">
+              <AlertCircle className="w-4 h-4 text-[#FF4B91] stroke-[2.5]" />
               Tugas Mendekat
             </h3>
-            <Link to="/tugas" className="text-sm text-primary font-medium hover:underline">Semua</Link>
+            <Link to="/tugas" className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black">
+              Semua
+            </Link>
           </div>
 
           {tasks.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {tasks.map(task => (
-                <div key={task.id} className="flex gap-3 p-3 rounded-2xl bg-gray-50 border border-gray-100">
-                  <Circle className="w-5 h-5 text-gray-300 mt-0.5 shrink-0" />
-                  <div>
-                    <div className="font-semibold text-text-main line-clamp-1">{task.title}</div>
-                    <div className="flex gap-2 items-center mt-1">
-                      <span className="text-xs text-red-600 font-medium bg-red-50 px-2 py-0.5 rounded-md">
+                <div key={task.id} className="flex gap-2.5 items-center p-2.5 rounded-xl bg-[#FFFDF8] border-2 border-black shadow-[2px_2px_0px_#121212]">
+                  <Circle className="w-4 h-4 text-gray-400 shrink-0" />
+                  <div className="min-w-0 flex-1">
+                    <div className="font-black text-xs truncate">{task.title}</div>
+                    <div className="flex gap-2 items-center mt-0.5">
+                      <span className="text-[9px] font-black uppercase bg-[#FFE600] text-black px-1.5 py-0.5 rounded border border-black">
                         {format(new Date(task.deadline), 'dd MMM', { locale: id })}
                       </span>
                     </div>
@@ -588,10 +602,10 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-             <div className="text-center py-4 px-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-             <p className="text-text-muted text-sm mb-2">Semua tugas aman.</p>
-             <Link to="/tugas/baru" className="text-primary font-semibold text-sm hover:underline">+ Tambah</Link>
-           </div>
+             <div className="text-center py-4 px-4 bg-[#FFFDF8] rounded-xl border-2 border-dashed border-black">
+               <p className="text-gray-500 font-bold text-xs mb-1.5">Semua tugas aman terkendali.</p>
+               <Link to="/tugas" className="memphis-btn memphis-btn-yellow px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
+             </div>
           )}
         </section>
       </div>

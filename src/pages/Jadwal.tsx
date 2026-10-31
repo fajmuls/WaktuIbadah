@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { getCachedPrayerData, getPrayerTimesForToday } from '../lib/prayer-times';
 import { checkSchedulePrayerConflicts, getAllScheduleConflicts } from '../lib/schedule-prayer-conflict';
 import { downloadICSFile, generateGoogleCalendarUrl } from '../lib/ical-export';
-import { vibrateSuccess } from '../lib/audio';
+import { vibrateSuccess, playScheduleEventSound, playDeleteSound, playToggleSound } from '../lib/audio';
 
 interface JadwalProps {
   isNew?: boolean;
@@ -101,6 +101,7 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
       storage.addSchedule(newSchedule);
     }
 
+    playScheduleEventSound('created');
     loadSchedules();
     setShowForm(false);
     if (isNew) navigate('/jadwal', { replace: true });
@@ -117,12 +118,14 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
   };
 
   const handleToggleComplete = (schedule: Schedule) => {
+    playToggleSound();
     storage.updateSchedule({ ...schedule, completed: !schedule.completed });
     loadSchedules();
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Hapus jadwal ini?')) {
+      playDeleteSound();
       storage.deleteSchedule(id);
       loadSchedules();
     }

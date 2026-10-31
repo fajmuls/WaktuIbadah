@@ -8,7 +8,7 @@ import {
 } from 'lucide-react';
 import { SurahItem, AyatItem, HadithArbain, FavoriteAyah, FavoriteHadith } from '../types';
 import { storage } from '../lib/storage';
-import { vibrateSuccess } from '../lib/audio';
+import { vibrateSuccess, playQuranSound } from '../lib/audio';
 import { murottalPlayer } from '../lib/murottal';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { KhatamCalculatorModal } from '../components/KhatamCalculatorModal';
@@ -150,6 +150,7 @@ export default function QuranHadis() {
 
   // Open Surah Detail with resilient multi-tier fallback
   const openSurah = async (surah: SurahItem, targetAyah?: number) => {
+    playQuranSound('open');
     setSelectedSurah(surah);
     setIsLoadingAyahs(true);
     setAyahs([]);
@@ -211,8 +212,10 @@ export default function QuranHadis() {
     const isFav = storage.isAyahFavorite(ayahId);
 
     if (isFav) {
+      playQuranSound('bookmark_removed');
       storage.removeFavoriteAyah(ayahId);
     } else {
+      playQuranSound('bookmark_saved');
       storage.addFavoriteAyah({
         id: ayahId,
         surahNumber: selectedSurah.nomor,

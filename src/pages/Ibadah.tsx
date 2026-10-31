@@ -6,7 +6,7 @@ import { id } from 'date-fns/locale';
 import { Check, Clock, Heart, BookOpen, ChevronLeft, ChevronRight, Plus, CheckCircle2, Sparkles, Sun, Moon, Star } from 'lucide-react';
 import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData, getCachedPrayerData } from '../lib/prayer-times';
 import { formatTimeString } from '../lib/utils';
-import { vibrateSuccess } from '../lib/audio';
+import { vibrateSuccess, playPrayerCompletedSound, playToggleSound } from '../lib/audio';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { Link } from 'react-router-dom';
 
@@ -43,8 +43,12 @@ export default function Ibadah() {
 
   const handleToggle = (prayer: PrayerName) => {
     const isCompleted = !log.prayers[prayer];
-    if (isCompleted && user?.soundEnabled !== false) {
-      vibrateSuccess();
+    if (user?.soundEnabled !== false) {
+      if (isCompleted) {
+        playPrayerCompletedSound();
+      } else {
+        playToggleSound();
+      }
     }
     const newLog = {
       ...log,
@@ -64,8 +68,12 @@ export default function Ibadah() {
   const handleToggleSunnah = (sunnah: SunnahPrayerName) => {
     const currentStatus = log.sunnahPrayers?.[sunnah] || false;
     const isCompleted = !currentStatus;
-    if (isCompleted && user?.soundEnabled !== false) {
-      vibrateSuccess();
+    if (user?.soundEnabled !== false) {
+      if (isCompleted) {
+        playPrayerCompletedSound();
+      } else {
+        playToggleSound();
+      }
     }
     const newSunnah = {
       ...(log.sunnahPrayers || { Dhuha: false, Tahajud: false, Witir: false }),

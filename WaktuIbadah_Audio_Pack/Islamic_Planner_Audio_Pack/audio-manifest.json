@@ -1,0 +1,180 @@
+{
+  "name": "Islamic Planner Audio Pack",
+  "version": "1.0",
+  "items": [
+    {
+      "file": "prayer_fajr.mp3",
+      "name": "Fajr / Subuh",
+      "purpose": "Pengingat salat Subuh; motif naik seperti suasana fajar.",
+      "duration": "1.75 s"
+    },
+    {
+      "file": "prayer_dhuhr.mp3",
+      "name": "Dhuhr / Zuhur",
+      "purpose": "Pengingat salat Zuhur; dua nada jernih dan terang.",
+      "duration": "1.55 s"
+    },
+    {
+      "file": "prayer_asr.mp3",
+      "name": "Asr / Asar",
+      "purpose": "Pengingat salat Asar; tiga nada hangat dengan ritme tegas.",
+      "duration": "1.65 s"
+    },
+    {
+      "file": "prayer_maghrib.mp3",
+      "name": "Maghrib",
+      "purpose": "Pengingat salat Magrib; dua nada lembut dengan nuansa senja.",
+      "duration": "1.85 s"
+    },
+    {
+      "file": "prayer_isha.mp3",
+      "name": "Isha / Isya",
+      "purpose": "Pengingat salat Isya; motif rendah yang tenang dan menurun.",
+      "duration": "1.90 s"
+    },
+    {
+      "file": "prayer_imsak.mp3",
+      "name": "Imsak",
+      "purpose": "Pengingat imsak yang lebih pelan dan lembut.",
+      "duration": "1.85 s"
+    },
+    {
+      "file": "prayer_completed.mp3",
+      "name": "Prayer completed",
+      "purpose": "Konfirmasi setelah ibadah ditandai selesai; nada hangat yang naik.",
+      "duration": "1.55 s"
+    },
+    {
+      "file": "quran_open.mp3",
+      "name": "Quran opened",
+      "purpose": "Suara halaman dibuka dengan chime kecil yang lembut.",
+      "duration": "1.25 s"
+    },
+    {
+      "file": "quran_bookmark_saved.mp3",
+      "name": "Ayah bookmarked",
+      "purpose": "Kilau kecil saat ayat ditambahkan ke favorit.",
+      "duration": "1.25 s"
+    },
+    {
+      "file": "quran_bookmark_removed.mp3",
+      "name": "Ayah unbookmarked",
+      "purpose": "Nada turun singkat saat favorit dihapus.",
+      "duration": "1.12 s"
+    },
+    {
+      "file": "quran_reading_goal_complete.mp3",
+      "name": "Quran reading goal complete",
+      "purpose": "Konfirmasi target membaca Quran tercapai; hangat dan menenangkan.",
+      "duration": "2.05 s"
+    },
+    {
+      "file": "dhikr_counter_tap.mp3",
+      "name": "Dhikr counter tap",
+      "purpose": "Klik kecil seperti sentuhan tasbih digital.",
+      "duration": "0.22 s"
+    },
+    {
+      "file": "schedule_created.mp3",
+      "name": "Schedule created",
+      "purpose": "Konfirmasi jadwal baru berhasil ditambahkan.",
+      "duration": "1.35 s"
+    },
+    {
+      "file": "schedule_reminder.mp3",
+      "name": "Schedule reminder",
+      "purpose": "Pengingat kegiatan terjadwal; jelas dan mudah dikenali.",
+      "duration": "1.45 s"
+    },
+    {
+      "file": "schedule_start.mp3",
+      "name": "Schedule starting now",
+      "purpose": "Penanda kegiatan dimulai sekarang; dua nada fokus.",
+      "duration": "1.55 s"
+    },
+    {
+      "file": "task_deadline_soon.mp3",
+      "name": "Task deadline approaching",
+      "purpose": "Peringatan deadline mendekat; bunyi tiga pulsa yang cukup menonjol.",
+      "duration": "1.55 s"
+    },
+    {
+      "file": "task_deadline_urgent.mp3",
+      "name": "Task deadline urgent",
+      "purpose": "Peringatan deadline sangat dekat; lebih tegas, berulang singkat, tidak menusuk.",
+      "duration": "1.68 s"
+    },
+    {
+      "file": "task_overdue.mp3",
+      "name": "Task overdue",
+      "purpose": "Tanda tugas telah melewati tenggat; tiga nada menurun.",
+      "duration": "1.68 s"
+    },
+    {
+      "file": "task_completed.mp3",
+      "name": "Task completed",
+      "purpose": "Konfirmasi tugas selesai; bunyi positif dan ringkas.",
+      "duration": "1.35 s"
+    },
+    {
+      "file": "focus_session_start.mp3",
+      "name": "Focus session start",
+      "purpose": "Awal sesi fokus; sapuan lembut menuju satu nada stabil.",
+      "duration": "1.55 s"
+    },
+    {
+      "file": "focus_session_end.mp3",
+      "name": "Focus session end",
+      "purpose": "Akhir sesi fokus; chime dua nada yang menenangkan.",
+      "duration": "1.75 s"
+    },
+    {
+      "file": "ui_button_tap.mp3",
+      "name": "Button tap",
+      "purpose": "Klik pendek, bersih, ringan untuk tombol umum.",
+      "duration": "0.18 s"
+    },
+    {
+      "file": "ui_toggle.mp3",
+      "name": "Toggle switch",
+      "purpose": "Klik mekanis kecil untuk switch on/off.",
+      "duration": "0.25 s"
+    },
+    {
+      "file": "ui_tab_switch.mp3",
+      "name": "Tab switch",
+      "purpose": "Whoosh sangat singkat saat berpindah tab atau halaman.",
+      "duration": "0.28 s"
+    },
+    {
+      "file": "ui_save_success.mp3",
+      "name": "Save success",
+      "purpose": "Konfirmasi data berhasil disimpan.",
+      "duration": "1.10 s"
+    },
+    {
+      "file": "ui_error.mp3",
+      "name": "Error / action failed",
+      "purpose": "Nada rendah pendek untuk aksi gagal atau validasi error.",
+      "duration": "0.62 s"
+    },
+    {
+      "file": "ui_delete.mp3",
+      "name": "Delete / remove item",
+      "purpose": "Bunyi geser dan pop rendah yang halus untuk menghapus item.",
+      "duration": "0.44 s"
+    },
+    {
+      "file": "notification_general.mp3",
+      "name": "General notification",
+      "purpose": "Notifikasi umum dua nada yang terang dan cukup terdengar.",
+      "duration": "1.35 s"
+    },
+    {
+      "file": "background_music/instrumental_ambient_islamic_90s_loop.mp3",
+      "name": "Ambient Islamic-inspired instrumental (90s)",
+      "purpose": "Background music; loop/repeat for app ambience",
+      "duration": "90 s"
+    }
+  ]
+}

@@ -3,9 +3,10 @@ import { storage } from '../lib/storage';
 import { Task } from '../types';
 import { format, isPast, isToday as isDateToday } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { Plus, X, CheckCircle2, Circle, AlertCircle, Calendar as CalendarIcon, Filter } from 'lucide-react';
+import { Plus, X, CheckCircle2, Circle, AlertCircle, Calendar as CalendarIcon, Filter, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../lib/utils';
+import { playTaskStateSound, playSaveSuccessSound, playDeleteSound, playToggleSound } from '../lib/audio';
 
 interface TugasProps {
   isNew?: boolean;
@@ -62,6 +63,7 @@ export default function Tugas({ isNew = false }: TugasProps) {
       storage.addTask(newTask);
     }
 
+    playSaveSuccessSound();
     loadTasks();
     setShowForm(false);
     if (isNew) navigate('/tugas', { replace: true });
@@ -77,12 +79,18 @@ export default function Tugas({ isNew = false }: TugasProps) {
 
   const handleToggleComplete = (task: Task) => {
     const newStatus = task.status === 'Selesai' ? 'Belum mulai' : 'Selesai';
+    if (newStatus === 'Selesai') {
+      playTaskStateSound('completed');
+    } else {
+      playToggleSound();
+    }
     storage.updateTask({ ...task, status: newStatus });
     loadTasks();
   };
 
   const handleDelete = (id: string) => {
     if (confirm('Hapus tugas ini?')) {
+      playDeleteSound();
       storage.deleteTask(id);
       loadTasks();
     }

@@ -1,51 +1,69 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Timer, BookOpen, Settings as SettingsIcon, Lightbulb, ChevronRight, Compass, Calendar, Sparkles, Lock } from 'lucide-react';
-import { storage } from '../lib/storage';
+import { storage, CURRENT_VERSION } from '../lib/storage';
 
 export default function Menu() {
   const user = storage.getUser();
 
   const menuItems = [
-    { label: "Al-Qur'an & Hadits", icon: BookOpen, path: '/quran', desc: '114 Surat & 42 Hadits Arba\'in (MyQuran)', color: 'text-emerald-500', bg: 'bg-emerald-50' },
-    { label: 'Tools & Bantuan Islami', icon: Sparkles, path: '/tools', desc: 'Doa harian, Asmaul Husna & Konversi Hijriyah', color: 'text-amber-500', bg: 'bg-amber-50' },
-    { label: 'Kalender Islami', icon: Calendar, path: '/kalender', desc: 'Kalender Hijriah & Google Sync', color: 'text-rose-500', bg: 'bg-rose-50' },
-    { label: 'Arah Kiblat', icon: Compass, path: '/qibla', desc: 'Kompas penunjuk arah Kakbah presisi', color: 'text-teal-500', bg: 'bg-teal-50' },
-    { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk produktivitas ibadah & kerja', color: 'text-blue-500', bg: 'bg-blue-50' },
-    { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi ibadah dan produktivitas hari ini', color: 'text-purple-500', bg: 'bg-purple-50' },
-    { label: 'Tips Islami', icon: Lightbulb, path: '/tips', desc: 'Motivasi dan panduan harian', color: 'text-orange-500', bg: 'bg-orange-50' },
-    { label: 'Admin Dashboard (PAI)', icon: Lock, path: '/admin', desc: 'Kelola link formulir evaluasi review (Token: fajrul22)', color: 'text-emerald-600', bg: 'bg-emerald-50' },
-    { label: 'Pengaturan', icon: SettingsIcon, path: '/settings', desc: 'Tema, audio, lokasi, dan versi aplikasi', color: 'text-gray-500', bg: 'bg-gray-50' },
+    { label: "Al-Qur'an & Hadits", icon: BookOpen, path: '/quran', desc: '114 Surat & 42 Hadits Arba\'in (MyQuran)', bg: 'bg-[#FFE600]', color: 'text-black' },
+    { label: 'Tools & Bantuan Islami', icon: Sparkles, path: '/tools', desc: 'Doa harian, Asmaul Husna & Konversi Hijriyah', bg: 'bg-[#00F0FF]', color: 'text-black' },
+    { label: 'Kalender Islami', icon: Calendar, path: '/kalender', desc: 'Kalender Hijriah & Jadwal Ibadah Bulanan', bg: 'bg-[#FF4B91]', color: 'text-white' },
+    { label: 'Arah Kiblat', icon: Compass, path: '/qibla', desc: 'Kompas penunjuk arah Kakbah presisi', bg: 'bg-[#10B981]', color: 'text-white' },
+    { label: 'Focus Mode', icon: Timer, path: '/focus', desc: 'Timer pomodoro untuk produktivitas ibadah & kuliah', bg: 'bg-[#FF6B35]', color: 'text-white' },
+    { label: 'Refleksi Harian', icon: BookOpen, path: '/reflection', desc: 'Evaluasi ibadah dan produktivitas harian', bg: 'bg-[#FFE600]', color: 'text-black' },
+    { label: 'Tips Islami', icon: Lightbulb, path: '/tips', desc: 'Motivasi dan panduan harian mahasiswa', bg: 'bg-[#00F0FF]', color: 'text-black' },
+    { label: 'Admin Dashboard (PAI)', icon: Lock, path: '/admin', desc: 'Kelola link formulir evaluasi review & rekapitulasi', bg: 'bg-black', color: 'text-[#FFE600]' },
+    { label: 'Pengaturan & Versi', icon: SettingsIcon, path: '/settings', desc: 'PWA Background, Sound Pack, Multi-Device Cloud Sync', bg: 'bg-[#10B981]', color: 'text-white' },
   ];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-6 animate-in fade-in duration-300 max-w-2xl mx-auto pb-20">
       
-      <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary font-bold text-xl shadow-sm border border-primary/20">
-          {user?.name?.charAt(0).toUpperCase()}
+      {/* Profile Header (Memphis Card) */}
+      <div className="memphis-card-yellow p-5 flex items-center justify-between flex-wrap gap-3">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 bg-black text-[#FFE600] rounded-2xl border-2 border-black flex items-center justify-center font-black text-2xl shadow-[3px_3px_0px_#121212]">
+            {user?.name?.charAt(0).toUpperCase() || 'M'}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-xl font-black uppercase tracking-tight text-black">{user?.name || 'Mahasiswa Muslim'}</h1>
+              <span className="memphis-badge bg-black text-white text-[9px]">
+                v{CURRENT_VERSION}
+              </span>
+            </div>
+            <p className="text-xs font-bold text-black/80">{user?.target || 'Menyeimbangkan Kuliah & Ibadah'}</p>
+          </div>
         </div>
-        <div>
-          <h1 className="text-xl font-bold text-text-main">{user?.name}</h1>
-          <p className="text-text-muted text-sm">{user?.target}</p>
-        </div>
+
+        <Link
+          to="/settings"
+          className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider"
+        >
+          Pengaturan
+        </Link>
       </div>
 
+      {/* Menu Navigation Grid */}
       <div className="grid gap-3">
         {menuItems.map((item) => (
           <Link
             key={item.path}
             to={item.path}
-            className="flex items-center p-4 bg-surface rounded-2xl border border-gray-100 shadow-sm hover:shadow-md hover:border-primary/20 transition-all active:scale-[0.98] group"
+            className="memphis-card p-4 flex items-center hover:translate-x-1 hover:translate-y-[-1px] transition-all"
           >
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mr-4 ${item.bg} ${item.color}`}>
-              <item.icon className="w-6 h-6" />
+            <div className={`w-12 h-12 rounded-xl border-2 border-black flex items-center justify-center mr-4 shrink-0 shadow-[2px_2px_0px_#121212] ${item.bg} ${item.color}`}>
+              <item.icon className="w-6 h-6 stroke-[2.5]" />
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-text-main group-hover:text-primary transition-colors">{item.label}</h3>
-              <p className="text-sm text-text-muted">{item.desc}</p>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-black text-sm uppercase tracking-tight text-black">{item.label}</h3>
+              <p className="text-xs font-bold text-gray-500 truncate">{item.desc}</p>
             </div>
-            <ChevronRight className="w-5 h-5 text-gray-300 group-hover:text-primary transition-colors" />
+            <div className="w-8 h-8 rounded-lg border-2 border-black flex items-center justify-center bg-[#FFE600] shadow-[2px_2px_0px_#121212] shrink-0">
+              <ChevronRight className="w-4 h-4 stroke-[3]" />
+            </div>
           </Link>
         ))}
       </div>

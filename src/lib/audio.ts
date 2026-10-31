@@ -1,61 +1,244 @@
-// Simple Web Audio API synthetic sounds + Real Azan MP3 Audio with volume amplification
-// Provides high-volume Azan audio, haptic vibration, and loud sound effects for phone and desktop
+// Authentic Islamic Planner Audio System with Local Sound Effects Pack & Real Azan
+// Features tactile UI feedback, specific prayer chimes, task updates, and ambient background music
 
-let audioCtx: AudioContext | null = null;
 let activeAdzanAudio: HTMLAudioElement | null = null;
+let activeAmbientAudio: HTMLAudioElement | null = null;
+let currentAlarmInterval: number | null = null;
+
+// Sound effect cache map for instant latency-free playback
+const audioPool: Record<string, HTMLAudioElement> = {};
+
+function getCachedAudio(src: string): HTMLAudioElement {
+  if (!audioPool[src]) {
+    const audio = new Audio(src);
+    audio.preload = 'auto';
+    audioPool[src] = audio;
+  }
+  return audioPool[src];
+}
+
+/**
+ * Play an audio file with cloneNode to allow rapid overlapping triggers
+ */
+function playSoundFile(src: string, volume: number = 0.85): Promise<void> {
+  return new Promise((resolve) => {
+    try {
+      const base = getCachedAudio(src);
+      const clone = base.cloneNode() as HTMLAudioElement;
+      clone.volume = Math.min(Math.max(volume, 0), 1);
+      const playPromise = clone.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => resolve()).catch(() => resolve());
+      } else {
+        resolve();
+      }
+    } catch {
+      resolve();
+    }
+  });
+}
+
+// -------------------------------------------------------------
+// UI Sound Effects
+// -------------------------------------------------------------
+
+export const playButtonTapSound = () => {
+  playSoundFile('/audio/ui_button_tap.mp3', 0.9);
+  if (navigator.vibrate) navigator.vibrate(25);
+};
+
+export const playToggleSound = () => {
+  playSoundFile('/audio/ui_toggle.mp3', 0.8);
+  if (navigator.vibrate) navigator.vibrate(30);
+};
+
+export const playTabSwitchSound = () => {
+  playSoundFile('/audio/ui_tab_switch.mp3', 0.75);
+};
+
+export const playSaveSuccessSound = () => {
+  playSoundFile('/audio/ui_save_success.mp3', 1.0);
+  if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
+};
+
+export const playDeleteSound = () => {
+  playSoundFile('/audio/ui_delete.mp3', 0.85);
+  if (navigator.vibrate) navigator.vibrate(50);
+};
+
+export const playErrorSound = () => {
+  playSoundFile('/audio/ui_error.mp3', 1.0);
+  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+};
+
+export const playClickSound = () => {
+  playButtonTapSound();
+};
+
+// -------------------------------------------------------------
+// Dhikr & Worship Sounds
+// -------------------------------------------------------------
+
+export const playDhikrTapSound = () => {
+  playSoundFile('/audio/dhikr_counter_tap.mp3', 1.0);
+  if (navigator.vibrate) navigator.vibrate(35);
+};
+
+export const playPrayerCompletedSound = () => {
+  playSoundFile('/audio/prayer_completed.mp3', 1.0);
+  if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+};
+
+export const playPrayerSound = (prayerName: string) => {
+  const norm = prayerName.toLowerCase();
+  let file = '/audio/notification_general.mp3';
+  if (norm.includes('subuh') || norm.includes('fajr')) {
+    file = '/audio/prayer_fajr.mp3';
+  } else if (norm.includes('zuhur') || norm.includes('dhuhr')) {
+    file = '/audio/prayer_dhuhr.mp3';
+  } else if (norm.includes('asar') || norm.includes('asr')) {
+    file = '/audio/prayer_asr.mp3';
+  } else if (norm.includes('magrib') || norm.includes('maghrib')) {
+    file = '/audio/prayer_maghrib.mp3';
+  } else if (norm.includes('isya') || norm.includes('isha')) {
+    file = '/audio/prayer_isha.mp3';
+  } else if (norm.includes('imsak')) {
+    file = '/audio/prayer_imsak.mp3';
+  }
+  return playSoundFile(file, 1.0);
+};
+
+// -------------------------------------------------------------
+// Tasks & Schedule Sounds
+// -------------------------------------------------------------
+
+export const playTaskStateSound = (state: 'completed' | 'urgent' | 'soon' | 'overdue') => {
+  switch (state) {
+    case 'completed':
+      playSoundFile('/audio/task_completed.mp3', 1.0);
+      if (navigator.vibrate) navigator.vibrate([70, 40, 70]);
+      break;
+    case 'urgent':
+      playSoundFile('/audio/task_deadline_urgent.mp3', 1.0);
+      if (navigator.vibrate) navigator.vibrate([150, 50, 150]);
+      break;
+    case 'soon':
+      playSoundFile('/audio/task_deadline_soon.mp3', 0.9);
+      break;
+    case 'overdue':
+      playSoundFile('/audio/task_overdue.mp3', 1.0);
+      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      break;
+  }
+};
+
+export const playScheduleEventSound = (type: 'created' | 'start' | 'reminder') => {
+  switch (type) {
+    case 'created':
+      playSoundFile('/audio/schedule_created.mp3', 0.9);
+      break;
+    case 'start':
+      playSoundFile('/audio/schedule_start.mp3', 1.0);
+      break;
+    case 'reminder':
+      playSoundFile('/audio/schedule_reminder.mp3', 1.0);
+      break;
+  }
+};
+
+// -------------------------------------------------------------
+// Quran & Focus Session Sounds
+// -------------------------------------------------------------
+
+export const playFocusSound = (type: 'start' | 'end') => {
+  if (type === 'start') {
+    playSoundFile('/audio/focus_session_start.mp3', 1.0);
+  } else {
+    playSoundFile('/audio/focus_session_end.mp3', 1.0);
+  }
+};
+
+export const playQuranSound = (type: 'open' | 'bookmark_saved' | 'bookmark_removed' | 'goal_complete') => {
+  switch (type) {
+    case 'open':
+      playSoundFile('/audio/quran_open.mp3', 0.85);
+      break;
+    case 'bookmark_saved':
+      playSoundFile('/audio/quran_bookmark_saved.mp3', 0.9);
+      if (navigator.vibrate) navigator.vibrate(40);
+      break;
+    case 'bookmark_removed':
+      playSoundFile('/audio/quran_bookmark_removed.mp3', 0.8);
+      break;
+    case 'goal_complete':
+      playSoundFile('/audio/quran_reading_goal_complete.mp3', 1.0);
+      if (navigator.vibrate) navigator.vibrate([100, 50, 150]);
+      break;
+  }
+};
+
+export const playGeneralNotificationSound = () => {
+  playSoundFile('/audio/notification_general.mp3', 1.0);
+};
+
+// -------------------------------------------------------------
+// Ambient Background Music Loop (Focus & Tilawah)
+// -------------------------------------------------------------
+
+export const playAmbientLoop = (volume: number = 0.5) => {
+  if (activeAmbientAudio) {
+    activeAmbientAudio.play().catch(() => {});
+    return;
+  }
+  try {
+    const ambient = new Audio('/audio/instrumental_ambient_islamic_90s_loop.mp3');
+    ambient.loop = true;
+    ambient.volume = Math.min(Math.max(volume, 0), 1);
+    activeAmbientAudio = ambient;
+    ambient.play().catch((err) => {
+      console.debug('Ambient autoplay paused:', err);
+    });
+  } catch (err) {
+    console.debug('Ambient audio error:', err);
+  }
+};
+
+export const stopAmbientLoop = () => {
+  if (activeAmbientAudio) {
+    try {
+      activeAmbientAudio.pause();
+      activeAmbientAudio.currentTime = 0;
+    } catch {}
+    activeAmbientAudio = null;
+  }
+};
+
+export const isAmbientPlaying = (): boolean => {
+  return !!activeAmbientAudio && !activeAmbientAudio.paused;
+};
+
+export const toggleAmbientLoop = (volume: number = 0.5): boolean => {
+  if (isAmbientPlaying()) {
+    stopAmbientLoop();
+    return false;
+  } else {
+    playAmbientLoop(volume);
+    return true;
+  }
+};
+
+// -------------------------------------------------------------
+// Real Azan Audio & Full Screen Alarms
+// -------------------------------------------------------------
 
 export const AZAN_AUDIO_URLS = {
-  subuh: '/audio/azan-subuh.mp3', // Khusus sholat subuh (Lokal, responsif, anti-404)
-  fardhu: '/audio/azan-fardhu.mp3', // Sholat lainnya (Zuhur, Asar, Magrib, Isya)
+  subuh: '/audio/azan-subuh.mp3',
+  fardhu: '/audio/azan-fardhu.mp3',
   makkah: '/audio/azan-fardhu.mp3',
   subuhFallback: 'https://cdn.jsdelivr.net/gh/Kiwifu/adhan-mp3@master/Adhan_Fajr_Al_Haram_Al_Maki_(%D8%A3%D8%B0%D8%A7%D9%86_%D8%A7%D9%84%D9%81%D8%AC%D8%B1_%D8%A7%D9%84%D8%AD%D8%B1%D9%85_%D8%A7%D9%84%D9%85%D9%83%D9%8A).mp3',
   fardhuFallback: 'https://cdn.jsdelivr.net/gh/Kiwifu/adhan-mp3@master/Adhan_Al_Haram_Al_Madani_-_Al_Madinah_1_(%D8%A3%D8%B0%D8%A7%D9%86_%D8%A7%D9%84%D8%AD%D8%B1%D9%85_%D8%A7%D9%84%D9%85%D8%AF%D9%86%D9%8A_-_%D8%A7%D9%84%D9%85%D8%AF%D9%8A%D9%86%D8%A9_%D8%A7%D9%84%D9%85%D9%86%D9%88%D8%B1%D8%A9).mp3'
 };
 
-const getAudioContext = () => {
-  if (!audioCtx) {
-    try {
-      audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    } catch (e) {
-      console.warn('AudioContext not supported');
-    }
-  }
-  if (audioCtx && audioCtx.state === 'suspended') {
-    audioCtx.resume();
-  }
-  return audioCtx;
-};
-
-export const playClickSound = () => {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-  
-  try {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(600, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(300, ctx.currentTime + 0.1);
-    
-    gain.gain.setValueAtTime(0.15, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
-    
-    osc.start();
-    osc.stop(ctx.currentTime + 0.1);
-  } catch (e) {
-    // ignore
-  }
-};
-
-let currentAlarmInterval: number | null = null;
-
-/**
- * Play authentic loud Azan audio specifically customized for Subuh vs other prayers
- */
 export const playPrayerAzan = (
   prayerName: string,
   type: 'sound_and_vibrate' | 'sound_only' | 'vibrate_only' = 'sound_and_vibrate'
@@ -86,22 +269,20 @@ export const playPrayerAzan = (
       const fallbackAudio = new Audio(fallbackUrl);
       fallbackAudio.volume = 1.0;
       activeAdzanAudio = fallbackAudio;
-      fallbackAudio.play().catch(() => playSyntheticTakbir(true));
+      fallbackAudio.play().catch(() => playPrayerSound(prayerName));
     };
 
     const playPromise = azanAudio.play();
     if (playPromise !== undefined) {
-      playPromise.catch(err => {
-        console.warn("Autoplay azan MP3 blocked or delayed, attempting CDN fallback:", err);
+      playPromise.catch(() => {
         const fallbackAudio = new Audio(fallbackUrl);
         fallbackAudio.volume = 1.0;
         activeAdzanAudio = fallbackAudio;
-        fallbackAudio.play().catch(() => playSyntheticTakbir(true));
+        fallbackAudio.play().catch(() => playPrayerSound(prayerName));
       });
     }
-  } catch (err) {
-    console.warn("Error initiating Azan MP3:", err);
-    playSyntheticTakbir(true);
+  } catch {
+    playPrayerSound(prayerName);
   }
 
   if (allowVibrate && navigator.vibrate) {
@@ -117,13 +298,10 @@ export const playPrayerAzan = (
   };
 };
 
-/**
- * Play authentic loud Azan audio (or synthetic fallback) + strong phone vibration
- */
 export const playAlarmSound = (
   tone: 'azan_makkah' | 'chime_peaceful' | 'beep_classic' = 'azan_makkah',
   type: 'sound_and_vibrate' | 'sound_only' | 'vibrate_only' = 'sound_and_vibrate',
-  loudBoost: boolean = true,
+  _loudBoost: boolean = true,
   prayerName?: string
 ) => {
   const allowVibrate = type === 'sound_and_vibrate' || type === 'vibrate_only';
@@ -139,127 +317,21 @@ export const playAlarmSound = (
     };
   }
 
-  // 1. If Azan tone is requested, attempt high-fidelity Real MP3 Azan
   if (tone === 'azan_makkah') {
-    try {
-      stopAlarmSound();
-      const isSubuh = prayerName?.toLowerCase().includes('subuh');
-      const targetUrl = isSubuh ? AZAN_AUDIO_URLS.subuh : AZAN_AUDIO_URLS.fardhu;
-      const fallbackUrl = isSubuh ? AZAN_AUDIO_URLS.subuhFallback : AZAN_AUDIO_URLS.fardhuFallback;
-
-      const azanAudio = new Audio(targetUrl);
-      azanAudio.volume = 1.0;
-      activeAdzanAudio = azanAudio;
-
-      azanAudio.onerror = () => {
-        const fallbackAudio = new Audio(fallbackUrl);
-        fallbackAudio.volume = 1.0;
-        activeAdzanAudio = fallbackAudio;
-        fallbackAudio.play().catch(() => playSyntheticTakbir(loudBoost));
-      };
-
-      const playPromise = azanAudio.play();
-      if (playPromise !== undefined) {
-        playPromise.catch(err => {
-          console.warn("Real Azan MP3 blocked or offline, trying fallback:", err);
-          const fallbackAudio = new Audio(fallbackUrl);
-          fallbackAudio.volume = 1.0;
-          activeAdzanAudio = fallbackAudio;
-          fallbackAudio.play().catch(() => playSyntheticTakbir(loudBoost));
-        });
-      }
-    } catch {
-      playSyntheticTakbir(loudBoost);
-    }
+    return playPrayerAzan(prayerName || 'Zuhur', type);
   } else {
-    playSyntheticTone(tone, loudBoost);
-  }
-
-  const intervalTime = tone === 'azan_makkah' ? 5000 : 3000;
-  currentAlarmInterval = window.setInterval(() => {
-    if (tone !== 'azan_makkah') {
-      playSyntheticTone(tone, loudBoost);
-    }
-    if (allowVibrate && navigator.vibrate) {
-      navigator.vibrate([500, 200, 500]);
-    }
-  }, intervalTime);
-
-  return () => {
-    stopAlarmSound();
-  };
-};
-
-const playSyntheticTakbir = (loudBoost: boolean = true) => {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-
-  try {
-    const gainMultiplier = loudBoost ? 0.35 : 0.2;
-    // Melodic synthetic takbir motif (Allahu Akbar): notes D4, F4, G4, A4
-    const notes = [
-      { freq: 293.66, dur: 0.6, delay: 0 },    // D4
-      { freq: 349.23, dur: 0.7, delay: 0.6 },  // F4
-      { freq: 392.00, dur: 0.9, delay: 1.3 },  // G4
-      { freq: 440.00, dur: 1.5, delay: 2.2 },  // A4
-    ];
-
-    notes.forEach(({ freq, dur, delay }) => {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
-      gain.gain.setValueAtTime(0, ctx.currentTime + delay);
-      gain.gain.linearRampToValueAtTime(gainMultiplier, ctx.currentTime + delay + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + dur);
-      osc.connect(gain);
-      gain.connect(ctx.destination);
-      osc.start(ctx.currentTime + delay);
-      osc.stop(ctx.currentTime + delay + dur);
-    });
-  } catch (e) {
-    console.warn("Synthetic takbir audio error:", e);
-  }
-};
-
-const playSyntheticTone = (tone: 'chime_peaceful' | 'beep_classic', loudBoost: boolean = true) => {
-  const ctx = getAudioContext();
-  if (!ctx) return;
-
-  try {
-    const gainMult = loudBoost ? 0.3 : 0.18;
-    if (tone === 'chime_peaceful') {
-      const chimeFrequencies = [528, 660, 792];
-      chimeFrequencies.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(freq, ctx.currentTime + idx * 0.2);
-        gain.gain.setValueAtTime(0, ctx.currentTime + idx * 0.2);
-        gain.gain.linearRampToValueAtTime(gainMult, ctx.currentTime + idx * 0.2 + 0.05);
-        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + idx * 0.2 + 1.8);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + idx * 0.2);
-        osc.stop(ctx.currentTime + idx * 0.2 + 1.8);
-      });
-    } else {
-      for (let i = 0; i < 3; i++) {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.type = 'square';
-        osc.frequency.setValueAtTime(850, ctx.currentTime + i * 0.2);
-        gain.gain.setValueAtTime(0, ctx.currentTime + i * 0.2);
-        gain.gain.linearRampToValueAtTime(gainMult, ctx.currentTime + i * 0.2 + 0.04);
-        gain.gain.linearRampToValueAtTime(0, ctx.currentTime + i * 0.2 + 0.14);
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.start(ctx.currentTime + i * 0.2);
-        osc.stop(ctx.currentTime + i * 0.2 + 0.14);
+    // Play notification general audio as chime/alarm
+    playSoundFile('/audio/notification_general.mp3', 1.0);
+    currentAlarmInterval = window.setInterval(() => {
+      playSoundFile('/audio/notification_general.mp3', 1.0);
+      if (allowVibrate && navigator.vibrate) {
+        navigator.vibrate([500, 200, 500]);
       }
-    }
-  } catch (e) {
-    console.warn("Synthetic tone error:", e);
+    }, 3000);
+
+    return () => {
+      stopAlarmSound();
+    };
   }
 };
 
@@ -300,7 +372,6 @@ export const vibratePrayerAlarm = () => {
 
 export const vibrateSuccess = () => {
   if (navigator.vibrate) {
-    navigator.vibrate([80, 40, 80]); // Short double vibration for success
+    navigator.vibrate([80, 40, 80]);
   }
 };
-

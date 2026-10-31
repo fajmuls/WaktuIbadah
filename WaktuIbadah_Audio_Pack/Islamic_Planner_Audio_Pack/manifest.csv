@@ -1,0 +1,30 @@
+﻿filename,display_name,recommended_use,duration
+prayer_fajr.mp3,Fajr / Subuh,Pengingat salat Subuh; motif naik seperti suasana fajar.,1.75 s
+prayer_dhuhr.mp3,Dhuhr / Zuhur,Pengingat salat Zuhur; dua nada jernih dan terang.,1.55 s
+prayer_asr.mp3,Asr / Asar,Pengingat salat Asar; tiga nada hangat dengan ritme tegas.,1.65 s
+prayer_maghrib.mp3,Maghrib,Pengingat salat Magrib; dua nada lembut dengan nuansa senja.,1.85 s
+prayer_isha.mp3,Isha / Isya,Pengingat salat Isya; motif rendah yang tenang dan menurun.,1.90 s
+prayer_imsak.mp3,Imsak,Pengingat imsak yang lebih pelan dan lembut.,1.85 s
+prayer_completed.mp3,Prayer completed,Konfirmasi setelah ibadah ditandai selesai; nada hangat yang naik.,1.55 s
+quran_open.mp3,Quran opened,Suara halaman dibuka dengan chime kecil yang lembut.,1.25 s
+quran_bookmark_saved.mp3,Ayah bookmarked,Kilau kecil saat ayat ditambahkan ke favorit.,1.25 s
+quran_bookmark_removed.mp3,Ayah unbookmarked,Nada turun singkat saat favorit dihapus.,1.12 s
+quran_reading_goal_complete.mp3,Quran reading goal complete,Konfirmasi target membaca Quran tercapai; hangat dan menenangkan.,2.05 s
+dhikr_counter_tap.mp3,Dhikr counter tap,Klik kecil seperti sentuhan tasbih digital.,0.22 s
+schedule_created.mp3,Schedule created,Konfirmasi jadwal baru berhasil ditambahkan.,1.35 s
+schedule_reminder.mp3,Schedule reminder,Pengingat kegiatan terjadwal; jelas dan mudah dikenali.,1.45 s
+schedule_start.mp3,Schedule starting now,Penanda kegiatan dimulai sekarang; dua nada fokus.,1.55 s
+task_deadline_soon.mp3,Task deadline approaching,Peringatan deadline mendekat; bunyi tiga pulsa yang cukup menonjol.,1.55 s
+task_deadline_urgent.mp3,Task deadline urgent,"Peringatan deadline sangat dekat; lebih tegas, berulang singkat, tidak menusuk.",1.68 s
+task_overdue.mp3,Task overdue,Tanda tugas telah melewati tenggat; tiga nada menurun.,1.68 s
+task_completed.mp3,Task completed,Konfirmasi tugas selesai; bunyi positif dan ringkas.,1.35 s
+focus_session_start.mp3,Focus session start,Awal sesi fokus; sapuan lembut menuju satu nada stabil.,1.55 s
+focus_session_end.mp3,Focus session end,Akhir sesi fokus; chime dua nada yang menenangkan.,1.75 s
+ui_button_tap.mp3,Button tap,"Klik pendek, bersih, ringan untuk tombol umum.",0.18 s
+ui_toggle.mp3,Toggle switch,Klik mekanis kecil untuk switch on/off.,0.25 s
+ui_tab_switch.mp3,Tab switch,Whoosh sangat singkat saat berpindah tab atau halaman.,0.28 s
+ui_save_success.mp3,Save success,Konfirmasi data berhasil disimpan.,1.10 s
+ui_error.mp3,Error / action failed,Nada rendah pendek untuk aksi gagal atau validasi error.,0.62 s
+ui_delete.mp3,Delete / remove item,Bunyi geser dan pop rendah yang halus untuk menghapus item.,0.44 s
+notification_general.mp3,General notification,Notifikasi umum dua nada yang terang dan cukup terdengar.,1.35 s
+background_music/instrumental_ambient_islamic_90s_loop.mp3,Ambient Islamic-inspired instrumental (90s),Background music; loop/repeat for app ambience,90 s

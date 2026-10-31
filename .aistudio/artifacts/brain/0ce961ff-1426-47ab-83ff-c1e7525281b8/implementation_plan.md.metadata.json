@@ -1,0 +1,6 @@
+{
+  "summary":  "Rencana implementasi pembaruan besar v2.0.0 mencakup perombakan antarmuka ke Vibrant Memphis Design Style, integrasi penuh paket audio lokal (sound effects & prayer tones), optimalisasi notifikasi PWA background/ServiceWorker, sinkronisasi Firestore multi-perangkat, serta panel versi aplikasi dan patch notes modal di Pengaturan & Admin Dashboard.",
+  "updatedAt":  "2026-10-31T13:02:52.903610761Z",
+  "requestFeedback":  true,
+  "userFacing":  true
+}
