@@ -229,23 +229,35 @@ export default function Dashboard() {
       {/* Admin Review Banner (Google Form Evaluation) */}
       <AdminReviewBanner />
 
-      {/* Memphis Header Section */}
+      {/* Memphis Header Section with Brand Icon */}
       <header className="p-3.5 sm:p-4 bg-white border-2 sm:border-[2.5px] border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex justify-between items-center flex-wrap gap-2 mb-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
-              Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Mahasiswa'}! 👋
-            </h1>
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border-2 border-black bg-white p-0.5 shadow-[2px_2px_0px_#121212] overflow-hidden flex items-center justify-center shrink-0">
+            <img 
+              src="/icon-waktuibadah.png" 
+              alt="Icon WaktuIbadah" 
+              className="w-full h-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = "https://files.catbox.moe/3b6dqo.png";
+              }}
+            />
           </div>
-          <p className="text-[#121212]/80 mt-1 font-bold text-xs flex items-center gap-2 flex-wrap">
-            <span>{format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}</span>
-            <span>•</span>
-            {prayerData && (
-              <span className="bg-[#00F0FF] text-black px-2 py-0.5 rounded border border-black text-[10px] font-black uppercase">
-                {prayerData.hijri.day} {prayerData.hijri.month} {prayerData.hijri.year.replace(/\s*H\s*$/i, '')} H
-              </span>
-            )}
-          </p>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+                Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Mahasiswa'}! 👋
+              </h1>
+            </div>
+            <p className="text-[#121212]/80 mt-0.5 font-bold text-xs flex items-center gap-2 flex-wrap">
+              <span>{format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}</span>
+              <span>•</span>
+              {prayerData && (
+                <span className="bg-[#00F0FF] text-black px-2 py-0.5 rounded border border-black text-[9px] font-black uppercase">
+                  {prayerData.hijri.day} {prayerData.hijri.month} {prayerData.hijri.year.replace(/\s*H\s*$/i, '')} H
+                </span>
+              )}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Link
@@ -442,6 +454,28 @@ export default function Dashboard() {
           </section>
         );
       })()}
+
+      {/* Quick Action: Doa & Zikir Banner */}
+      <section className="memphis-card p-3.5 sm:p-4 flex items-center justify-between bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border-2 border-black">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 border-2 border-black flex items-center justify-center font-black text-white shadow-[2px_2px_0px_#121212]">
+            <Sparkles className="w-5 h-5 text-white" />
+          </div>
+          <div>
+            <div className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Kumpulan Doa & Zikir</div>
+            <div className="text-xs sm:text-sm font-black text-[#121212] mt-0.5">
+              Wirid Setelah Salat, Doa Makan, Tidur & Belajar
+            </div>
+          </div>
+        </div>
+        <Link 
+          to="/doa" 
+          className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1 shrink-0"
+        >
+          <span>Buka Doa</span>
+          <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
+        </Link>
+      </section>
 
       {/* Daily Quran Tilawah Summary */}
       <section className="memphis-card p-3.5 sm:p-4 flex items-center justify-between">

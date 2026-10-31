@@ -21,9 +21,11 @@ const KEYS = {
   BACKGROUND_SYNC_ALLOWED: "wi_bg_sync_allowed",
   BACKGROUND_SYNC_DISMISSED: "wi_bg_sync_dismissed",
   ADMIN_AUTHENTICATED: "wi_admin_authenticated",
+  AUTO_DOA_MODAL: "wi_auto_doa_modal",
+  SELECTED_CITY: "wi_selected_city",
 };
 
-export const CURRENT_VERSION = "2.1.0";
+export const CURRENT_VERSION = "2.2.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -343,6 +345,19 @@ export const storage = {
   // Notification verification status
   isNotificationVerified: () => getItem<boolean>(KEYS.NOTIFICATION_VERIFIED, false),
   setNotificationVerified: (verified: boolean) => setItem(KEYS.NOTIFICATION_VERIFIED, verified),
+
+  // Auto Doa Setelah Salat Modal
+  getAutoDoaModal: () => getItem<boolean>(KEYS.AUTO_DOA_MODAL, true),
+  setAutoDoaModal: (enabled: boolean) => setItem(KEYS.AUTO_DOA_MODAL, enabled),
+
+  // Indonesian City & Timezone Selection
+  getSelectedCity: () => getItem<string>(KEYS.SELECTED_CITY, "Jakarta"),
+  setSelectedCity: (city: string) => {
+    setItem(KEYS.SELECTED_CITY, city);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_city_changed', { detail: city }));
+    }
+  },
 
   clearAll: () => localStorage.clear(),
 };

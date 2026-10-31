@@ -1,14 +1,14 @@
 @import "tailwindcss";
 
 @theme {
-  --color-primary: #10B981;
-  --color-primary-dark: #059669;
-  --color-memphis-yellow: #34D399; /* Upgraded to vibrant emerald/mint green */
+  --color-primary: #059669;
+  --color-primary-dark: #047857;
+  --color-memphis-yellow: #10B981; /* Calibrated to rich emerald green */
   --color-memphis-pink: #FF4B91;
   --color-memphis-cyan: #00F0FF;
   --color-memphis-orange: #FF6B35;
   --color-memphis-purple: #9D4EDD;
-  --color-memphis-green: #10B981;
+  --color-memphis-green: #059669;
   --color-memphis-black: #121212;
   --color-memphis-bg: #FFFDF8;
   --color-memphis-surface: #FFFFFF;
@@ -21,6 +21,9 @@
     max-width: 100vw;
     overflow-x: hidden;
     background-color: #FFFDF8;
+    background-image: radial-gradient(rgba(18, 18, 18, 0.09) 1.5px, transparent 1.5px);
+    background-size: 22px 22px;
+    background-attachment: fixed;
     color: #121212;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
@@ -51,10 +54,10 @@
   border-radius: 0.75rem;
 }
 
-/* Green Multi-tone Gradient Memphis Cards (Replaces solid yellow) */
+/* Rich Emerald Multi-tone Gradient Memphis Cards */
 .memphis-card-yellow,
 .memphis-card-green {
-  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 40%, #10B981 100%);
+  background: linear-gradient(135deg, #34D399 0%, #10B981 45%, #059669 100%);
   border: 2px solid #121212;
   box-shadow: 3px 3px 0px #121212;
   border-radius: 0.875rem;
@@ -68,6 +71,17 @@
     box-shadow: 4px 4px 0px #121212;
     border-radius: 1rem;
   }
+}
+
+.memphis-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #121212;
+  box-shadow: 2px 2px 0px #121212;
+  border-radius: 0.65rem;
+  flex-shrink: 0;
+  transition: transform 0.1s ease;
 }
 
 .memphis-card-pink {

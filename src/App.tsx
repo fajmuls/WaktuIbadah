@@ -23,6 +23,7 @@ import Settings from './pages/Settings';
 import Tips from './pages/Tips';
 import QuranHadis from './pages/QuranHadis';
 import Hadis from './pages/Hadis';
+import DoaZikir from './pages/DoaZikir';
 import Tools from './pages/Tools';
 import AdminDashboard from './pages/AdminDashboard';
 import Kalender from './pages/Kalender';
@@ -291,6 +292,7 @@ export default function App() {
                 <Route path="/quran" element={<QuranHadis />} />
                 <Route path="/quran-hadis" element={<QuranHadis />} />
                 <Route path="/hadis" element={<Hadis />} />
+                <Route path="/doa" element={<DoaZikir />} />
                 <Route path="/tools" element={<Tools />} />
                 <Route path="/focus" element={<FocusMode />} />
                 <Route path="/reflection" element={<Reflection />} />
@@ -306,31 +308,43 @@ export default function App() {
             )}
           </Routes>
 
-          {/* Live In-App Azan Notification Banner (Functional even without PWA installed) */}
+          {/* Live In-App Azan Notification Banner (Functional even without PWA installed & Mobile Autoplay Policy Ready) */}
           {activeAzanAlert && (
-            <div className="fixed top-3 left-3 right-3 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md z-50 memphis-card p-3 sm:p-4 bg-gradient-to-r from-emerald-400 via-teal-400 to-green-500 shadow-[4px_4px_0px_#121212] flex items-center justify-between gap-3 animate-bounce">
+            <div className="fixed top-3 left-3 right-3 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md z-50 memphis-card p-3 sm:p-4 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 shadow-[4px_4px_0px_#121212] flex items-center justify-between gap-3 animate-bounce">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-[#121212] text-[#34D399] flex items-center justify-center font-black text-xl border-2 border-black shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#121212] text-[#6EE7B7] flex items-center justify-center font-black text-xl border-2 border-black shrink-0">
                   🕌
                 </div>
                 <div className="min-w-0">
                   <h4 className="text-xs sm:text-sm font-black uppercase text-[#121212] truncate">
-                    Waktu Salat {activeAzanAlert.prayer} Telah Tiba!
+                    Waktu Salat {activeAzanAlert.prayer} Tiba!
                   </h4>
                   <p className="text-[10px] sm:text-[11px] font-bold text-[#121212]/80 truncate">
-                    Suara Azan berkumandang ({activeAzanAlert.time})
+                    Ketuk untuk pastikan suara aktif ({activeAzanAlert.time})
                   </p>
                 </div>
               </div>
-              <button
-                onClick={() => {
-                  stopAlarmSound();
-                  setActiveAzanAlert(null);
-                }}
-                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-black uppercase tracking-wider shrink-0"
-              >
-                Hentikan
-              </button>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => {
+                    const isSubuh = activeAzanAlert.prayer.toLowerCase().includes('subuh');
+                    playPrayerAzan(isSubuh);
+                  }}
+                  className="memphis-btn bg-white hover:bg-emerald-50 text-black px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
+                  title="Bunyikan Suara Azan"
+                >
+                  Bunyikan
+                </button>
+                <button
+                  onClick={() => {
+                    stopAlarmSound();
+                    setActiveAzanAlert(null);
+                  }}
+                  className="memphis-btn bg-black text-white hover:bg-gray-800 px-2 py-1 text-[10px] font-black uppercase tracking-wider"
+                >
+                  Hening
+                </button>
+              </div>
             </div>
           )}
 

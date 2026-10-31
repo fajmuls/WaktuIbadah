@@ -8,6 +8,7 @@ import { getPrayerTimesForToday, fetchPrayerTimes, PrayerData, getCachedPrayerDa
 import { formatTimeString } from '../lib/utils';
 import { vibrateSuccess, playPrayerCompletedSound, playToggleSound } from '../lib/audio';
 import { QuranLogModal } from '../components/QuranLogModal';
+import { DoaSetelahSalatModal } from '../components/DoaSetelahSalatModal';
 import { Link } from 'react-router-dom';
 
 export default function Ibadah() {
@@ -21,6 +22,7 @@ export default function Ibadah() {
   const [prayerData, setPrayerData] = useState<PrayerData | null>(getCachedPrayerData());
   const [quranLogs, setQuranLogs] = useState<QuranLog[]>([]);
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const [isDoaModalOpen, setIsDoaModalOpen] = useState(false);
 
   useEffect(() => {
     const loadedUser = storage.getUser();
@@ -57,11 +59,16 @@ export default function Ibadah() {
     setLog(newLog);
     storage.updatePrayerLog(newLog);
 
-    // If all 5 prayers are completed today, notify review listener
+    // If all 5 prayers are completed today, open Doa modal & notify review listener
     if (Object.values(newLog.prayers).every(Boolean) && selectedDate === format(new Date(), 'yyyy-MM-dd')) {
+      if (storage.getAutoDoaModal()) {
+        setTimeout(() => {
+          setIsDoaModalOpen(true);
+        }, 500);
+      }
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('wi_check_five_prayers_review'));
-      }, 600);
+      }, 1200);
     }
   };
 
@@ -150,8 +157,16 @@ export default function Ibadah() {
           </p>
         </div>
 
-        {/* Date manual input picker */}
+        {/* Date manual input picker and Doa modal shortcut */}
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsDoaModalOpen(true)}
+            className="memphis-btn memphis-btn-green px-2.5 py-1 text-[11px] font-black uppercase tracking-wider gap-1 shrink-0"
+            title="Buka Wirid & Doa Setelah Salat"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Wirid &</span> Doa Salat
+          </button>
           <input
             type="date"
             value={selectedDate}
@@ -461,6 +476,13 @@ export default function Ibadah() {
         onLogSaved={() => {
           setQuranLogs(storage.getQuranLogsByDate(selectedDate));
         }}
+      />
+
+      {/* Doa Setelah Salat Modal */}
+      <DoaSetelahSalatModal
+        isOpen={isDoaModalOpen}
+        onClose={() => setIsDoaModalOpen(false)}
+        dateStr={selectedDate}
       />
     </div>
   );

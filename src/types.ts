@@ -251,6 +251,35 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.2.0',
+    releaseDate: '31 Oktober 2026',
+    title: 'Modul Doa & Zikir Lengkap, Modal 5 Waktu Salat, Background Memphis Polkadot, & Mobile Audio Policy',
+    highlights: [
+      'Menu Khusus Doa & Zikir: Halaman katalog baru (/doa) berisikan wirid dzikir dan doa setelah salat fardhu lengkap dengan teks Arab, transliterasi, terjemahan, dan counter tasbih taktil.',
+      'Koleksi Doa Harian: Dilengkapi kumpulan doa harian penting (makan, tidur, keluar rumah, bepergian, menuntut ilmu dan ujian).',
+      'Modal Doa Setelah Salat Otomatis: Selebrasi capaian saat ke-5 salat harian tercapai dengan opsi sakelar jangan tampilkan otomatis lagi.',
+      'Logo Resmi & Icon Aplikasi: Icon WaktuIbadah asli terintegrasi penuh di favicon, apple-touch-icon, header sidebar PC, mobile top bar, dan splash screen pembuka.',
+      'Background Memphis Polkadot: Tekstur polkadot retro klasik menghiasi latar belakang antarmuka secara elegan.',
+      'Kalibrasi Warna Hijau Emerald: Warna hijau disesuaikan lebih teduh dan berimbang (rich emerald green) serasi dengan dashboard.',
+      'Banner Fallback Autoplay Audio Mobile: Deteksi kebijakan pemblokiran audio browser HP dengan banner alert satu sentuhan untuk membunyikan suara Azan.',
+      'Penyelarasan Zona Waktu Salat Indonesia: Pilihan kota-kota rujukan Indonesia (WIB, WITA, WIT) dengan GPS auto-detect fallback.'
+    ],
+    soundPackUpdates: [
+      'Fallback banner penembus kebijakan autoplay browser mobile untuk suara adzan',
+      'Efek suara capaian paska menuntaskan 5 waktu salat fardhu harian'
+    ],
+    uiOverhaul: [
+      'Background texture polkadot Memphis bergradasi lembut',
+      'SVG Memphis button icon badges dengan ragam geometri retro',
+      'Modal responsif penuh Doa Setelah Salat dengan fitur salin doa instan'
+    ],
+    recommendations: [
+      'Saran #1: Integrasikan fitur Target Khatam Ramadan & pengingat baca Al-Quran per waktu salat fardhu',
+      'Saran #2: Tambahkan mode offline Audio Murottal per ayat atau per juz dengan IndexedDB caching',
+      'Saran #3: Buat widget kalender Hijriah dinamis lengkap dengan jadwal puasa sunnah Ayyamul Bidh'
+    ]
+  },
+  {
     version: '2.1.0',
     releaseDate: '31 Oktober 2026',
     title: 'Pembaruan UI Memphis Konsisten, Multi-tone Green Gradients & Animasi Opening',

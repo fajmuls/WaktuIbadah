@@ -19,6 +19,7 @@ import {
   syncAllToCloud, syncAllFromCloud, updateProfilePin, 
   connectCloudProfile, checkCloudProfile 
 } from '../lib/cloud-sync';
+import { CitySelectorModal } from '../components/CitySelectorModal';
 
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null);
@@ -29,6 +30,10 @@ export default function Settings() {
   const [isAmbientOn, setIsAmbientOn] = useState(false);
   const [showPatchNotesModal, setShowPatchNotesModal] = useState(false);
   const navigate = useNavigate();
+
+  const [autoDoaModal, setAutoDoaModal] = useState<boolean>(storage.getAutoDoaModal());
+  const [selectedCity, setSelectedCity] = useState<string>(storage.getSelectedCity());
+  const [isCityModalOpen, setIsCityModalOpen] = useState(false);
 
   // Cloud Sync states
   const [isSyncingToCloud, setIsSyncingToCloud] = useState(false);
@@ -233,13 +238,13 @@ export default function Settings() {
     <div className="space-y-6 pb-24 animate-in fade-in duration-300 max-w-3xl mx-auto">
       
       {/* Memphis Header */}
-      <div className="p-4 bg-[#FFE600] border-[2.5px] border-[#121212] rounded-2xl shadow-[4px_4px_0px_#121212] flex items-center justify-between flex-wrap gap-3">
+      <div className="p-4 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-[2.5px] border-[#121212] rounded-2xl shadow-[4px_4px_0px_#121212] flex items-center justify-between flex-wrap gap-3">
         <div>
           <div className="flex items-center gap-2">
             <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#121212]">
               Pengaturan & Sinkronisasi
             </h1>
-            <span className="memphis-badge bg-black text-[#FFE600]">
+            <span className="memphis-badge bg-black text-[#6EE7B7]">
               v{CURRENT_VERSION}
             </span>
           </div>
@@ -253,7 +258,7 @@ export default function Settings() {
           className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
         >
           <Sparkles className="w-4 h-4 text-[#FF4B91]" />
-          Catatan Versi v2.0.0
+          Catatan Versi v{CURRENT_VERSION}
         </button>
       </div>
 
@@ -350,6 +355,62 @@ export default function Settings() {
             >
               <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
               {isPullingCloud ? 'Menyinkronkan...' : 'Tarik Data dari Cloud'}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Preferensi Doa & Kota Salat */}
+      <div className="memphis-card p-5 space-y-4">
+        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#00F0FF] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+              <Sparkles className="w-5 h-5 text-black" />
+            </div>
+            <div>
+              <h3 className="font-black text-sm uppercase tracking-tight">Preferensi Doa & Kota Jadwal Salat</h3>
+              <p className="text-xs font-bold text-gray-500">Konfigurasi pop-up doa setelah salat dan zona waktu</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Toggle Auto Doa Modal */}
+          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-2 border-black">
+            <div className="pr-2">
+              <span className="font-black text-xs text-black block">Pop-up Doa Setelah Salat Otomatis</span>
+              <span className="text-[11px] font-semibold text-gray-500">
+                Otomatis menampilkan modal wirid ketika 5 waktu salat hari ini selesai dicentang
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                playToggleSound();
+                const nextVal = !autoDoaModal;
+                setAutoDoaModal(nextVal);
+                storage.setAutoDoaModal(nextVal);
+              }}
+              className={`memphis-btn px-3 py-1.5 text-xs font-black uppercase shrink-0 ${
+                autoDoaModal ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-600'
+              }`}
+            >
+              {autoDoaModal ? 'Aktif' : 'Nonaktif'}
+            </button>
+          </div>
+
+          {/* Kota & Zona Waktu */}
+          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-2 border-black">
+            <div className="pr-2">
+              <span className="font-black text-xs text-black block">Kota & Zona Waktu Salat</span>
+              <span className="text-[11px] font-semibold text-gray-500">
+                Kota saat ini: <strong className="text-emerald-700">{selectedCity}</strong>
+              </span>
+            </div>
+            <button
+              onClick={() => setIsCityModalOpen(true)}
+              className="memphis-btn memphis-btn-cyan px-3 py-1.5 text-xs font-black uppercase shrink-0"
+            >
+              Ganti Kota
             </button>
           </div>
         </div>
@@ -795,6 +856,15 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* City Selector Modal */}
+      <CitySelectorModal
+        isOpen={isCityModalOpen}
+        onClose={() => setIsCityModalOpen(false)}
+        onCitySelected={(_, cityName) => {
+          setSelectedCity(cityName);
+        }}
+      />
 
       {/* Footer */}
       <div className="text-center pt-2">

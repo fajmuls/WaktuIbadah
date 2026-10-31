@@ -7,6 +7,7 @@ export default function Menu() {
   const user = storage.getUser();
 
   const menuItems = [
+    { label: "Doa & Zikir Lengkap", icon: Sparkles, path: '/doa', desc: 'Wirid sesudah salat fardhu, doa harian & belajar', bg: 'bg-gradient-to-br from-emerald-500 to-green-600', color: 'text-white' },
     { label: "Al-Qur'an & Hadits", icon: BookOpen, path: '/quran', desc: '114 Surat & 42 Hadits Arba\'in (MyQuran)', bg: 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400', color: 'text-black' },
     { label: 'Tools & Bantuan Islami', icon: Sparkles, path: '/tools', desc: 'Doa harian, Asmaul Husna & Konversi Hijriyah', bg: 'bg-[#00F0FF]', color: 'text-black' },
     { label: 'Kalender Islami', icon: Calendar, path: '/kalender', desc: 'Kalender Hijriah & Jadwal Ibadah Bulanan', bg: 'bg-[#FF4B91]', color: 'text-white' },
