@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana implementasi terpadu untuk penambahan Menu Doa & Zikir, modal otomatis Doa Setelah Salat 5 waktu, integrasi icon aplikasi & SVG Memphis buttons, background pola Memphis polkadot, penyesuaian warna hijau emerald yang lebih seimbang, sistem fallback banner kebijakan autoplay audio di peramban mobile, dan fitur sinkronisasi zona waktu salat kota-kota Indonesia (WIB/WITA/WIT).",
-  "updatedAt":  "2026-10-31T16:43:28.941259939Z",
-  "requestFeedback":  true,
-  "userFacing":  true
+  "summary": "Rencana implementasi terpadu untuk pengkondisian izin notifikasi (Notification Gatekeeper Modal) sebelum masuk dashboard, kalibrasi volume audio UI vs Azan keras, sakelar tema terang/gelap manual di Pengaturan, pembacaan Al-Qur'an bertema putih bersih, serta pemisahan fitur Tandai Terakhir Baca dan Simpan Ayat Favorit.",
+  "updatedAt": "2026-11-03T15:09:57.702913081Z",
+  "requestFeedback": true,
+  "userFacing": true
 }

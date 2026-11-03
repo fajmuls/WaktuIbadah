@@ -1,74 +1,71 @@
-# Rencana Implementasi: Fitur Doa & Zikir, Modal Paska Salat 5 Waktu, UI Memphis Polkadot, & Audio Policy
+# Rencana Implementasi: Permission Gatekeeper Notifikasi, Kalibrasi Volume Audio, Tema Manual & Penanda Ayat Al-Qur'an
 
-Rencana komprehensif untuk mengintegrasikan modul Doa & Zikir lengkap, modal selebrasi paska salat fardhu 5 waktu, penempatan icon resmi aplikasi, background polkadot bergaya Memphis retro, penyesuaian nada hijau emerald yang teduh, banner fallback autoplay audio mobile, serta penyelarasan zona waktu dan kota di seluruh Indonesia.
+Rencana komprehensif untuk memfokuskan alur izin notifikasi browser/PWA sebelum pengguna masuk ke dashboard utama, mengecilkan efek suara tombol UI sambil mempertahankan volume keras Azan, menambahkan sakelar tema terang/gelap manual dengan tampilan Al-Qur'an selalu latar putih bersih, serta memisahkan penandaan "Terakhir Baca" dan "Ayat Favorit".
 
 ---
 
 ### User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Berdasarkan jawaban klarifikasi yang telah Anda tentukan:
-> 1. **Menu Navigasi**: Menu khusus **"Doa & Zikir"** akan ditambahkan langsung pada sidebar navigasi desktop (`Layout.tsx`), menu mobile, dan pintasan beranda.
-> 2. **Cakupan Doa**: Menyajikan panduan lengkap wirid dzikir & doa setelah salat fardhu sebagai tab utama, disertai doa-doa harian penting (makan, tidur, keluar rumah, bepergian, menuntut ilmu).
-> 3. **Penyelarasan Zona Waktu**: Menyediakan deteksi lokasi GPS otomatis dilengkapi dropdown pilihan kota-kota besar di Indonesia (WIB, WITA, WIT) yang tersimpan permanen di pengaturan.
+> Berdasarkan konfirmasi pilihan Anda:
+> 1. **Mekanisme Izin Notifikasi**: Menampilkan **Notification Permission Modal** interaktif saat pengguna pertama kali membuka aplikasi atau belum memberikan izin notifikasi peramban/HP, sebelum mengarahkan ke dashboard utama.
+> 2. **Kontrol Tema (Light/Dark Mode)**: Menyediakan **Sakelar Tema Manual** (Mode Terang vs Mode Gelap) di Pengaturan, dengan ketentuan khusus bahwa **tampilan pembacaan Al-Qur'an (`/quran`) selalu menggunakan latar putih bersih dan teks Arab hitam kontras tinggi** agar tidak terganggu oleh pembalikan warna otomatis HP.
+> 3. **Pemisahan Penanda Ayat**: Fitur penanda Al-Qur'an dipisahkan secara tegas menjadi dua tindakan independen:
+>    - **Tandai Terakhir Baca** (Bookmark Posisi — 1 ayat aktif yang diperbarui secara otomatis).
+>    - **Simpan Ayat Favorit** (Favorit — koleksi banyak ayat pilihan untuk dibaca ulang).
+> 4. **Level Volume Suara**: Suara tombol UI (button tap, toggle, tab switch, task complete) dikecilkan menjadi lebih lembut (~25-30% gain volume), sedangkan **Azan, Alarm, dan Uji Tes Suara Azan tetap berbunyi keras 100%**.
 
-- **Keputusan Terkonfirmasi 1**: Modal "Doa Setelah Salat" otomatis muncul saat ke-5 salat fardhu dalam 1 hari dicentang selesai, dilengkapi sakelar "Jangan tampilkan otomatis lagi" agar fleksibel bagi pengguna.
-- **Keputusan Terkonfirmasi 2**: Icon aplikasi resmi (`Icon WaktuIbadah.png`) diterapkan menyeluruh pada favicon `index.html`, header desktop/mobile, PWA shortcut, serta animasi pembuka splash screen.
-- **Keputusan Terkonfirmasi 3**: Warna hijau distabilkan dari hijau neon menjadi hijau emerald alami (`#059669`, `#047857`, `#10B981`), serasi dengan dashboard utama dan tidak menyilaukan mata.
+- **Keputusan Terkonfirmasi 1**: Aplikasi dapat langsung mengirimkan Web Notification & suara Azan di HP/laptop pengguna bahkan ketika dibuka biasa melalui browser web tanpa wajib di-install sebagai PWA.
+- **Keputusan Terkonfirmasi 2**: Notifikasi Azan berbunyi disertai floating banner & control bar interaktif dengan tombol "Hentikan Azan" saat waktu salat tiba.
 
 ---
 
 ### 1. Overview & Core Concept
 
 - **Apa yang Dibangun**:
-  1. **Halaman Doa & Zikir (`/doa`)**: Halaman terdedikasi dengan panduan teks Arab, transliterasi Latin, terjemahan Indonesia, dan counter tasbih/zikir interaktif.
-  2. **Modal Doa Setelah Salat Otomatis**: Pop-up selebrasi bernuansa Memphis yang muncul ketika pengguna menyelesaikan 5 waktu salat (Subuh, Zuhur, Asar, Magrib, Isya).
-  3. **Visual Memphis Polkadot & Icon SVG**: Latar belakang aplikasi dipercantik dengan pola titik polkadot geometris Memphis, dan tombol-tombol antarmuka menggunakan ikon SVG Memphis dengan palet aksen harmonis.
-  4. **Fallback Autoplay Audio Mobile**: Banner visual mengambang beranimasi untuk mengatasi kebijakan blokir suara otomatis di browser HP (Chrome/Safari), memungkinkan pengguna mengaktifkan audio azan sekali ketuk.
-  5. **Pengaturan Zona Waktu Salat**: Fitur pemilihan wilayah salat (kota-kota di seluruh Indonesia) dengan sinkronisasi zona WIB, WITA, dan WIT yang akurat.
-- **Target Pengguna**: Mahasiswa dan pengguna Muslim yang membutuhkan pendamping ibadah praktis, jadwal terpadu, dan panduan wirid yang mudah diakses di smartphone maupun laptop.
-- **Versi Aplikasi**: Dinaikkan menjadi **v2.2.0** (tercatat eksklusif di halaman Pengaturan & Patch Notes).
+  1. **Notification Permission Gatekeeper Modal**: Pop-up edukatif berdesain Memphis yang memandu pengguna memberikan izin notifikasi peramban (`Notification.requestPermission()`) sebelum mengakses dashboard.
+  2. **Web Notifications System & Direct Audio Player**: Engine notifikasi peramban independen yang memicu alert dan suara Azan lokal (Subuh & Fardhu) dengan tombol penghenti ("Hentikan Azan").
+  3. **Volume Gain Scaler (`audio.ts`)**: Kalibrasi gain node / volume audio lokal sehingga suara efek sentuhan tombol menjadi lembut (0.25-0.30 volume) dan tidak mengejutkan, tanpa mengurangi kenyaringan suara Azan (1.0 volume).
+  4. **Tampilan Al-Qur'an Latar Putih Bersih & Tema Manual**: Mode membaca surah & ayat Al-Qur'an dikunci pada latar putih bersih (`#FFFDF8` / `#FFFFFF`) dengan huruf Arab hitam tajam (`#121212`), serta ditambahkan sakelar tema terang/gelap di halaman Pengaturan.
+  5. **Dua Tombol Spesial Ayat**: Tombol **"Tandai Terakhir Baca"** (penanda posisi 1 ayat) dan **"Favoritkan Ayat"** (koleksi tersimpan) dipisahkan secara visual pada setiap baris ayat.
 
 ---
 
 ### 2. User Experience & Visual Design
 
-#### A. Alur Pengguna (User Flows)
-1. **Penyelesaian Salat 5 Waktu**:
-   - Pengguna mencentang salat ke-5 pada hari ini di halaman Ibadah atau widget Dashboard.
-   - Suara efek capaian (*achievement sound*) berbunyi lembut, diikuti animasi konfeti Memphis.
-   - Modal **"Alhamdulillah! 5 Salat Sempurna Hari Ini"** terbuka menampilkan ringkasan wirid dan doa setelah salat fardhu.
-   - Pengguna dapat membaca doa langsung, menyalin teks, atau menonaktifkan kemunculan otomatis melalui opsi sakelar.
-2. **Eksplorasi Doa & Zikir**:
-   - Pengguna mengklik menu **"Doa & Zikir"** di navigasi sidebar atau mobile bar.
-   - Tersedia tab filter segmented: **Wirid Setelah Salat**, **Doa Harian**, dan **Doa Menuntut Ilmu**.
-   - Setiap doa dilengkapi kartu Memphis bertekstur, teks Arab dengan ukuran font yang nyaman dibaca, serta tombol salin dan audio pelafalan.
-3. **Banner Fallback Audio di HP**:
-   - Jika browser mobile menahan pemutaran otomatis audio azan, banner alert Memphis muncul di bagian atas layar: *"Waktu Salat [Nama] Tiba! Ketuk untuk Putar Azan"*.
-   - Sekali diketuk, audio azan langsung berbunyi dan izin peramban otomatis terbuka untuk waktu berikutnya.
+#### A. Alur Permintaan Izin Notifikasi (Gatekeeper Flow)
+1. **Awal Buka Aplikasi**:
+   - Sistem memeriksa status `Notification.permission` di browser.
+   - Jika status masih `default` (belum diminta/dipilih), aplikasi menampilkan **Notification Permission Modal** dengan animasi Memphis.
+   - Modal menjelaskan manfaat notifikasi (jadwal azan tepat waktu, pengingat deadline tugas, suara azan Subuh & Fardhu).
+   - Pengguna mengklik tombol **"Aktifkan Notifikasi Salat"**.
+   - Peramban meminta izin native. Setelah diizinkan, modal ditutup dan pengguna masuk ke dashboard.
+   - Jika peramban diblokir/ditolak, modal memberi panduan ringkas cara mengaktifkannya kembali via ikon gembok URL browser.
 
-#### B. Identitas Visual & Tema
-- **Pola Background**: `memphis-pattern-dots` halus dengan jarak 20px berlatar `#FFFDF8` (krem lembut) berpadu dot abu-abu muda (`#E5E7EB`), memberikan tekstur retro khas Memphis tanpa mengganggu keterbacaan teks.
-- **Palet Warna Hijau**:
-  - Hijau Utama: Emerald Green `#059669` (stabil, kontras tinggi, elegan).
-  - Hijau Aksen/Border: Deep Forest `#065F46` dan Mint `#34D399`.
-  - Aksen Memphis Tambahan: Coral Pink `#FF4B91`, Sky Blue `#00F0FF`, dan Sun Gold `#F59E0B`.
-- **Button Icon SVG Memphis**:
-  - Ikon tombol dirancang dengan geometri solid, border tebal hitam 2px, dan latar belakang bentuk bervariasi (lingkaran, kotak miring, pil mini).
+2. **Notifikasi Azan & Tombol Hentikan**:
+   - Ketika waktu salat Tiba (online maupun di browser), Web Notification terkirim ke sistem notifikasi HP/laptop.
+   - Suara Azan diputar di latar belakang.
+   - Floating Control Banner muncul di layar atas dengan tombol menonjol **"Hentikan Azan"** (atau "Mute").
+
+#### B. Pengalaman Membaca Al-Qur'an & Tema
+- **Latar Putih Khusus Al-Qur'an**: Kartu ayat, teks Arab, transliterasi Latin, dan terjemahan di halaman `/quran` selalu dirender pada latar belakang putih bersih (`bg-[#FFFDF8]` / `bg-white`), sehingga terhindar dari bug pembalikan warna gelap yang membuat huruf Arab pudar.
+- **Dua Action Button pada Setiap Ayat**:
+  - 📌 **Tandai Terakhir Baca**: Mengeset indikator "Terakhir Dibaca pada Surat X Ayat Y", memudahkan melanjutkan tilawah dari dashboard.
+  - ⭐ **Simpan ke Favorit**: Menambahkan ayat ke daftar koleksi "Ayat Favorit" yang dapat dibuka dari tab khusus.
 
 ---
 
 ### 3. Key Product Decisions & Trade-Offs
 
-- **Keputusan 1: Struktur Data Doa Lokal vs Cloud**:
-  - *Pendekatan*: Kumpulan doa dan wirid disimpan secara statis terstruktur di dalam modul aplikasi (`src/data/prayers-data.ts`) dengan status penanda bacaan/favorit disinkronkan ke Firestore.
-  - *Alasan*: Menjamin seluruh wirid dan doa dapat diakses instan 100% offline tanpa menunggu koneksi internet, sangat krusial saat waktu salat di masjid atau area minim sinyal.
-- **Keputusan 2: Penanganan Mobile Audio Policy**:
-  - *Pendekatan*: Menggunakan deteksi Promise rejection saat memanggil `audio.play()`, lalu menampilkan Memphis Fallback Action Banner di DOM jika peramban menolak pemutaran otomatis.
-  - *Alasan*: Standar keamanan modern iOS/Android mewajibkan interaksi pengguna (user gesture). Banner interaktif ini memberi solusi yang patuh kebijakan web sekaligus menjamin pengguna tidak ketinggalan azan.
-- **Keputusan 3: Penyelarasan Kota & Zona Waktu**:
-  - *Pendekatan*: Menghadirkan daftar kota rujukan di Indonesia (Jakarta, Bandung, Yogyakarta, Surabaya, Medan, Padang, Palembang, Banjarmasin, Balikpapan, Makassar, Manado, Denpasar, Mataram, Jayapura, Ambon) dengan koordinat lintang/bujur dan zona waktu (WIB=7, WITA=8, WIT=9).
-  - *Alasan*: Menghindari ketergantungan mutlak pada API luar yang berisiko lambat atau error kuota, sambil tetap memberikan akurasi menit salat di seluruh nusantara.
+- **Keputusan 1: Pengoperasian Notifikasi Tanpa Install PWA**:
+  - *Pendekatan*: Menggunakan kombinasi standar HTML5 `Notification` API, Web Audio API, dan `setInterval` / Web Worker pemicu waktu lokal.
+  - *Alasan*: Pengguna yang hanya membuka aplikasi via tautan browser tetap mendapatkan pengingat azan dan notifikasi tanpa hambatan.
+- **Keputusan 2: Pemisahan Volume Audio UI vs Azan**:
+  - *Pendekatan*: Mengatur `audio.volume = 0.25` secara terprogram pada fungsi `playButtonTapSound`, `playToggleSound`, `playTabSwitchSound`, dan `playDhikrTapSound` di `src/lib/audio.ts`, sedangkan `playPrayerAzan` dan `testAlarmTone` tetap diset pada `audio.volume = 1.0`.
+  - *Alasan*: Menghindari suara klik tombol yang terlalu bising/kaget saat HP dipasang volume tinggi, namun menjamin azan tetap terdengar nyaring.
+- **Keputusan 3: Penguncian Latar Putih Pembacaan Al-Qur'an**:
+  - *Pendekatan*: Menghapus kelas `dark:bg-*` dan `dark:text-*` pada komponen kontainer ayat Al-Qur'an dan menguncinya dengan kelas `bg-white text-[#121212]`.
+  - *Alasan*: Memastikan huruf Arab khat Utsmani selalu terbaca tajam dan tidak pudar atau abu-abu akibat seleksi tema gelap otomatis browser/HP.
 
 ---
 
@@ -76,41 +73,37 @@ Rencana komprehensif untuk mengintegrasikan modul Doa & Zikir lengkap, modal sel
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                       WAKTIUBADAH APP                       │
+│                      WAKTUIBADAH APP                        │
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│   ┌────────────────┐      ┌─────────────────────────────┐   │
-│   │  Navbar / Nav  │ ───► │  Menu: Doa & Zikir (/doa)   │   │
-│   └────────────────┘      └──────────────┬──────────────┘   │
-│                                          │                  │
-│   ┌────────────────┐                     ▼                  │
-│   │ Ibadah Page &  │ ───► ┌─────────────────────────────┐   │
-│   │ Dashboard Card │      │ DoaSetelahSalatModal (Auto) │   │
-│   └────────────────┘      └─────────────────────────────┘   │
-│           │                                                 │
-│           ▼ (5 Salat Selesai)                               │
 │   ┌─────────────────────────────────────────────────────┐   │
-│   │              Audio & Notification Engine            │   │
-│   │  • Fallback Audio Banner (Mobile Autoplay Policy)   │   │
-│   │  • Subuh & Fardhu Azan Players                      │   │
-│   └─────────────────────────────────────────────────────┘   │
-│           │                                                 │
-│           ▼ (Lokasi & Zona)                                 │
+│   │           Notification Permission Gatekeeper        │   │
+│   │  • Checks Notification.permission on load           │   │
+│   │  • Shows Interactive Memphis Permission Modal        │   │
+│   └──────────────────────────┬──────────────────────────┘   │
+│                              │                              │
+│                              ▼                              │
 │   ┌─────────────────────────────────────────────────────┐   │
-│   │          Location & Prayer Schedule Engine          │   │
-│   │  • Kota-kota Indonesia (WIB, WITA, WIT)             │   │
-│   │  • GPS Auto-detect fallback                         │   │
+│   │                Audio & Volume Engine                │   │
+│   │  • UI Sounds (Tap/Toggle/Tab): Gain Volume = 0.25   │   │
+│   │  • Azan & Alarm Sounds: Gain Volume = 1.0           │   │
+│   │  • Persistent Floating "Hentikan Azan" Banner       │   │
+│   └──────────────────────────┬──────────────────────────┘   │
+│                              │                              │
+│                              ▼                              │
+│   ┌─────────────────────────────────────────────────────┐   │
+│   │            Quran Reader & Bookmark Engine           │   │
+│   │  • Forced Bright Clean White Background for Ayahs   │   │
+│   │  • Separate "Tandai Terakhir Baca" (Single active)  │   │
+│   │  • Separate "Simpan Ayat Favorit" (Collection list) │   │
 │   └─────────────────────────────────────────────────────┘   │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-#### Komponen Utama yang Dibuat & Dimodifikasi:
-1. `src/data/prayers-data.ts`: Koleksi terverifikasi zikir wirid setelah salat (istighfar, tasbih, tahmid, takbir, ayat kursi, doa keselamatan) & doa harian umum.
-2. `src/components/DoaSetelahSalatModal.tsx`: Modal selebrasi Memphis yang dipicu saat ke-5 salat selesai dicentang.
-3. `src/pages/DoaZikir.tsx`: Halaman katalog doa & zikir lengkap dengan navigasi tab dan pencarian instan.
-4. `src/components/AudioUnlockBanner.tsx`: Banner fallback deteksi autoplay policy untuk peramban ponsel.
-5. `src/lib/prayer-times.ts` & `src/data/indonesian-cities.ts`: Modul konfigurasi kota Indonesia dan kalkulasi akurat WIB/WITA/WIT.
-6. `src/components/Layout.tsx` & `src/App.tsx`: Penambahan link menu Doa, pembaruan logo brand dengan icon resmi, dan background polkadot Memphis.
-7. `src/index.css`: Penambahan pola dot matrix Memphis dan kelas tombol ikon SVG Memphis.
-8. `src/lib/storage.ts`: Bump versi ke `2.2.0` dan penambahan opsi preferensi modal doa otomatis.
+#### Komponen Utama yang Dimodifikasi & Dibuat:
+1. `src/lib/audio.ts`: Kalibrasi volume audio UI (~25-30%) vs Azan (100%).
+2. `src/components/NotificationGatekeeperModal.tsx`: Permintaan izin notifikasi interaktif pada awal sesi jika belum diizinkan.
+3. `src/pages/QuranHadis.tsx` & `src/components/SurahDetailModal.tsx`: Tampilan latar putih bersih untuk huruf Arab & pemisahan 2 tombol spesial (Tandai Terakhir Baca & Favorit).
+4. `src/pages/Settings.tsx`: Penambahan sakelar Tema Manual (Terang / Gelap) & kalibrasi pengaturan izin notifikasi.
+5. `src/lib/storage.ts`: Penyimpanan state `lastReadAyah` dan `favoriteAyahs` terpisah.

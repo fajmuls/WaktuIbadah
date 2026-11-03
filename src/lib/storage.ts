@@ -23,9 +23,12 @@ const KEYS = {
   ADMIN_AUTHENTICATED: "wi_admin_authenticated",
   AUTO_DOA_MODAL: "wi_auto_doa_modal",
   SELECTED_CITY: "wi_selected_city",
+  THEME_MODE: "wi_theme_mode",
+  QURAN_WHITE_THEME: "wi_quran_white_theme",
+  LAST_READ_AYAH: "wi_last_read_ayah",
 };
 
-export const CURRENT_VERSION = "2.2.0";
+export const CURRENT_VERSION = "2.3.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -356,6 +359,28 @@ export const storage = {
     setItem(KEYS.SELECTED_CITY, city);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('wi_city_changed', { detail: city }));
+    }
+  },
+
+  // Manual Theme Mode ('light' | 'dark' | 'system')
+  getThemeMode: (): 'light' | 'dark' | 'system' => getItem<'light' | 'dark' | 'system'>(KEYS.THEME_MODE, 'light'),
+  setThemeMode: (mode: 'light' | 'dark' | 'system') => {
+    setItem(KEYS.THEME_MODE, mode);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_theme_changed', { detail: mode }));
+    }
+  },
+
+  // Forced White Theme for Quran Reading
+  isQuranWhiteTheme: () => getItem<boolean>(KEYS.QURAN_WHITE_THEME, true),
+  setQuranWhiteTheme: (enabled: boolean) => setItem(KEYS.QURAN_WHITE_THEME, enabled),
+
+  // Last Read Ayah Marker (1 single active position)
+  getLastReadAyah: () => getItem<{ surahNumber: number; surahName: string; ayahNumber: number; date: string } | null>(KEYS.LAST_READ_AYAH, null),
+  setLastReadAyah: (data: { surahNumber: number; surahName: string; ayahNumber: number; date: string }) => {
+    setItem(KEYS.LAST_READ_AYAH, data);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_last_read_updated', { detail: data }));
     }
   },
 

@@ -251,6 +251,33 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.3.0',
+    releaseDate: '3 November 2026',
+    title: 'Permission Gatekeeper Notifikasi, Kalibrasi Volume Audio, Tema Manual & Latar Putih Al-Qur\'an',
+    highlights: [
+      'Notification Permission Gatekeeper Modal: Permintaan izin notifikasi interaktif sebelum pengguna masuk ke dashboard utama.',
+      'Notifikasi Browser Tanpa Install PWA: Pengingat waktu salat dan suara Azan berbunyi otomatis dari web browser biasa.',
+      'Kalibrasi Volume Audio UI: Efek suara tombol (tap, toggle, tab switch, dzikir) dikecilkan menjadi lembut (~25% volume) agar nyaman, sementara suara Azan tetap 100% keras.',
+      'Latar Putih Khusus Al-Qur\'an: Tampilan pembacaan ayat dan surat Al-Qur\'an selalu berlatar putih bersih dengan teks Arab hitam kontras tinggi agar tidak terpengaruh tema gelap otomatis HP.',
+      'Pemisahan Fitur Penanda Ayat: Dua tombol berbeda: "Tandai Terakhir Baca" (1 posisi aktif) dan "Simpan Ayat Favorit" (koleksi banyak ayat).',
+      'Sakelar Tema Manual di Pengaturan: Pilihan Mode Terang, Mode Gelap, dan Mode Sistem dengan kontrol terpisah untuk tema Al-Qur\'an.'
+    ],
+    soundPackUpdates: [
+      'Volume suara tombol UI diredam lembut (25% gain) untuk kenyamanan pendengaran',
+      'Suara Azan Subuh, Fardhu, dan pengujian alarm tetap 100% lantang'
+    ],
+    uiOverhaul: [
+      'Notification Permission Modal beranimasi Memphis',
+      'Tampilan ayat Al-Qur\'an dipastikan berlatar putih bersih dengan kontras huruf Arab maksimal',
+      'Aksi dua tombol spesial pada setiap ayat: Tandai Terakhir Baca & Simpan Favorit'
+    ],
+    recommendations: [
+      'Saran #1: Integrasikan fitur pencarian tafsir ringkas Kemenag RI per ayat Al-Qur\'an',
+      'Saran #2: Tambahkan statistik durasi tilawah harian dalam grafik mingguan',
+      'Saran #3: Buat widget pengingat zikir pagi dan petang otomatis sesuai jam lokal'
+    ]
+  },
+  {
     version: '2.2.0',
     releaseDate: '31 Oktober 2026',
     title: 'Modul Doa & Zikir Lengkap, Modal 5 Waktu Salat, Background Memphis Polkadot, & Mobile Audio Policy',

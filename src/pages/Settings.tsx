@@ -34,6 +34,8 @@ export default function Settings() {
   const [autoDoaModal, setAutoDoaModal] = useState<boolean>(storage.getAutoDoaModal());
   const [selectedCity, setSelectedCity] = useState<string>(storage.getSelectedCity());
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
+  const [themeMode, setThemeModeState] = useState<'light' | 'dark' | 'system'>(storage.getThemeMode());
+  const [quranWhiteTheme, setQuranWhiteThemeState] = useState<boolean>(storage.isQuranWhiteTheme());
 
   // Cloud Sync states
   const [isSyncingToCloud, setIsSyncingToCloud] = useState(false);
@@ -411,6 +413,100 @@ export default function Settings() {
               className="memphis-btn memphis-btn-cyan px-3 py-1.5 text-xs font-black uppercase shrink-0"
             >
               Ganti Kota
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Pengaturan Tema Tampilan (Light/Dark Mode & Al-Qur'an White Background) */}
+      <div className="memphis-card p-5 space-y-4">
+        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#FFE600] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+              <Moon className="w-5 h-5 text-black" />
+            </div>
+            <div>
+              <h3 className="font-black text-sm uppercase tracking-tight">Tema & Tampilan Aplikasi</h3>
+              <p className="text-xs font-bold text-gray-500">Mode Terang/Gelap manual & latar Al-Qur'an</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          {/* Mode Tema Aplikasi */}
+          <div className="p-3 bg-[#FFFDF8] rounded-xl border-2 border-black space-y-2">
+            <span className="font-black text-xs text-black block">Mode Tema Antarmuka</span>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  playToggleSound();
+                  setThemeModeState('light');
+                  storage.setThemeMode('light');
+                  document.documentElement.classList.remove('dark');
+                }}
+                className={`memphis-btn py-2 text-xs font-black uppercase ${
+                  themeMode === 'light' ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-700'
+                }`}
+              >
+                Terang ☀️
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playToggleSound();
+                  setThemeModeState('dark');
+                  storage.setThemeMode('dark');
+                  document.documentElement.classList.add('dark');
+                }}
+                className={`memphis-btn py-2 text-xs font-black uppercase ${
+                  themeMode === 'dark' ? 'memphis-btn-pink text-white' : 'memphis-btn-white text-gray-700'
+                }`}
+              >
+                Gelap 🌙
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playToggleSound();
+                  setThemeModeState('system');
+                  storage.setThemeMode('system');
+                  if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    document.documentElement.classList.remove('dark');
+                  }
+                }}
+                className={`memphis-btn py-2 text-xs font-black uppercase ${
+                  themeMode === 'system' ? 'memphis-btn-cyan text-black' : 'memphis-btn-white text-gray-700'
+                }`}
+              >
+                Sistem 📱
+              </button>
+            </div>
+          </div>
+
+          {/* Locked White Theme for Al-Quran Reader */}
+          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-2 border-black">
+            <div className="pr-2">
+              <span className="font-black text-xs text-black block">Tampilan Al-Qur'an Latar Putih Bersih</span>
+              <span className="text-[11px] font-semibold text-gray-500">
+                Memastikan teks Arab & ayat Al-Qur'an selalu berlatar putih dengan kontras maksimal
+              </span>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                playToggleSound();
+                const nextVal = !quranWhiteTheme;
+                setQuranWhiteThemeState(nextVal);
+                storage.setQuranWhiteTheme(nextVal);
+              }}
+              className={`memphis-btn px-3 py-1.5 text-xs font-black uppercase shrink-0 ${
+                quranWhiteTheme ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-600'
+              }`}
+            >
+              {quranWhiteTheme ? 'Aktif' : 'Ikuti Tema'}
             </button>
           </div>
         </div>

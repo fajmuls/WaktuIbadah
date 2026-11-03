@@ -42,33 +42,37 @@ function playSoundFile(src: string, volume: number = 0.85): Promise<void> {
 // UI Sound Effects
 // -------------------------------------------------------------
 
+// -------------------------------------------------------------
+// UI Sound Effects (Subtle & Softened Volume ~0.25)
+// -------------------------------------------------------------
+
 export const playButtonTapSound = () => {
-  playSoundFile('/audio/ui_button_tap.mp3', 0.9);
-  if (navigator.vibrate) navigator.vibrate(25);
+  playSoundFile('/audio/ui_button_tap.mp3', 0.25);
+  if (navigator.vibrate) navigator.vibrate(15);
 };
 
 export const playToggleSound = () => {
-  playSoundFile('/audio/ui_toggle.mp3', 0.8);
-  if (navigator.vibrate) navigator.vibrate(30);
+  playSoundFile('/audio/ui_toggle.mp3', 0.25);
+  if (navigator.vibrate) navigator.vibrate(15);
 };
 
 export const playTabSwitchSound = () => {
-  playSoundFile('/audio/ui_tab_switch.mp3', 0.75);
+  playSoundFile('/audio/ui_tab_switch.mp3', 0.20);
 };
 
 export const playSaveSuccessSound = () => {
-  playSoundFile('/audio/ui_save_success.mp3', 1.0);
-  if (navigator.vibrate) navigator.vibrate([60, 40, 90]);
+  playSoundFile('/audio/ui_save_success.mp3', 0.35);
+  if (navigator.vibrate) navigator.vibrate([40, 30, 60]);
 };
 
 export const playDeleteSound = () => {
-  playSoundFile('/audio/ui_delete.mp3', 0.85);
-  if (navigator.vibrate) navigator.vibrate(50);
+  playSoundFile('/audio/ui_delete.mp3', 0.25);
+  if (navigator.vibrate) navigator.vibrate(25);
 };
 
 export const playErrorSound = () => {
-  playSoundFile('/audio/ui_error.mp3', 1.0);
-  if (navigator.vibrate) navigator.vibrate([100, 50, 100]);
+  playSoundFile('/audio/ui_error.mp3', 0.40);
+  if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
 };
 
 export const playClickSound = () => {
@@ -80,13 +84,13 @@ export const playClickSound = () => {
 // -------------------------------------------------------------
 
 export const playDhikrTapSound = () => {
-  playSoundFile('/audio/dhikr_counter_tap.mp3', 1.0);
-  if (navigator.vibrate) navigator.vibrate(35);
+  playSoundFile('/audio/dhikr_counter_tap.mp3', 0.30);
+  if (navigator.vibrate) navigator.vibrate(20);
 };
 
 export const playPrayerCompletedSound = () => {
-  playSoundFile('/audio/prayer_completed.mp3', 1.0);
-  if (navigator.vibrate) navigator.vibrate([80, 50, 80]);
+  playSoundFile('/audio/prayer_completed.mp3', 0.35);
+  if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 };
 
 export const playPrayerSound = (prayerName: string) => {
@@ -115,19 +119,19 @@ export const playPrayerSound = (prayerName: string) => {
 export const playTaskStateSound = (state: 'completed' | 'urgent' | 'soon' | 'overdue') => {
   switch (state) {
     case 'completed':
-      playSoundFile('/audio/task_completed.mp3', 1.0);
-      if (navigator.vibrate) navigator.vibrate([70, 40, 70]);
+      playSoundFile('/audio/task_completed.mp3', 0.35);
+      if (navigator.vibrate) navigator.vibrate([40, 30, 40]);
       break;
     case 'urgent':
-      playSoundFile('/audio/task_deadline_urgent.mp3', 1.0);
-      if (navigator.vibrate) navigator.vibrate([150, 50, 150]);
+      playSoundFile('/audio/task_deadline_urgent.mp3', 0.85);
+      if (navigator.vibrate) navigator.vibrate([120, 40, 120]);
       break;
     case 'soon':
-      playSoundFile('/audio/task_deadline_soon.mp3', 0.9);
+      playSoundFile('/audio/task_deadline_soon.mp3', 0.35);
       break;
     case 'overdue':
-      playSoundFile('/audio/task_overdue.mp3', 1.0);
-      if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+      playSoundFile('/audio/task_overdue.mp3', 0.85);
+      if (navigator.vibrate) navigator.vibrate([150, 80, 150]);
       break;
   }
 };
@@ -135,13 +139,13 @@ export const playTaskStateSound = (state: 'completed' | 'urgent' | 'soon' | 'ove
 export const playScheduleEventSound = (type: 'created' | 'start' | 'reminder') => {
   switch (type) {
     case 'created':
-      playSoundFile('/audio/schedule_created.mp3', 0.9);
+      playSoundFile('/audio/schedule_created.mp3', 0.30);
       break;
     case 'start':
-      playSoundFile('/audio/schedule_start.mp3', 1.0);
+      playSoundFile('/audio/schedule_start.mp3', 0.85);
       break;
     case 'reminder':
-      playSoundFile('/audio/schedule_reminder.mp3', 1.0);
+      playSoundFile('/audio/schedule_reminder.mp3', 0.85);
       break;
   }
 };
@@ -152,27 +156,27 @@ export const playScheduleEventSound = (type: 'created' | 'start' | 'reminder') =
 
 export const playFocusSound = (type: 'start' | 'end') => {
   if (type === 'start') {
-    playSoundFile('/audio/focus_session_start.mp3', 1.0);
+    playSoundFile('/audio/focus_session_start.mp3', 0.40);
   } else {
-    playSoundFile('/audio/focus_session_end.mp3', 1.0);
+    playSoundFile('/audio/focus_session_end.mp3', 0.40);
   }
 };
 
 export const playQuranSound = (type: 'open' | 'bookmark_saved' | 'bookmark_removed' | 'goal_complete') => {
   switch (type) {
     case 'open':
-      playSoundFile('/audio/quran_open.mp3', 0.85);
+      playSoundFile('/audio/quran_open.mp3', 0.30);
       break;
     case 'bookmark_saved':
-      playSoundFile('/audio/quran_bookmark_saved.mp3', 0.9);
-      if (navigator.vibrate) navigator.vibrate(40);
+      playSoundFile('/audio/quran_bookmark_saved.mp3', 0.35);
+      if (navigator.vibrate) navigator.vibrate(25);
       break;
     case 'bookmark_removed':
-      playSoundFile('/audio/quran_bookmark_removed.mp3', 0.8);
+      playSoundFile('/audio/quran_bookmark_removed.mp3', 0.25);
       break;
     case 'goal_complete':
-      playSoundFile('/audio/quran_reading_goal_complete.mp3', 1.0);
-      if (navigator.vibrate) navigator.vibrate([100, 50, 150]);
+      playSoundFile('/audio/quran_reading_goal_complete.mp3', 0.50);
+      if (navigator.vibrate) navigator.vibrate([80, 40, 100]);
       break;
   }
 };
