@@ -1,9 +1,9 @@
 // GET /api/admin/overview   (header: x-admin-token)
 // Ringkasan semua pengguna terdaftar + review + status notifikasi untuk Admin Dashboard.
 // PIN dan isi data pribadi TIDAK dikirim ke browser; hanya ringkasan.
-import { getDb } from '../_lib/firebase.js';
 import { isAdmin, methodGuard, normalizeProfileId, send } from '../_lib/http.js';
-import { COLLECTION } from '../_lib/dispatch.js';
+import { listCollection } from '../_lib/firestore-rest.js';
+import { allIds, getSubs } from '../_lib/store.js';
 
 const toList = (v) => (Array.isArray(v) ? v : v && typeof v === 'object' ? Object.values(v) : []);
 const dayDiff = (a, b) => Math.max(0, Math.round((b - a) / 86400000));
@@ -14,18 +14,20 @@ export default async function handler(req, res) {
   if (!isAdmin(req)) return send(res, 401, { ok: false, error: 'Token admin salah' });
 
   try {
-    const db = getDb();
-    const [profilesSnap, reviewsSnap, pushSnap] = await Promise.all([
-      db.collection('student_profiles').get(),
-      db.collection('website_reviews').get(),
-      db.collection(COLLECTION).get(),
+    // Profil & review dibaca lewat Firestore REST (aturan Firestore mengizinkan baca);
+    // langganan notifikasi dibaca dari Redis.
+    const [profileDocs, reviewDocs, subIds] = await Promise.all([
+      listCollection('student_profiles'),
+      listCollection('website_reviews'),
+      allIds(),
     ]);
+    const pushSubs = await getSubs(subIds);
 
     // Review per pengguna
     const reviewsByUser = new Map();
     const reviews = [];
-    reviewsSnap.forEach((d) => {
-      const r = d.data();
+    reviewDocs.forEach((d) => {
+      const r = d.data;
       reviews.push(r);
       const k = normalizeProfileId(r.userName);
       if (!reviewsByUser.has(k)) reviewsByUser.set(k, []);
@@ -35,8 +37,7 @@ export default async function handler(req, res) {
     // Perangkat notifikasi per pengguna
     const pushByUser = new Map();
     const pushPlatforms = { android: 0, ios: 0, desktop: 0 };
-    pushSnap.forEach((d) => {
-      const p = d.data();
+    pushSubs.forEach((p) => {
       if (p.enabled === false) return;
       pushPlatforms[p.platform] = (pushPlatforms[p.platform] || 0) + 1;
       if (!pushByUser.has(p.profileId)) pushByUser.set(p.profileId, []);
@@ -45,8 +46,8 @@ export default async function handler(req, res) {
 
     const now = Date.now();
     const users = [];
-    profilesSnap.forEach((d) => {
-      const p = d.data();
+    profileDocs.forEach((d) => {
+      const p = d.data;
       const prayerLogs = toList(p.prayerLogs);
       const tasks = toList(p.tasks);
       const schedules = toList(p.schedules);
@@ -116,7 +117,7 @@ export default async function handler(req, res) {
       totals: {
         users: users.length,
         withNotifications: users.filter((u) => u.notification.devices > 0).length,
-        notificationDevices: pushSnap.size,
+        notificationDevices: pushSubs.filter((p) => p.enabled !== false).length,
         platforms: pushPlatforms,
         reviews: reviews.length,
       },

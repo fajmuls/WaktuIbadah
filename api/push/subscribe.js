@@ -1,10 +1,9 @@
 // POST /api/push/subscribe
 // Menyimpan/memperbarui langganan Web Push + preferensi + jadwal pengguna.
-import { getDb } from '../_lib/firebase.js';
 import { bodyOf, endpointId, isAllowedPushEndpoint, methodGuard, normalizeProfileId, send } from '../_lib/http.js';
 import { normalizePrefs } from '../_lib/events.js';
 import { safeTz } from '../_lib/time.js';
-import { COLLECTION } from '../_lib/dispatch.js';
+import { getSub, putSub } from '../_lib/store.js';
 
 const str = (v, max) => (typeof v === 'string' ? v.trim().slice(0, max) : '');
 
@@ -38,12 +37,12 @@ export default async function handler(req, res) {
       status: str(t?.status, 30),
     }));
 
-    const db = getDb();
-    const ref = db.collection(COLLECTION).doc(endpointId(endpoint));
-    const existing = await ref.get();
+    const id = endpointId(endpoint);
+    const existing = await getSub(id);
     const now = Date.now();
 
     const doc = {
+      ...(existing || {}),
       endpoint,
       keys: { p256dh, auth },
       enabled: true,
@@ -61,15 +60,15 @@ export default async function handler(req, res) {
       updatedAt: now,
       nextRunAt: now, // dihitung ulang oleh dispatch pada menit berikutnya
     };
-    if (!existing.exists) {
+    if (!existing) {
       doc.createdAt = now;
       doc.joinedAt = now;
       doc.sent = {};
       doc.sentCount = 0;
     }
 
-    await ref.set(doc, { merge: true });
-    return send(res, 200, { ok: true, id: ref.id, isNew: !existing.exists });
+    await putSub(id, doc);
+    return send(res, 200, { ok: true, id, isNew: !existing });
   } catch (e) {
     console.error('[subscribe]', e);
     return send(res, 500, { ok: false, error: String(e?.message || e) });

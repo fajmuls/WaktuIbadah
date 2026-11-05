@@ -1,5 +1,6 @@
 // Mengambil jadwal salat (data MyQuran/Kemenag) di sisi server, dengan cache
-// di memori + Firestore supaya tidak menembak API setiap menit.
+// di memori + Redis supaya tidak menembak API setiap menit.
+import { cacheGet, cacheSet } from './store.js';
 
 const MYQURAN = 'https://api.myquran.com/v2';
 const mem = new Map();
@@ -17,17 +18,15 @@ async function fetchJson(url, timeoutMs = 7000) {
 }
 
 /** @returns {Promise<{times:Record<string,string>, imsak:string}>} */
-export async function getDayTimes(db, cityId, ymd) {
+export async function getDayTimes(cityId, ymd) {
   const id = String(cityId || '1301');
   const key = `${id}_${ymd}`;
   if (mem.has(key)) return mem.get(key);
 
-  const ref = db.collection('prayer_cache').doc(key);
-  const cached = await ref.get();
-  if (cached.exists) {
-    const v = cached.data();
-    mem.set(key, v);
-    return v;
+  const cached = await cacheGet(key);
+  if (cached) {
+    mem.set(key, cached);
+    return cached;
   }
 
   const [y, m, d] = ymd.split('-');
@@ -41,20 +40,19 @@ export async function getDayTimes(db, cityId, ymd) {
     fetchedAt: Date.now(),
   };
   mem.set(key, value);
-  await ref.set(value).catch(() => {});
+  await cacheSet(key, value).catch(() => {});
   return value;
 }
 
 /** Tanggal Hijriah (angka hari) untuk tanggal Masehi tertentu. */
-export async function getHijriDay(db, ymd) {
+export async function getHijriDay(ymd) {
   const key = `hijri_${ymd}`;
   if (mem.has(key)) return mem.get(key).day;
 
-  const ref = db.collection('prayer_cache').doc(key);
-  const cached = await ref.get();
-  if (cached.exists) {
-    mem.set(key, cached.data());
-    return cached.data().day;
+  const cached = await cacheGet(key);
+  if (cached) {
+    mem.set(key, cached);
+    return cached.day;
   }
 
   const json = await fetchJson(`${MYQURAN}/cal/hijr/${ymd}`);
@@ -63,6 +61,6 @@ export async function getHijriDay(db, ymd) {
   if (!Number.isFinite(day)) throw new Error('Format tanggal Hijriah tidak valid');
   const value = { day, raw: text, fetchedAt: Date.now() };
   mem.set(key, value);
-  await ref.set(value).catch(() => {});
+  await cacheSet(key, value).catch(() => {});
   return day;
 }
