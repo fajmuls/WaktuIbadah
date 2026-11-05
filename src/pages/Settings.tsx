@@ -14,7 +14,7 @@ import {
   playButtonTapSound, playToggleSound, playSaveSuccessSound, playDhikrTapSound,
   playTaskStateSound, toggleAmbientLoop, isAmbientPlaying, stopAmbientLoop
 } from '../lib/audio';
-import { showPWANotification, requestNotificationPermission } from '../lib/pwa-service';
+import { enablePush, disablePush, getPushStatus, sendServerTestPush, syncPushSoon, PushStatus } from '../lib/push';
 import { 
   syncAllToCloud, syncAllFromCloud, updateProfilePin, 
   connectCloudProfile, checkCloudProfile 
@@ -36,6 +36,12 @@ export default function Settings() {
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [themeMode, setThemeModeState] = useState<'light' | 'dark' | 'system'>(storage.getThemeMode());
   const [quranWhiteTheme, setQuranWhiteThemeState] = useState<boolean>(storage.isQuranWhiteTheme());
+
+  // Web Push (notifikasi server)
+  const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMsg, setPushMsg] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+  const refreshPush = () => getPushStatus().then(setPushStatus).catch(() => {});
 
   // Cloud Sync states
   const [isSyncingToCloud, setIsSyncingToCloud] = useState(false);
@@ -60,19 +66,45 @@ export default function Settings() {
     if (loadedUser) setNameInput(loadedUser.name);
     setVersion(storage.getVersion());
     setIsAmbientOn(isAmbientPlaying());
+    refreshPush();
   }, []);
 
-  const handleToggleMasterReminder = () => {
-    if (user) {
-      playToggleSound();
-      const updated = { ...user, reminderEnabled: !user.reminderEnabled };
-      storage.setUser(updated);
-      setUser(updated);
-      
-      if (updated.reminderEnabled && 'Notification' in window) {
-        Notification.requestPermission();
-      }
+  const handleToggleMasterReminder = async () => {
+    if (!user) return;
+    playToggleSound();
+    const updated = { ...user, reminderEnabled: !user.reminderEnabled };
+    storage.setUser(updated);
+    setUser(updated);
+    setPushMsg(null);
+    if (updated.reminderEnabled) {
+      await handleEnablePush();
+    } else {
+      await disablePush();
+      refreshPush();
     }
+  };
+
+  const handleEnablePush = async () => {
+    playButtonTapSound();
+    setPushBusy(true);
+    setPushMsg(null);
+    const r = await enablePush();
+    await refreshPush();
+    setPushBusy(false);
+    setPushMsg(r.ok
+      ? { text: 'Notifikasi aktif. Klik "Uji Notifikasi dari Server" untuk memastikan.', type: 'success' }
+      : { text: r.message || 'Gagal mengaktifkan notifikasi.', type: 'error' });
+  };
+
+  const handleServerTest = async () => {
+    playButtonTapSound();
+    setPushBusy(true);
+    setPushMsg(null);
+    const r = await sendServerTestPush();
+    setPushBusy(false);
+    setPushMsg(r.ok
+      ? { text: 'Uji dikirim dari server. Notifikasi akan muncul dalam beberapa detik, bahkan bila Anda menutup aplikasi.', type: 'success' }
+      : { text: r.message || 'Gagal mengirim uji.', type: 'error' });
   };
 
   const updateReminderSetting = <K extends keyof ReminderSettings>(key: K, value: ReminderSettings[K]) => {
@@ -80,6 +112,7 @@ export default function Settings() {
     const updated = { ...reminderSettings, [key]: value };
     setReminderSettings(updated);
     storage.setReminderSettings(updated);
+    syncPushSoon(800); // kirim preferensi terbaru ke server notifikasi
   };
 
   const handleTestAlarm = async () => {
@@ -618,46 +651,93 @@ export default function Settings() {
           </label>
         </div>
 
+        {/* Status */}
+        <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase">
+          <span className={`px-2 py-1 rounded border-2 border-black ${pushStatus?.subscribed ? 'bg-emerald-400' : 'bg-[#FFE600]'}`}>
+            {pushStatus?.subscribed ? 'Notifikasi server: aktif' : 'Notifikasi server: belum aktif'}
+          </span>
+          <span className="px-2 py-1 rounded border-2 border-black bg-white">
+            Izin: {pushStatus?.permission === 'granted' ? 'diizinkan' : pushStatus?.permission === 'denied' ? 'diblokir' : 'belum'}
+          </span>
+          <span className="px-2 py-1 rounded border-2 border-black bg-white">
+            {pushStatus?.standalone ? 'Terpasang sebagai aplikasi' : 'Berjalan di browser'}
+          </span>
+        </div>
+
         <p className="text-xs font-semibold text-gray-600">
-          Notifikasi Service Worker WaktuIbadah menggunakan Web Notifications API resmi dengan aksi langsung buka aplikasi dan getaran taktil HP.
+          Pengingat salat, jadwal kuliah, dan tenggat tugas dikirim dari server tepat waktu, jadi tetap muncul walaupun aplikasi ditutup.
+          {pushStatus?.support === 'ios-needs-install' && ' Di iPhone/iPad: pasang dulu lewat Bagikan > Tambah ke Layar Utama, lalu buka dari ikonnya.'}
+          {pushStatus?.support === 'unsupported' && ' Browser ini tidak mendukung notifikasi push.'}
+          {pushStatus?.support === 'not-configured' && ' Server notifikasi belum dikonfigurasi (kunci VAPID kosong).'}
         </p>
 
-        {/* Test Background Notification Button */}
+        {pushMsg && (
+          <div className={`p-2.5 rounded-xl border-2 border-black text-xs font-bold ${pushMsg.type === 'success' ? 'bg-emerald-100 text-emerald-900' : 'bg-[#FF4B91] text-white'}`}>
+            {pushMsg.text}
+          </div>
+        )}
+
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          <button
-            onClick={async () => {
-              playButtonTapSound();
-              const perm = await requestNotificationPermission();
-              if (perm === 'granted') {
-                showPWANotification('🕌 Waktu Salat Tiba (Uji PWA)', {
-                  body: 'Pengingat latar belakang aktif! Suara adzan dan countdown jadwal siap berbunyi.',
-                  tag: 'test-pwa-alert',
-                  vibrate: [500, 200, 500]
-                });
-                setSyncMessage({
-                  text: 'Notifikasi uji PWA dikirim ke perangkat Anda! Periksa bilah status notifikasi HP/laptop.',
-                  type: 'success'
-                });
-              } else {
-                setSyncMessage({
-                  text: 'Izin notifikasi belum diberikan di browser. Mohon izinkan notifikasi pada pop-up browser.',
-                  type: 'error'
-                });
-              }
-            }}
-            className="memphis-btn memphis-btn-yellow py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
-          >
-            <Bell className="w-4 h-4 stroke-[2.5]" />
-            Kirim Uji Notifikasi Latar (PWA)
-          </button>
+          {pushStatus?.subscribed ? (
+            <button
+              onClick={handleServerTest}
+              disabled={pushBusy}
+              className="memphis-btn memphis-btn-yellow py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-60"
+            >
+              <Bell className="w-4 h-4 stroke-[2.5]" />
+              {pushBusy ? 'Mengirim...' : 'Uji Notifikasi dari Server'}
+            </button>
+          ) : (
+            <button
+              onClick={handleEnablePush}
+              disabled={pushBusy || pushStatus?.support === 'unsupported' || pushStatus?.support === 'not-configured'}
+              className="memphis-btn memphis-btn-green py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-60"
+            >
+              <Bell className="w-4 h-4 stroke-[2.5]" />
+              {pushBusy ? 'Memproses...' : 'Aktifkan Notifikasi'}
+            </button>
+          )}
 
           <button
             onClick={handleTestAlarm}
             className="memphis-btn memphis-btn-cyan py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
           >
             <Vibrate className="w-4 h-4 stroke-[2.5]" />
-            {stopAlarmFn ? 'Hentikan Alarm HP' : 'Uji Pola Getar & Nada HP'}
+            {stopAlarmFn ? 'Hentikan Alarm HP' : 'Uji Pola Getar & Nada (di aplikasi)'}
           </button>
+        </div>
+
+        {/* Pengaturan suara & pengingat */}
+        <div className="space-y-3 border-t-2 border-dashed border-black/30 pt-3">
+          <label className="flex items-start justify-between gap-3 cursor-pointer">
+            <span className="min-w-0">
+              <span className="block text-xs font-black uppercase">Bisukan suara notifikasi</span>
+              <span className="block text-[11px] font-bold text-gray-500 leading-snug">
+                Notifikasi tetap muncul tetapi tanpa suara dan tanpa getar. Untuk getar saja, atur HP ke mode getar.
+              </span>
+            </span>
+            <input
+              type="checkbox"
+              checked={reminderSettings.silentNotifications === true}
+              onChange={(e) => updateReminderSetting('silentNotifications', e.target.checked)}
+              className="w-5 h-5 accent-emerald-600 shrink-0 mt-0.5"
+            />
+          </label>
+
+          <label className="flex items-center justify-between gap-3">
+            <span className="text-xs font-black uppercase">Ingatkan sebelum waktu salat</span>
+            <select
+              value={reminderSettings.preReminderMinutes ?? 10}
+              onChange={(e) => updateReminderSetting('preReminderMinutes', Number(e.target.value))}
+              className="border-2 border-black rounded-lg bg-white px-2 py-1 text-xs font-bold"
+            >
+              <option value={0}>Mati</option>
+              <option value={5}>5 menit</option>
+              <option value={10}>10 menit</option>
+              <option value={15}>15 menit</option>
+              <option value={30}>30 menit</option>
+            </select>
+          </label>
         </div>
       </div>
 

@@ -108,6 +108,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         useFocusMode: formData.useFocusMode !== false,
         pin: cleanPin.length === 4 ? cleanPin : undefined,
         isOnboarded: true,
+        createdAt: new Date().toISOString(),
       };
       storage.setUser(user);
 
@@ -118,10 +119,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         console.warn('Initial cloud profile setup failed (can retry in settings):', err);
       }
 
-      // Request notification permission if enabled
-      if (user.reminderEnabled && 'Notification' in window) {
-        Notification.requestPermission();
-      }
+      // Izin notifikasi + langganan push diminta lewat NotificationGatekeeperModal
+      // (di Dashboard) agar terjadi dalam satu sentuhan pengguna dan setelah ajakan pasang PWA.
 
       setIsSyncing(false);
       onComplete();

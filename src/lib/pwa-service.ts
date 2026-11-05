@@ -1,7 +1,7 @@
 /**
  * PWA Service Worker & Background Sync Helper
- * Manages Service Worker registration, Periodic Background Sync,
- * and reliable push/local notifications even when tab is backgrounded.
+ * Mendaftarkan Service Worker dan menyediakan notifikasi lokal (hanya saat aplikasi terbuka).
+ * Notifikasi saat aplikasi TERTUTUP dikirim server lewat Web Push: lihat src/lib/push.ts.
  */
 
 export interface PWAStatus {
@@ -22,22 +22,6 @@ export async function registerPWA(): Promise<ServiceWorkerRegistration | null> {
 
   try {
     const registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
-
-    // Request Periodic Background Sync if available on modern Chrome / Android
-    if ('periodicSync' in registration) {
-      try {
-        const periodicSync = (registration as any).periodicSync;
-        const tags = await periodicSync.getTags();
-        if (!tags.includes('prayer-alarm-sync')) {
-          await periodicSync.register('prayer-alarm-sync', {
-            minInterval: 15 * 60 * 1000, // 15 minutes minimum interval
-          });
-        }
-      } catch (err) {
-        // Periodic sync may require specific user engagement or permission
-        console.debug('Periodic sync not active:', err);
-      }
-    }
 
     return registration;
   } catch (error) {
@@ -110,8 +94,8 @@ export async function showPWANotification(
 
   const notificationOptions: NotificationOptions = {
     body: options.body,
-    icon: options.icon || 'https://files.catbox.moe/3b6dqo.png',
-    badge: options.badge || 'https://files.catbox.moe/3b6dqo.png',
+    icon: options.icon || '/icons/icon-192.png',
+    badge: options.badge || '/icons/badge-96.png',
     tag: options.tag || 'waktu-ibadah-alarm',
     data: options.data,
     ...(options.vibrate ? { vibrate: options.vibrate } : {}),

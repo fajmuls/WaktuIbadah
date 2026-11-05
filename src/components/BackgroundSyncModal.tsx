@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ShieldCheck, Bell, Zap, X, Check, BatteryCharging } from 'lucide-react';
 import { storage } from '../lib/storage';
 import { vibrateSuccess } from '../lib/audio';
-import { requestNotificationPermission } from '../lib/pwa-service';
+import { enablePush, getPushSupport } from '../lib/push';
 
 export const BackgroundSyncModal: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -28,9 +28,9 @@ export const BackgroundSyncModal: React.FC = () => {
     storage.setBackgroundSyncDismissed(true);
     vibrateSuccess();
 
-    // Request notification permission if not yet decided
-    if ('Notification' in window && Notification.permission === 'default') {
-      await requestNotificationPermission();
+    // Aktifkan Web Push (izin + langganan server) bila perangkat mendukung
+    if (getPushSupport() === 'supported') {
+      await enablePush();
     }
 
     setIsOpen(false);

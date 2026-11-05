@@ -7,6 +7,7 @@ import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } fro
 import { format, addDays } from 'date-fns';
 import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm } from './lib/audio';
 import { showPWANotification } from './lib/pwa-service';
+import { isPushActive, syncPushNow, syncPushSoon } from './lib/push';
 import { testFirestoreConnection, syncAllFromCloud, syncAllToCloud, subscribeToStudentProfile } from './lib/cloud-sync';
 
 // Pages
@@ -32,6 +33,7 @@ import Qibla from './pages/Qibla';
 // Modals
 import { BackgroundSyncModal } from './components/BackgroundSyncModal';
 import { WebsiteReviewModal } from './components/WebsiteReviewModal';
+import { InstallPwaBanner } from './components/InstallPwaBanner';
 
 const SplashScreen = () => (
   <motion.div 
@@ -159,6 +161,13 @@ export default function App() {
     };
     window.addEventListener('wi_check_five_prayers_review', handleReviewTrigger);
 
+    // Bila Web Push server aktif, notifikasi sistem dikirim server (muncul juga saat app ditutup).
+    // Di sini cukup memutar azan/getar di dalam aplikasi agar tidak muncul notifikasi ganda.
+    const notify = (title: string, opts: Parameters<typeof showPWANotification>[1]) => {
+      if (isPushActive()) return;
+      showPWANotification(title, opts);
+    };
+
     const checkAlarms = () => {
       const currentUser = storage.getUser();
       if (!currentUser?.reminderEnabled) return;
@@ -173,6 +182,7 @@ export default function App() {
 
       // Trigger Helper: sound and vibration with custom Azan URLs
       const triggerAlarmEffect = (prayerName?: string) => {
+        if (reminderSettings.silentNotifications) return;
         if (reminderSettings.reminderType !== 'sound_only') {
           vibratePrayerAlarm();
         }
@@ -194,7 +204,7 @@ export default function App() {
             notifiedTimes.current.add(`prayer-${prayer}-${today}`);
             setActiveAzanAlert({ prayer, time: prayerTime });
             triggerAlarmEffect(prayer);
-            showPWANotification(`Waktu Salat ${prayer} Tiba`, {
+            notify(`Waktu Salat ${prayer} Tiba`, {
               body: `Allahu Akbar! Saatnya menunaikan ibadah salat ${prayer}.`,
               tag: `prayer-${prayer}-${today}`,
             });
@@ -207,7 +217,7 @@ export default function App() {
         if (times['Imsak'] === currentHHMM && !notifiedTimes.current.has(`imsak-${today}`)) {
           notifiedTimes.current.add(`imsak-${today}`);
           triggerAlarmEffect();
-          showPWANotification(`Waktu Imsak Telah Tiba`, {
+          notify(`Waktu Imsak Telah Tiba`, {
             body: `Waktu Imsak (${times['Imsak']}). Segera selesaikan santap sahur sebelum adzan Subuh.`,
             tag: `imsak-${today}`,
           });
@@ -219,7 +229,7 @@ export default function App() {
         notifiedTimes.current.add(`puasa-${today}`);
         const fastingInfo = getSunnahFastingInfo(cached?.hijri?.day || "1", now);
         if (fastingInfo && fastingInfo.isPuasaTomorrow) {
-          showPWANotification(`Pengingat Puasa Sunnah`, {
+          notify(`Pengingat Puasa Sunnah`, {
             body: `${fastingInfo.name}. ${fastingInfo.desc}`,
             tag: `puasa-${today}`,
           });
@@ -233,7 +243,7 @@ export default function App() {
           if (s.startTime === currentHHMM && !notifiedTimes.current.has(`schedule-${s.id}`)) {
             notifiedTimes.current.add(`schedule-${s.id}`);
             triggerAlarmEffect();
-            showPWANotification(`Jadwal: ${s.title}`, {
+            notify(`Jadwal: ${s.title}`, {
               body: `Aktivitas ${s.title} dimulai sekarang.`,
               tag: `schedule-${s.id}`,
             });
@@ -253,11 +263,43 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilityWake);
     window.addEventListener('focus', handleVisibilityWake);
 
-    if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
-      Notification.requestPermission();
-    }
+    // Izin notifikasi TIDAK diminta di sini (butuh sentuhan pengguna). Lihat NotificationGatekeeperModal.
+
+    // Pesan dari Service Worker (push diterima saat aplikasi terbuka, dsb.)
+    const onSwMessage = (ev: MessageEvent) => {
+      const msg = ev.data;
+      if (!msg || typeof msg !== 'object') return;
+      if (msg.type === 'PUSH_SUBSCRIPTION_CHANGED') {
+        syncPushNow().catch(() => {});
+        return;
+      }
+      if (msg.type === 'PUSH_RECEIVED' && msg.payload?.kind === 'prayer' && msg.payload?.prayer) {
+        const prayer = String(msg.payload.prayer);
+        const day = format(new Date(), 'yyyy-MM-dd');
+        const key = `prayer-${prayer}-${day}`;
+        if (notifiedTimes.current.has(key)) return;
+        notifiedTimes.current.add(key);
+        const rs = storage.getReminderSettings();
+        const u = storage.getUser();
+        const times = (getCachedPrayerData()?.times || {}) as Record<string, string>;
+        setActiveAzanAlert({ prayer, time: times[prayer] || format(new Date(), 'HH:mm') });
+        if (rs.silentNotifications) return;
+        if (rs.reminderType !== 'sound_only') vibratePrayerAlarm();
+        if (u?.soundEnabled !== false && rs.reminderType !== 'vibrate_only') playPrayerAzan(prayer, rs.reminderType);
+      }
+    };
+    if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', onSwMessage);
+
+    // Sinkronkan preferensi/jadwal ke server saat data berubah & saat aplikasi dibuka kembali
+    const handlePushResync = () => syncPushSoon();
+    window.addEventListener('wi_auto_cloud_sync', handlePushResync);
+    window.addEventListener('wi_cloud_sync_completed', handlePushResync);
+    syncPushNow().catch(() => {});
 
     return () => {
+      window.removeEventListener('wi_auto_cloud_sync', handlePushResync);
+      window.removeEventListener('wi_cloud_sync_completed', handlePushResync);
+      if ('serviceWorker' in navigator) navigator.serviceWorker.removeEventListener('message', onSwMessage);
       clearTimeout(timer);
       clearInterval(alarmInterval);
       window.removeEventListener('wi_auto_cloud_sync', handleAutoCloudSync);
@@ -327,8 +369,7 @@ export default function App() {
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={() => {
-                    const isSubuh = activeAzanAlert.prayer.toLowerCase().includes('subuh');
-                    playPrayerAzan(isSubuh);
+                    playPrayerAzan(activeAzanAlert.prayer);
                   }}
                   className="memphis-btn bg-white hover:bg-emerald-50 text-black px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
                   title="Bunyikan Suara Azan"
@@ -350,6 +391,9 @@ export default function App() {
 
           {/* Polite Battery-Efficient Background Sync Prompt Modal */}
           <BackgroundSyncModal />
+
+          {/* Ajakan memasang PWA (wajib di iPhone agar notifikasi bisa jalan) */}
+          <InstallPwaBanner />
 
           {/* Automatic 5-Star Website Review Modal after 5 prayers */}
           <WebsiteReviewModal

@@ -1,94 +1,195 @@
-// Service Worker for WaktuIbadah PWA
-// Provides reliable background notification handling, notification click routing, and periodic sync
+/* WaktuIbadah Service Worker
+ * - Menerima Web Push dari server (notifikasi tetap muncul walau aplikasi/tab ditutup)
+ * - Menangani klik notifikasi
+ * - Cache ringan agar aplikasi bisa dibuka offline
+ *
+ * CATATAN: file ini SENGAJA ditulis manual. Jangan tambahkan plugin yang
+ * menghasilkan sw.js otomatis (mis. vite-plugin-pwa generateSW), karena akan
+ * menimpa file ini dan menghapus handler 'push' di bawah.
+ */
 
-const CACHE_NAME = 'waktuibadah-v1.7.0';
+const VERSION = 'v2.0.0';
+const SHELL_CACHE = `waktuibadah-shell-${VERSION}`;
+const ASSET_CACHE = `waktuibadah-assets-${VERSION}`;
 
+const SHELL_URLS = [
+  '/',
+  '/manifest.webmanifest',
+  '/icons/icon-192.png',
+  '/icons/badge-96.png',
+];
+
+// ---------------------------------------------------------------------------
+// Lifecycle
+// ---------------------------------------------------------------------------
 self.addEventListener('install', (event) => {
-  self.skipWaiting();
+  event.waitUntil(
+    caches
+      .open(SHELL_CACHE)
+      .then((cache) => cache.addAll(SHELL_URLS))
+      .catch(() => {})
+      .then(() => self.skipWaiting())
+  );
 });
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    clients.claim().then(() => {
-      console.log('[SW] WaktuIbadah Service Worker activated and claimed clients.');
-    })
+    (async () => {
+      const keys = await caches.keys();
+      await Promise.all(
+        keys
+          .filter((k) => k.startsWith('waktuibadah-') && k !== SHELL_CACHE && k !== ASSET_CACHE)
+          .map((k) => caches.delete(k))
+      );
+      await self.clients.claim();
+    })()
   );
 });
 
-// Handle incoming push messages
-self.addEventListener('push', (event) => {
-  let data = {
-    title: '🕌 Waktu Salat Telah Tiba',
-    body: 'Saatnya menunaikan salat dan istirahat sejenak dari aktivitas.',
-    icon: '/assets/aistudio/logo.png',
-    badge: '/assets/aistudio/logo.png',
-    tag: 'waktu-ibadah-alarm',
-    data: { url: '/' }
-  };
+// ---------------------------------------------------------------------------
+// Fetch: cache sederhana (tidak menyentuh /api, audio, atau request Range)
+// ---------------------------------------------------------------------------
+self.addEventListener('fetch', (event) => {
+  const req = event.request;
+  if (req.method !== 'GET') return;
 
-  if (event.data) {
-    try {
-      const payload = event.data.json();
-      data = { ...data, ...payload };
-    } catch {
-      data.body = event.data.text();
-    }
-  }
+  const url = new URL(req.url);
+  if (url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/api/')) return;
+  if (url.pathname === '/sw.js') return;
+  if (req.headers.has('range') || req.destination === 'audio' || req.destination === 'video') return;
 
-  const options = {
-    body: data.body,
-    icon: data.icon || 'https://files.catbox.moe/3b6dqo.png',
-    badge: data.badge || 'https://files.catbox.moe/3b6dqo.png',
-    vibrate: [500, 200, 500, 200, 800],
-    tag: data.tag || 'waktu-ibadah-alarm',
-    renotify: true,
-    requireInteraction: true,
-    data: data.data || { url: '/' },
-    actions: [
-      { action: 'open_app', title: 'Buka Aplikasi' },
-      { action: 'dismiss', title: 'Tutup' }
-    ]
-  };
-
-  event.waitUntil(
-    self.registration.showNotification(data.title, options)
-  );
-});
-
-// Handle notification click event
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-
-  if (event.action === 'dismiss') {
+  // Halaman (navigasi): coba jaringan dulu, jatuh ke cache bila offline
+  if (req.mode === 'navigate') {
+    event.respondWith(
+      fetch(req)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(SHELL_CACHE).then((c) => c.put('/', copy)).catch(() => {});
+          return res;
+        })
+        .catch(async () => (await caches.match('/')) || Response.error())
+    );
     return;
   }
 
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
-
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      for (const client of clientList) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          return client.focus();
-        }
-      }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
-      }
-    })
-  );
-});
-
-// Handle periodic background sync (Chrome Android)
-self.addEventListener('periodicsync', (event) => {
-  if (event.tag === 'prayer-alarm-sync') {
-    event.waitUntil(
-      self.registration.showNotification('🕌 Pengingat Ibadah Rutin', {
-        body: 'Tetap jaga salat 5 waktu dan luangkan waktu untuk tilawah Al-Qur\'an.',
-        icon: 'https://files.catbox.moe/3b6dqo.png',
-        tag: 'periodic-prayer-sync',
-        vibrate: [300, 100, 300]
+  // Aset statis: stale-while-revalidate
+  if (['script', 'style', 'image', 'font'].includes(req.destination)) {
+    event.respondWith(
+      caches.open(ASSET_CACHE).then(async (cache) => {
+        const cached = await cache.match(req);
+        const network = fetch(req)
+          .then((res) => {
+            if (res && res.status === 200) cache.put(req, res.clone()).catch(() => {});
+            return res;
+          })
+          .catch(() => cached);
+        return cached || network;
       })
     );
   }
+});
+
+// ---------------------------------------------------------------------------
+// Web Push
+// Payload JSON dari server (api/_lib/dispatch.js):
+// { title, body, tag, url, kind, prayer, silent, vibrate, requireInteraction }
+// ---------------------------------------------------------------------------
+self.addEventListener('push', (event) => {
+  let payload = {};
+  if (event.data) {
+    try {
+      payload = event.data.json();
+    } catch (e) {
+      payload = { body: event.data.text() };
+    }
+  }
+
+  const title = payload.title || 'WaktuIbadah';
+  const isAzan = payload.kind === 'prayer';
+
+  const options = {
+    body: payload.body || 'Saatnya menunaikan ibadah.',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/badge-96.png',
+    tag: payload.tag || 'waktuibadah',
+    renotify: true,
+    requireInteraction: payload.requireInteraction === true || isAzan,
+    silent: payload.silent === true,
+    timestamp: Date.now(),
+    data: {
+      url: payload.url || '/',
+      kind: payload.kind || 'general',
+      prayer: payload.prayer || null,
+    },
+    actions: [
+      { action: 'open', title: 'Buka' },
+      { action: 'dismiss', title: 'Tutup' },
+    ],
+  };
+
+  // Getar hanya bila tidak dibisukan (silent:true mematikan suara DAN getar).
+  if (payload.silent !== true) {
+    options.vibrate = Array.isArray(payload.vibrate)
+      ? payload.vibrate
+      : isAzan
+        ? [800, 300, 800, 300, 1200]
+        : [300, 150, 300];
+  }
+
+  event.waitUntil(
+    (async () => {
+      // Selalu tampilkan notifikasi (wajib di iOS/Safari dan Chrome).
+      await self.registration.showNotification(title, options);
+
+      // Jika aplikasi sedang terbuka di layar, minta halaman memutar azan penuh.
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of windows) {
+        if (client.visibilityState === 'visible') {
+          client.postMessage({ type: 'PUSH_RECEIVED', payload });
+        }
+      }
+    })()
+  );
+});
+
+// ---------------------------------------------------------------------------
+// Klik notifikasi
+// ---------------------------------------------------------------------------
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'dismiss') return;
+
+  const data = event.notification.data || {};
+  const targetUrl = new URL(data.url || '/', self.location.origin).href;
+
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of windows) {
+        if (client.url.startsWith(self.location.origin) && 'focus' in client) {
+          client.postMessage({ type: 'NOTIFICATION_CLICK', data });
+          if ('navigate' in client && client.url !== targetUrl) {
+            try {
+              await client.navigate(targetUrl);
+            } catch (e) {
+              /* abaikan */
+            }
+          }
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(targetUrl);
+    })()
+  );
+});
+
+// Langganan push kedaluwarsa/diganti browser -> minta halaman berlangganan ulang
+self.addEventListener('pushsubscriptionchange', (event) => {
+  event.waitUntil(
+    (async () => {
+      const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      for (const client of windows) client.postMessage({ type: 'PUSH_SUBSCRIPTION_CHANGED' });
+    })()
+  );
 });

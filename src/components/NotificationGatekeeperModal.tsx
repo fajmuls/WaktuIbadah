@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Bell, BellRing, Volume2, ShieldCheck, AlertTriangle, 
-  CheckCircle2, Smartphone, Laptop, Sparkles, RefreshCw, X, ChevronRight, HelpCircle
+  CheckCircle2, Smartphone, Laptop, Sparkles, RefreshCw, X, ChevronRight, HelpCircle, Share, SquarePlus
 } from 'lucide-react';
 import { storage } from '../lib/storage';
-import { registerPWA, showPWANotification, getPWAStatus, PWAStatus } from '../lib/pwa-service';
-import { testAlarmTone, stopAlarmSound, vibrateSuccess, playButtonTapSound } from '../lib/audio';
+import { registerPWA, getPWAStatus, PWAStatus } from '../lib/pwa-service';
+import { stopAlarmSound, vibrateSuccess, playButtonTapSound } from '../lib/audio';
+import { enablePush, getPushSupport, isPushActive, sendServerTestPush, PushSupport } from '../lib/push';
 
 interface NotificationGatekeeperModalProps {
   forceOpen?: boolean;
   onClose?: () => void;
 }
+
+const SNOOZE_KEY = 'wi_push_prompt_snooze_until';
 
 export function NotificationGatekeeperModal({ forceOpen = false, onClose }: NotificationGatekeeperModalProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -18,16 +21,26 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
   const [pwaStatus, setPwaStatus] = useState<PWAStatus | null>(null);
   const [isTesting, setIsTesting] = useState(false);
   const [permissionState, setPermissionState] = useState<NotificationPermission>('default');
+  const [support, setSupport] = useState<PushSupport>(getPushSupport());
+  const [errorMsg, setErrorMsg] = useState<string>('');
 
   useEffect(() => {
     if (typeof window !== 'undefined' && 'Notification' in window) {
       setPermissionState(Notification.permission);
     }
     checkStatus();
-    const isVerified = storage.isNotificationVerified();
-    
-    // Auto-open modal on startup if forceOpen OR if permission is not yet granted
-    if (forceOpen || !isVerified || (typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted')) {
+    const sup = getPushSupport();
+    setSupport(sup);
+
+    // Buka otomatis bila notifikasi push BELUM aktif di perangkat ini (dan belum ditunda).
+    // Di iPhone yang belum memasang aplikasi, ajakan dilakukan oleh InstallPwaBanner.
+    let snoozed = false;
+    try {
+      snoozed = Date.now() < Number(localStorage.getItem(SNOOZE_KEY) || 0);
+    } catch {
+      /* abaikan */
+    }
+    if (forceOpen || (sup === 'supported' && !isPushActive() && !snoozed)) {
       setIsOpen(true);
     }
   }, [forceOpen]);
@@ -35,58 +48,42 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
   const checkStatus = async () => {
     const status = await getPWAStatus();
     setPwaStatus(status);
+    if ('Notification' in window) setPermissionState(Notification.permission);
   };
 
-  const handleRequestPermission = async () => {
+  // Satu sentuhan: minta izin -> berlangganan push -> kirim notifikasi uji DARI SERVER
+  const handleEnable = async () => {
     playButtonTapSound();
-    if (typeof window !== 'undefined' && 'Notification' in window) {
-      try {
-        const perm = await Notification.requestPermission();
-        setPermissionState(perm);
-        if (perm === 'granted') {
-          handleRunDiagnosticTest();
-        } else {
-          setStep('guide');
-        }
-      } catch (err) {
-        console.error("Error requesting notification permission:", err);
-        handleRunDiagnosticTest();
-      }
-    } else {
-      handleRunDiagnosticTest();
-    }
-  };
-
-  const handleRunDiagnosticTest = async () => {
+    setErrorMsg('');
     setIsTesting(true);
     setStep('testing');
-
     try {
-      // 1. Ensure Service Worker is registered
       await registerPWA();
-      
-      // 2. Play Loud Azan Sound & strong vibration
-      testAlarmTone('azan_makkah', 'sound_and_vibrate', 8000);
-
-      // 3. Trigger Real Mobile Notification via Service Worker / Browser Notification
-      await showPWANotification(
-        '🕌 Tes Notifikasi & Adzan WaktuIbadah',
-        {
-          body: 'Alhamdulillah! Notifikasi di perangkat Anda berfungsi sempurna untuk pengingat waktu salat.',
-          tag: 'test-direct-notification',
-          vibrate: [600, 250, 600, 250, 900]
-        }
-      );
-
+      const res = await enablePush();
       await checkStatus();
-      setIsTesting(false);
+      if (!res.ok) {
+        setErrorMsg(res.message || 'Gagal mengaktifkan notifikasi.');
+        setStep('guide');
+        return;
+      }
+      const test = await sendServerTestPush();
+      if (!test.ok) {
+        setErrorMsg(test.message || 'Notifikasi uji gagal dikirim.');
+        setStep('guide');
+        return;
+      }
       setStep('verify');
-    } catch (err) {
-      console.error("Diagnostic notification test error:", err);
+    } catch (err: any) {
+      console.error('Aktivasi notifikasi gagal:', err);
+      setErrorMsg(err?.message || 'Terjadi kesalahan.');
+      setStep('guide');
+    } finally {
       setIsTesting(false);
-      setStep('verify');
     }
   };
+
+  const handleRequestPermission = handleEnable;
+  const handleRunDiagnosticTest = handleEnable;
 
   const handleConfirmSuccess = () => {
     stopAlarmSound();
@@ -101,9 +98,14 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
     setStep('guide');
   };
 
+  // "Lewati" hanya menunda sehari: notifikasi adalah fitur utama, jadi akan diingatkan lagi.
   const handleDismissModal = () => {
     stopAlarmSound();
-    storage.setNotificationVerified(true);
+    try {
+      localStorage.setItem(SNOOZE_KEY, String(Date.now() + 24 * 3600 * 1000));
+    } catch {
+      /* abaikan */
+    }
     setIsOpen(false);
     if (onClose) onClose();
   };
@@ -130,8 +132,9 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
             </div>
           </div>
 
-          {/* Close button only available if already verified once or force-opened */}
-          {(storage.isNotificationVerified() || forceOpen) && (
+          {/* Tombol tutup (menunda sehari) */}
+          {(
+
             <button 
               onClick={handleDismissModal}
               className="w-8 h-8 rounded-xl bg-white border-2 border-black flex items-center justify-center hover:bg-gray-100 font-black shadow-[1.5px_1.5px_0px_#121212]"
@@ -146,7 +149,7 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
           {step === 'intro' && (
             <div className="space-y-4">
               <p className="text-xs font-bold text-gray-700 leading-relaxed">
-                Agar pengingat salat 5 waktu dan suara Azan berbunyi tepat waktu di HP / laptop Anda (bahkan saat tab browser ditutup), izinkan akses notifikasi peramban di bawah ini:
+                Agar pengingat salat 5 waktu muncul tepat waktu di HP / laptop Anda, <strong>bahkan saat aplikasi ditutup</strong>, aktifkan notifikasi di bawah ini. Notifikasi dikirim dari server, jadi tidak bergantung pada aplikasi yang sedang terbuka.
               </p>
 
               {/* Diagnostic Card */}
@@ -180,21 +183,42 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
                 <div className="flex items-center justify-between">
                   <span className="text-gray-700 font-bold flex items-center gap-1.5">
                     <Volume2 className="w-3.5 h-3.5 text-emerald-700" />
-                    Audio Azan & Getar:
+                    Suara & Getar:
                   </span>
                   <span className="font-black text-black">
-                    Lantang 100% Volume
+                    Bawaan HP + getar
                   </span>
                 </div>
               </div>
 
-              {permissionState === 'granted' ? (
+              {support === 'ios-needs-install' && (
+                <div className="p-3 bg-[#FFE600] border-2 border-black rounded-xl text-[11px] font-bold text-black space-y-1">
+                  <div className="font-black uppercase">Di iPhone/iPad, pasang dulu aplikasinya</div>
+                  <ol className="list-decimal pl-4 space-y-1">
+                    <li>Di Safari, ketuk <Share className="inline w-3.5 h-3.5 -mt-0.5" /> <b>Bagikan</b>.</li>
+                    <li>Pilih <SquarePlus className="inline w-3.5 h-3.5 -mt-0.5" /> <b>Tambah ke Layar Utama</b>.</li>
+                    <li>Buka WaktuIbadah dari ikon di layar utama, lalu aktifkan notifikasi (butuh iOS 16.4+).</li>
+                  </ol>
+                </div>
+              )}
+              {support === 'unsupported' && (
+                <div className="p-3 bg-[#FF4B91] text-white border-2 border-black rounded-xl text-[11px] font-bold">
+                  Browser ini belum mendukung notifikasi push. Gunakan Chrome/Edge (Android &amp; PC) atau pasang sebagai aplikasi.
+                </div>
+              )}
+              {support === 'not-configured' && (
+                <div className="p-3 bg-[#FF4B91] text-white border-2 border-black rounded-xl text-[11px] font-bold">
+                  Server notifikasi belum dikonfigurasi oleh pengembang (kunci VAPID kosong).
+                </div>
+              )}
+
+              {support !== 'supported' ? null : permissionState === 'granted' ? (
                 <button
                   onClick={handleRunDiagnosticTest}
                   className="memphis-btn memphis-btn-green w-full py-3 text-xs font-black uppercase tracking-wider gap-2 shadow-[3px_3px_0px_#121212]"
                 >
                   <BellRing className="w-4 h-4" />
-                  <span>Uji Coba Notifikasi & Suara Sekarang</span>
+                  <span>Aktifkan & Uji Notifikasi Sekarang</span>
                 </button>
               ) : (
                 <button
@@ -231,7 +255,7 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
                   Menguji Notifikasi & Suara Azan...
                 </h3>
                 <p className="text-xs font-bold text-gray-600 mt-1">
-                  Memutar suara azan keras dan memicu notifikasi ke HP Anda.
+                  Mengaktifkan notifikasi lalu meminta server mengirim pesan tes ke perangkat ini.
                 </p>
               </div>
             </div>
@@ -245,10 +269,10 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
                   <BellRing className="w-5 h-5 animate-bounce" />
                 </div>
                 <h3 className="font-black text-xs sm:text-sm uppercase text-[#121212]">
-                  Apakah Banner Notifikasi & Suara Azan Muncul?
+                  Apakah Notifikasi Tes Muncul?
                 </h3>
                 <p className="text-xs font-bold text-gray-700 leading-relaxed">
-                  Periksa bilah status/panel notifikasi HP atau laptop Anda. Apakah ada pesan tes dan suara Azan berbunyi?
+                  Periksa bilah status/panel notifikasi HP atau laptop Anda. Pesan "Tes Notifikasi WaktuIbadah" seharusnya muncul dalam beberapa detik, sekalipun Anda menutup aplikasi.
                 </p>
               </div>
 
@@ -281,7 +305,7 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
                   <span>Solusi Notifikasi Diblokir HP:</span>
                 </div>
                 <p className="text-[11px] font-bold leading-relaxed">
-                  Browser seluler sering menahan suara dan notifikasi otomatis tanpa izin manual pengguna.
+                  {errorMsg || 'Browser seluler sering menahan notifikasi sampai izin diberikan manual.'}
                 </p>
               </div>
 
@@ -303,6 +327,16 @@ export function NotificationGatekeeperModal({ forceOpen = false, onClose }: Noti
                   </div>
                   <p className="text-gray-600 font-bold text-[11px] leading-relaxed">
                     Pastikan HP tidak dalam mode Silent/Mute total dan mode Do Not Disturb dinonaktifkan.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-white border-2 border-black rounded-xl">
+                  <div className="font-black text-black flex items-center gap-1.5 mb-1 uppercase">
+                    <span className="w-4 h-4 rounded bg-black text-white flex items-center justify-center text-[10px]">3</span>
+                    Android: Longgarkan Penghemat Baterai
+                  </div>
+                  <p className="text-gray-600 font-bold text-[11px] leading-relaxed">
+                    Pengaturan ➔ Aplikasi ➔ WaktuIbadah (atau Chrome) ➔ Baterai ➔ pilih <strong>Tanpa batasan</strong>. Di Xiaomi/Oppo/Vivo/Samsung aktifkan juga <strong>Mulai otomatis</strong>. Tanpa ini sebagian HP menunda notifikasi.
                   </p>
                 </div>
               </div>

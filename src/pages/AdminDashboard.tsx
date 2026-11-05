@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { storage, CURRENT_VERSION } from '../lib/storage';
 import { AdminReviewConfig, WebsiteReview, APP_PATCH_NOTES } from '../types';
 import { vibrateSuccess, playButtonTapSound, playSaveSuccessSound } from '../lib/audio';
+import { AdminUsersPanel, AdminOverview } from '../components/AdminUsersPanel';
 import { 
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid
 } from 'recharts';
@@ -17,7 +18,16 @@ import {
   fetchAdminConfigFromCloud, saveAdminConfigToCloud 
 } from '../lib/cloud-sync';
 
-const ADMIN_TOKEN_SECRET = 'Fajmuls22';
+// Token admin TIDAK lagi ditulis di kode. Diverifikasi server (env ADMIN_TOKEN) lewat /api/admin/overview
+// dan hanya disimpan di sessionStorage (hilang saat tab ditutup).
+const ADMIN_SESSION_KEY = 'wi_admin_token';
+const getAdminToken = () => {
+  try {
+    return sessionStorage.getItem(ADMIN_SESSION_KEY) || '';
+  } catch {
+    return '';
+  }
+};
 
 const RATING_CONFIG = [
   { star: 1, label: 'Tidak Membantu', color: '#FF4B91' }, // Memphis Pink
@@ -30,9 +40,10 @@ const RATING_CONFIG = [
 export default function AdminDashboard() {
   const navigate = useNavigate();
   const [tokenInput, setTokenInput] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
-    return storage.isAdminAuthenticated();
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => !!getAdminToken());
+  const [overview, setOverview] = useState<AdminOverview | null>(null);
+  const [overviewLoading, setOverviewLoading] = useState(false);
+  const [overviewError, setOverviewError] = useState('');
   const [authError, setAuthError] = useState('');
 
   // Form config state
@@ -102,13 +113,54 @@ export default function AdminDashboard() {
     }
   };
 
-  const handleLogin = (e: React.FormEvent) => {
+  const loadOverview = async (token: string = getAdminToken()): Promise<boolean> => {
+    setOverviewLoading(true);
+    setOverviewError('');
+    try {
+      const res = await fetch('/api/admin/overview', { headers: { 'x-admin-token': token } });
+      if (res.status === 401) {
+        setOverviewError('Token admin salah atau sesi berakhir.');
+        return false;
+      }
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.ok) {
+        setOverviewError(json?.error || `Server mengembalikan kode ${res.status}.`);
+        return true; // token benar, server bermasalah
+      }
+      setOverview(json as AdminOverview);
+      return true;
+    } catch {
+      setOverviewError('Tidak bisa menghubungi server. Periksa koneksi internet.');
+      return true;
+    } finally {
+      setOverviewLoading(false);
+    }
+  };
+
+  // Pulihkan sesi admin (bila token masih tersimpan) dan validasi ke server
+  useEffect(() => {
+    const token = getAdminToken();
+    if (!token) return;
+    loadOverview(token).then((valid) => {
+      if (!valid) {
+        try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch { /* abaikan */ }
+        setIsAuthenticated(false);
+      }
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (tokenInput.trim() === ADMIN_TOKEN_SECRET) {
+    const token = tokenInput.trim();
+    if (!token) return;
+    setAuthError('');
+    const valid = await loadOverview(token);
+    if (valid) {
+      try { sessionStorage.setItem(ADMIN_SESSION_KEY, token); } catch { /* abaikan */ }
       playSaveSuccessSound();
       setIsAuthenticated(true);
-      storage.setAdminAuthenticated(true);
-      setAuthError('');
+      setTokenInput('');
       vibrateSuccess();
     } else {
       setAuthError('Token admin salah! Masukkan token yang valid.');
@@ -117,8 +169,10 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     playButtonTapSound();
-    setIsAuthenticated(false);
+    try { sessionStorage.removeItem(ADMIN_SESSION_KEY); } catch { /* abaikan */ }
     storage.setAdminAuthenticated(false);
+    setIsAuthenticated(false);
+    setOverview(null);
     setTokenInput('');
   };
 
@@ -306,6 +360,14 @@ export default function AdminDashboard() {
               Pantau ulasan mahasiswa atas penggunaan ibadah harian, jadwal kuliah, dan efektivitas aplikasi dalam format grafik siap cetak.
             </p>
           </div>
+
+          {/* Pengguna terdaftar (data dari server, dilindungi token admin) */}
+          <AdminUsersPanel
+            data={overview}
+            loading={overviewLoading}
+            error={overviewError}
+            onRefresh={() => loadOverview()}
+          />
 
           {/* Stats Summary (Memphis Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">

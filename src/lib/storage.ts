@@ -38,6 +38,8 @@ export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderDeadlines: true,
   reminderSchedule: true,
   reminderPuasa: true,
+  preReminderMinutes: 10,
+  silentNotifications: false,
 };
 
 // --- Generic Storage Helpers ---

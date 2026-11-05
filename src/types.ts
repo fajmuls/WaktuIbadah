@@ -10,6 +10,7 @@ export interface User {
   theme?: string;
   timeFormat?: '24h' | '12h';
   soundEnabled?: boolean;
+  createdAt?: string; // ISO, waktu pertama kali mendaftar
   location?: {
     latitude: number;
     longitude: number;
@@ -26,6 +27,10 @@ export interface ReminderSettings {
   reminderDeadlines: boolean;
   reminderSchedule: boolean;
   reminderPuasa: boolean;
+  /** Pengingat X menit sebelum waktu salat (0 = mati). */
+  preReminderMinutes?: number;
+  /** Bisukan notifikasi push (tanpa suara & getar). */
+  silentNotifications?: boolean;
 }
 
 export interface Task {

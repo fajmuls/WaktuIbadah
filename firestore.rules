@@ -16,6 +16,16 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // Koleksi server-only (Admin SDK di /api melewati rules ini). Klien TIDAK boleh membaca/menulis:
+    //  - push_subscriptions : kunci langganan Web Push (rahasia) + jadwal pengguna
+    //  - prayer_cache       : cache jadwal salat dari MyQuran
+    match /push_subscriptions/{id} {
+      allow read, write: if false;
+    }
+    match /prayer_cache/{id} {
+      allow read, write: if false;
+    }
+
     // Student Profiles (Multi-device sync based on student name and optional PIN)
     match /student_profiles/{profileId} {
       allow read: if isValidId(profileId);
