@@ -96,6 +96,7 @@ export default function Settings() {
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [themeMode, setThemeModeState] = useState<'light' | 'dark' | 'system'>(storage.getThemeMode());
   const [quranWhiteTheme, setQuranWhiteThemeState] = useState<boolean>(storage.isQuranWhiteTheme());
+  const [tajweedEnabled, setTajweedEnabledState] = useState<boolean>(storage.getTajweedEnabled());
 
   // Web Push (notifikasi server)
   const [pushStatus, setPushStatus] = useState<PushStatus | null>(null);
@@ -536,6 +537,52 @@ export default function Settings() {
             </button>
           </div>
         </div>
+
+        {/* Jenis Kelamin Pengguna (Untuk Penyesuaian Salat Jumat) */}
+        <div className="p-3 bg-[#FFFDF8] border-[1.5px] border-[#121212] rounded-xl shadow-[1.5px_1.5px_0px_#121212] space-y-2">
+          <div className="flex items-center justify-between">
+            <div>
+              <span className="font-bold text-xs text-black block">Jenis Kelamin / Panggilan Ibadah</span>
+              <span className="text-[11px] font-medium text-gray-500">
+                Pengguna ikhwan (Laki-laki) otomatis mendapatkan label "Salat Jumat" pada hari Jumat.
+              </span>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                playToggleSound();
+                const updated = { ...user, gender: 'Laki-laki' as const };
+                setUser(updated);
+                storage.setUser(updated);
+              }}
+              className={`py-2 px-3 rounded-lg border-[1.5px] text-xs font-bold transition-all ${
+                (user.gender === 'Laki-laki' || user.gender === 'male')
+                  ? 'bg-emerald-600 text-white border-black shadow-[1.5px_1.5px_0px_#121212]'
+                  : 'bg-white text-gray-700 border-black/40 hover:bg-gray-50'
+              }`}
+            >
+              🧔 Laki-laki (Ikhwan)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                playToggleSound();
+                const updated = { ...user, gender: 'Perempuan' as const };
+                setUser(updated);
+                storage.setUser(updated);
+              }}
+              className={`py-2 px-3 rounded-lg border-[1.5px] text-xs font-bold transition-all ${
+                (user.gender === 'Perempuan' || user.gender === 'female')
+                  ? 'bg-emerald-600 text-white border-black shadow-[1.5px_1.5px_0px_#121212]'
+                  : 'bg-white text-gray-700 border-black/40 hover:bg-gray-50'
+              }`}
+            >
+              🧕 Perempuan (Akhwat)
+            </button>
+          </div>
+        </div>
       </div>
 
       </div>
@@ -774,9 +821,9 @@ export default function Settings() {
           {/* Toggle Auto Doa Modal */}
           <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-[1.5px] border-black">
             <div className="pr-2">
-              <span className="font-bold text-xs text-black block">Pop-up Doa Setelah Salat Otomatis</span>
+              <span className="font-bold text-xs text-black block">Pop-up Doa & Wirid Setelah Salat</span>
               <span className="text-[11px] font-semibold text-gray-500">
-                Otomatis menampilkan modal wirid ketika 5 waktu salat hari ini selesai dicentang
+                Otomatis menampilkan ajakan wirid dan doa ma'tsur setiap kali selesai mencentang salat fardhu
               </span>
             </div>
             <button
@@ -791,6 +838,29 @@ export default function Settings() {
               }`}
             >
               {autoDoaModal ? 'Aktif' : 'Nonaktif'}
+            </button>
+          </div>
+
+          {/* Toggle Warna Tajwid Standar Kemenag RI */}
+          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-[1.5px] border-black">
+            <div className="pr-2">
+              <span className="font-bold text-xs text-black block">Warna Tajwid Standar Kemenag RI</span>
+              <span className="text-[11px] font-semibold text-gray-500">
+                Memberikan pewarnaan kaidah hukum tajwid (Ghunnah, Ikhfa, Idgham, Iqlab, Qalqalah, Mad) pada ayat Al-Qur'an
+              </span>
+            </div>
+            <button
+              onClick={() => {
+                playToggleSound();
+                const nextVal = !tajweedEnabled;
+                setTajweedEnabledState(nextVal);
+                storage.setTajweedEnabled(nextVal);
+              }}
+              className={`memphis-btn px-3 py-1.5 text-xs font-bold shrink-0 ${
+                tajweedEnabled ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-600'
+              }`}
+            >
+              {tajweedEnabled ? 'Aktif' : 'Nonaktif'}
             </button>
           </div>
 

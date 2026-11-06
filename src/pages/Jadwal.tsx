@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { storage } from '../lib/storage';
 import { Schedule, ScheduleCategory, PrayerConflictInfo } from '../types';
-import { format } from 'date-fns';
+import { format, subDays, addDays } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { 
   Plus, X, Clock, Calendar as CalendarIcon, Tag, Check, 
   AlertTriangle, Info, Sparkles, ShieldAlert, CheckCircle2,
-  CalendarPlus, Download, ExternalLink
+  CalendarPlus, Download, ExternalLink, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getCachedPrayerData, getPrayerTimesForToday } from '../lib/prayer-times';
@@ -20,7 +20,8 @@ interface JadwalProps {
 
 export default function Jadwal({ isNew = false }: JadwalProps) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
-  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [selectedDate, setSelectedDate] = useState(todayStr);
   const [showForm, setShowForm] = useState(isNew);
   const [prayerTimes, setPrayerTimes] = useState<Record<string, string>>({});
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
     category: 'Kuliah',
     startTime: '08:00',
     endTime: '09:30',
-    date: format(new Date(), 'yyyy-MM-dd'),
+    date: todayStr,
     completed: false
   });
 
@@ -75,12 +76,6 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
     return checkSchedulePrayerConflicts(formData, prayerTimes);
   }, [formData.startTime, formData.endTime, formData.title, prayerTimes]);
 
-  // Check conflicts for all schedules of the selected date
-  const dayConflicts = useMemo(() => {
-    if (Object.keys(prayerTimes).length === 0) return [];
-    return getAllScheduleConflicts(currentSchedules, prayerTimes);
-  }, [currentSchedules, prayerTimes]);
-
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title) return;
@@ -91,7 +86,7 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
       category: formData.category as ScheduleCategory,
       startTime: formData.startTime!,
       endTime: formData.endTime!,
-      date: formData.date!,
+      date: formData.date || selectedDate,
       completed: formData.completed || false
     };
 
@@ -131,19 +126,51 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
     }
   };
 
+  // Date shifting
+  const selectedDateObj = useMemo(() => new Date(`${selectedDate}T12:00:00`), [selectedDate]);
+
+  const handlePrevDay = () => {
+    const d = subDays(selectedDateObj, 1);
+    setSelectedDate(format(d, 'yyyy-MM-dd'));
+  };
+
+  const handleNextDay = () => {
+    const d = addDays(selectedDateObj, 1);
+    setSelectedDate(format(d, 'yyyy-MM-dd'));
+  };
+
+  const handleGoToday = () => {
+    setSelectedDate(todayStr);
+  };
+
+  // Scrollable calendar strip centered around selected date
+  const calendarStripDays = useMemo(() => {
+    return [-4, -3, -2, -1, 0, 1, 2, 3, 4].map(offset => {
+      const d = addDays(selectedDateObj, offset);
+      const dStr = format(d, 'yyyy-MM-dd');
+      return {
+        dateStr: dStr,
+        dayName: format(d, 'EEE', { locale: id }),
+        dayNum: format(d, 'd'),
+        isToday: dStr === todayStr,
+        isSelected: dStr === selectedDate,
+      };
+    });
+  }, [selectedDateObj, selectedDate, todayStr]);
+
   const categories: ScheduleCategory[] = ['Kuliah', 'Tugas', 'Ibadah', 'Istirahat', 'Pribadi', 'Lainnya'];
 
   return (
-    <div className="space-y-4 animate-in fade-in duration-300 pb-16 w-full max-w-full overflow-x-hidden">
+    <div className="space-y-3.5 pb-16 w-full max-w-full overflow-x-hidden animate-in fade-in duration-300">
       
       {/* Memphis Header */}
-      <div className="p-3 sm:p-3.5 bg-white border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
-        <div>
-          <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#121212]">
+      <div className="p-3 bg-white border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#121212] truncate">
             Jadwal & Agenda Kuliah
           </h1>
-          <p className="text-gray-600 text-[11px] font-medium mt-0.5">
-            Sinkronisasi otomatis dengan deteksi bentrok waktu salat fardhu
+          <p className="text-gray-600 text-[11px] font-medium truncate mt-0.5">
+            Deteksi bentrok salat otomatis & sinkronisasi kalender
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap shrink-0">
@@ -153,7 +180,7 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
                 downloadICSFile(schedules, prayerTimes, `jadwal-kuliah-${selectedDate}.ics`);
                 vibrateSuccess();
               }}
-              className="border-[1.5px] border-black bg-white px-2.5 py-1.5 text-[11px] font-bold rounded-lg shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1.5 active:translate-y-0.5"
+              className="border-[1.5px] border-black bg-white px-2.5 py-1 text-[11px] font-bold rounded-lg shadow-[1px_1px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
               title="Ekspor .ics ke Google Calendar"
             >
               <Download className="w-3.5 h-3.5" />
@@ -163,12 +190,21 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
 
           {!showForm && (
             <button 
-              onClick={() => setShowForm(true)}
-              aria-label="Tambah jadwal"
-              className="border-[1.5px] border-black bg-emerald-400 text-black px-3 py-1.5 text-xs font-bold rounded-lg shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
+              onClick={() => {
+                setFormData({
+                  title: '',
+                  category: 'Kuliah',
+                  startTime: '08:00',
+                  endTime: '09:30',
+                  date: selectedDate,
+                  completed: false
+                });
+                setShowForm(true);
+              }}
+              className="border-[1.5px] border-black bg-emerald-400 text-black px-3 py-1 text-xs font-bold rounded-lg shadow-[1px_1px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
             >
-              <Plus className="w-4 h-4 stroke-[2.5]" /> 
-              <span className="hidden sm:inline">Tambah Jadwal</span>
+              <Plus className="w-3.5 h-3.5 stroke-[2.5]" /> 
+              <span>Tambah Jadwal</span>
             </button>
           )}
         </div>
@@ -207,6 +243,17 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
                 placeholder="Misal: Praktikum Algoritma / Kuliah PAI"
               />
             </div>
+
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1">Tanggal</label>
+              <input 
+                type="date" 
+                required
+                value={formData.date || selectedDate}
+                onChange={e => setFormData({...formData, date: e.target.value})}
+                className="w-full p-2 border-[1.5px] border-black rounded-lg text-xs font-medium"
+              />
+            </div>
             
             <div className="grid grid-cols-2 gap-2.5">
               <div>
@@ -238,31 +285,17 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
             </div>
 
             <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider mb-1">Tanggal</label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-2.5 top-2.5 w-3.5 h-3.5 text-gray-400" />
-                <input 
-                  type="date" 
-                  required
-                  value={formData.date}
-                  onChange={e => setFormData({...formData, date: e.target.value})}
-                  className="w-full p-2 pl-8 border-[1.5px] border-black rounded-lg text-xs font-medium"
-                />
-              </div>
-            </div>
-
-            <div>
               <label className="block text-[11px] font-bold uppercase tracking-wider mb-1">Kategori</label>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="grid grid-cols-3 gap-1.5">
                 {categories.map(cat => (
                   <button
                     key={cat}
                     type="button"
                     onClick={() => setFormData({...formData, category: cat})}
-                    className={`px-2.5 py-1 rounded-lg border-[1.5px] border-black text-xs font-bold shadow-[1px_1px_0px_#121212] ${
+                    className={`py-1.5 px-2 rounded-lg border text-xs font-bold transition-all ${
                       formData.category === cat 
-                      ? 'bg-emerald-400 text-black' 
-                      : 'bg-white text-gray-800'
+                        ? 'bg-black text-white border-black' 
+                        : 'bg-white text-gray-700 border-black/40 hover:bg-gray-50'
                     }`}
                   >
                     {cat}
@@ -303,40 +336,81 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
         </div>
       ) : (
         <>
-          {/* Date Selector (52x60px Chips per Section D) */}
-          <div className="flex gap-1.5 overflow-x-auto pb-1 max-w-full hide-scrollbar">
-            {[-2, -1, 0, 1, 2, 3].map(offset => {
-              const d = new Date();
-              d.setDate(d.getDate() + offset);
-              const dateStr = format(d, 'yyyy-MM-dd');
-              const isSelected = selectedDate === dateStr;
-              const isToday = offset === 0;
-              
-              return (
+          {/* Horizontal Calendar Strip with < > Day Shifting */}
+          <div className="bg-white border-[1.5px] border-[#121212] rounded-xl p-2.5 shadow-[2px_2px_0px_#121212] space-y-2">
+            <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2">
+              <button
+                onClick={handlePrevDay}
+                className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] active:translate-y-0.5 text-black"
+                title="Hari Sebelumnya"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div className="flex items-center gap-2 min-w-0">
+                <span className="text-xs sm:text-sm font-bold text-gray-900 truncate">
+                  {format(selectedDateObj, 'EEEE, d MMMM yyyy', { locale: id })}
+                </span>
+                {selectedDate !== todayStr && (
+                  <button
+                    onClick={handleGoToday}
+                    className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-500 rounded-md shrink-0 hover:bg-emerald-200"
+                  >
+                    Hari Ini
+                  </button>
+                )}
+              </div>
+
+              <div className="flex items-center gap-1.5 shrink-0">
+                <input
+                  type="date"
+                  value={selectedDate}
+                  onChange={(e) => setSelectedDate(e.target.value)}
+                  className="border border-black rounded-lg px-1.5 py-0.5 text-xs font-semibold bg-white w-28 text-gray-700"
+                  title="Pilih tanggal kalender"
+                />
                 <button
-                  key={dateStr}
-                  onClick={() => setSelectedDate(dateStr)}
-                  className={`flex flex-col items-center justify-center w-[52px] h-[60px] rounded-xl border-[1.5px] border-black transition-all shrink-0 ${
-                    isSelected 
+                  onClick={handleNextDay}
+                  className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] active:translate-y-0.5 text-black"
+                  title="Hari Berikutnya"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Scrollable Day Strip */}
+            <div className="flex gap-1.5 overflow-x-auto pb-0.5 max-w-full hide-scrollbar">
+              {calendarStripDays.map(p => (
+                <button
+                  key={p.dateStr}
+                  onClick={() => setSelectedDate(p.dateStr)}
+                  className={`flex flex-col items-center justify-center w-11 sm:w-12 h-13 rounded-xl border-[1.5px] border-black transition-all shrink-0 ${
+                    p.isSelected 
                       ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-bold shadow-[2px_2px_0px_#121212] -translate-y-0.5' 
-                      : isToday 
-                        ? 'bg-emerald-50 text-emerald-900 font-bold shadow-[1.5px_1.5px_0px_#121212]'
-                        : 'bg-white text-gray-700 font-bold shadow-[1.5px_1.5px_0px_#121212]'
+                      : p.isToday 
+                        ? 'bg-emerald-50 text-emerald-900 font-bold shadow-[1px_1px_0px_#121212]'
+                        : 'bg-white text-gray-700 font-bold shadow-[1px_1px_0px_#121212]'
                   }`}
                 >
-                  <span className="text-[10px] uppercase tracking-wider">{format(d, 'EEE', { locale: id })}</span>
-                  <span className="text-base font-bold mt-0.5">{format(d, 'd')}</span>
+                  <span className="text-[9.5px] uppercase tracking-wider">{p.dayName}</span>
+                  <span className="text-sm font-bold mt-0.5">{p.dayNum}</span>
                 </button>
-              );
-            })}
+              ))}
+            </div>
           </div>
 
           {/* Timeline in Memphis Card */}
-          <div className="bg-white border-[1.5px] border-black rounded-xl p-3.5 sm:p-4 shadow-[2px_2px_0px_#121212] min-h-[280px]">
-            <h3 className="font-bold text-xs sm:text-sm tracking-tight mb-3 flex items-center gap-1.5 border-b border-black pb-2">
-              <CalendarIcon className="w-3.5 h-3.5 stroke-[2.5]" />
-              {format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: id })}
-            </h3>
+          <div className="bg-white border-[1.5px] border-black rounded-xl p-3.5 sm:p-4 shadow-[2px_2px_0px_#121212] min-h-[260px]">
+            <div className="flex items-center justify-between border-b border-black pb-2 mb-3">
+              <h3 className="font-bold text-xs sm:text-sm tracking-tight flex items-center gap-1.5 text-black">
+                <CalendarIcon className="w-3.5 h-3.5 stroke-[2.5]" />
+                <span>Daftar Kegiatan ({currentSchedules.length})</span>
+              </h3>
+              <span className="text-[11px] text-gray-500 font-semibold">
+                {format(selectedDateObj, 'd MMM yyyy', { locale: id })}
+              </span>
+            </div>
 
             {currentSchedules.length > 0 ? (
               <div className="relative border-l-[1.5px] border-black ml-3 sm:ml-4 space-y-3 pb-2">
@@ -403,15 +477,14 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
                 })}
               </div>
             ) : (
-              /* Compact Empty State (Icon 40px, 1 Sentence Text) */
               <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                <div className="w-10 h-10 bg-emerald-100 border-[1.5px] border-black rounded-xl flex items-center justify-center mb-2 shadow-[1px_1px_0px_#121212]">
-                  <CalendarIcon className="w-5 h-5 text-emerald-800" />
+                <div className="w-9 h-9 bg-emerald-100 border-[1.5px] border-black rounded-xl flex items-center justify-center mb-2 shadow-[1px_1px_0px_#121212]">
+                  <CalendarIcon className="w-4.5 h-4.5 text-emerald-800" />
                 </div>
                 <p className="text-gray-600 font-medium text-xs mb-2">Belum ada aktivitas pada tanggal ini.</p>
                 <button 
                   onClick={() => setShowForm(true)}
-                  className="px-3 py-1.5 bg-emerald-400 text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1px_1px_0px_#121212]"
+                  className="px-3 py-1 bg-emerald-400 text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1px_1px_0px_#121212]"
                 >
                   + Tambah Jadwal
                 </button>

@@ -238,18 +238,18 @@ export default function DoaZikir() {
                       className="w-8 h-8 sm:w-9 sm:h-9" 
                       active={isTargetReached}
                     />
-                    <div className="min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white truncate">
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        <h2 className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white break-words">
                           {item.title}
                         </h2>
                         {item.category === 'wirid_salat' && (
-                          <span className="text-[9px] font-bold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-400">
+                          <span className="text-[9px] font-bold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.2 rounded border border-emerald-400 shrink-0">
                             Wirid Fardhu
                           </span>
                         )}
                         {item.category === 'belajar' && (
-                          <span className="text-[9px] font-bold uppercase bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-400">
+                          <span className="text-[9px] font-bold uppercase bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-1.5 py-0.2 rounded border border-cyan-400 shrink-0">
                             Kuliah & Ujian
                           </span>
                         )}

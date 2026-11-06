@@ -27,9 +27,10 @@ const KEYS = {
   QURAN_WHITE_THEME: "wi_quran_white_theme",
   LAST_READ_AYAH: "wi_last_read_ayah",
   READING_HANCAS: "wi_reading_hancas",
+  TAJWEED_ENABLED: "wi_tajweed_enabled",
 };
 
-export const CURRENT_VERSION = "2.8.0";
+export const CURRENT_VERSION = "2.9.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -405,6 +406,15 @@ export const storage = {
   // Forced White Theme for Quran Reading
   isQuranWhiteTheme: () => getItem<boolean>(KEYS.QURAN_WHITE_THEME, true),
   setQuranWhiteTheme: (enabled: boolean) => setItem(KEYS.QURAN_WHITE_THEME, enabled),
+
+  // Tajweed Highlighting Standard Kemenag
+  getTajweedEnabled: () => getItem<boolean>(KEYS.TAJWEED_ENABLED, true),
+  setTajweedEnabled: (enabled: boolean) => {
+    setItem(KEYS.TAJWEED_ENABLED, enabled);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_tajweed_changed', { detail: enabled }));
+    }
+  },
 
   // Last Read Ayah Marker (1 single active position)
   getLastReadAyah: () => getItem<{ surahNumber: number; surahName: string; ayahNumber: number; date: string } | null>(KEYS.LAST_READ_AYAH, null),

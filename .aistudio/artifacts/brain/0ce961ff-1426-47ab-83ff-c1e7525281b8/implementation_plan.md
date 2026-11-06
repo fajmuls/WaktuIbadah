@@ -1,111 +1,114 @@
-# Rencana Pembaruan WaktuIbadah v2.8.0 (Widget Interaktif, Notifikasi Check-in +30 Menit, Azan Otomatis, Memphis Modern Tipis, & QoL Murottal)
+# Rencana Implementasi Pembaruan WaktuIbadah v2.9.0
 
-Pembaruan besar untuk menghadirkan widget minimalis salat & tugas yang bisa disematkan/mengambang, notifikasi cerdas 30 menit setelah waktu salat dengan tombol aksi "Sudah Salat" otomatis, perbaikan pemutaran suara azan dari push/in-app, penyelarasan gaya visual Memphis modern tipis 1.5px pada menu Qur'an dan Doa Zikir, perapian tipografi halaman Menu, ikon SVG kustom pada bottom navigation bar, serta fitur QoL pemutar Murottal auto-scroll dengan penyorot ayat aktif dan pilihan suara Qari.
+Pembaruan komprehensif ini menyempurnakan fungsi widget desktop/homescreen, kalender interaktif pada Jadwal dan Ibadah, validasi waktu salat masa depan, ajakan wirid pasca-salat, perbaikan tipografi responsif (anti-tumpang tindih), fitur Tajwid berwarna Kemenag, salat Jumat untuk laki-laki, dan pembersihan audio pack ganda.
 
 ---
 
-## User Review & Critical Decisions
+## Tinjauan Pengguna & Keputusan Kritis
 
 > [!IMPORTANT]
-> Berdasarkan konfirmasi pada sesi tanya jawab dan arahan spesifik Anda, keputusan implementasi telah dikunci sebagai berikut:
-> 1. **Format Widget Salat & Tugas**: Menggabungkan **mode jendela widget minimalis terpisah (`/widget`)** yang ringkas dan resizable untuk layar utama/desktop/PWA homescreen, serta **Floating Mini-Widget** yang dapat dibuka/tutup dan diminimize saat berada di dalam aplikasi.
-> 2. **Alur Notifikasi 30 Menit Pasca-Salat**: Mengirim notifikasi tepat 30 menit setelah waktu salat tiba dengan tombol aksi interaktif `[ Sudah Salat ✅ ]` langsung di push notification dan modal pengingat in-app. Sekali tekan, salat langsung terceklist di `wi_prayers` dan penyimpanan cloud secara otomatis.
-> 3. **Ketebalan Gaya Memphis**: Menerapkan gaya **Memphis Modern Tipis** bergaris tepi presisi 1.5px (`border-[1.5px] border-[#121212]`) dengan bayangan offset halus (`shadow-[2px_2px_0px_#121212]`) dan palet warna lembut, seragam di menu Qur'an, Doa Zikir, dan kartu-kartu aplikasi.
-> 4. **Pembaruan Versi**: Kenaikan versi dari **v2.7.0 ke v2.8.0** (posisi angka kedua bertambah karena penambahan fitur widget, cron azan, dan fitur QoL baru), lengkap dengan patch notes di Admin Dashboard.
+> Berdasarkan jawaban klarifikasi yang telah Anda konfirmasi:
+> 1. **Tajwid Berwarna**: Diterapkan mode warna tajwid standar Kemenag RI (Ghunnah, Ikhfa, Idgham, Iqlab, Qalqalah, Mad) yang dapat diaktifkan/dinonaktifkan langsung melalui modal pengaturan pembaca Al-Qur'an.
+> 2. **Wirid & Doa Pasca-Salat**: Menampilkan pop-up dialog ajakan wirid sesaat setelah pengguna mencentang salat fardhu apa pun, dilengkapi opsi sakelar *"Jangan ingatkan lagi"* dan pengaturan permanen di menu Pengaturan.
+> 3. **Kalender Jadwal & Ibadah**: Menerapkan strip horizontal geser tanggal yang intuitif (hari sebelumnya/berikutnya) disertai tombol pemilih kalender cepat dan akses untuk mengisi catatan ibadah hari-hari lampau (*qadha/backfill*).
 
 ---
 
-## 1. Overview & Core Concept
+## 1. Ikhtisar & Konsep Utama
 
-- **Apa yang Dibangun**:
-  1. **Widget Minimalis Salat & Tugas**: Mode widget terpisah (`/widget`) dan widget mengambang (*floating overlay*) yang memungkinkan pengguna langsung menceklis 5 waktu salat fardhu dan menyelesaikan tugas harian tanpa perlu menavigasi menu yang panjang.
-  2. **Notifikasi 30 Menit Pasca-Salat**: Sistem pengingat otomatis di server cron (`api/_lib/events.js`) dan timer lokal yang menanyakan apakah pengguna sudah menunaikan salat, dengan tombol aksi sekali ketuk untuk menandai otomatis.
-  3. **Pemutar Azan Push & In-App**: Penanganan klik notifikasi azan dan tindakan "Dengar Azan" yang memutar audio azan fardhu / subuh secara andal, serta pembukaan modal azan ketika waktu salat tiba.
-  4. **Penyelarasan Style Memphis Modern Tipis**: Memadukan keanggunan clean look Al-Qur'an dan Doa Zikir dengan border tipis 1.5px dan aksen khas WaktuIbadah.
-  5. **Ikon SVG Kustom Navigation Bar & Perapian Menu**: Ikon vektor SVG murni pada bilah navigasi bawah (Home, Jadwal, Ibadah, Doa, Qur'an, Menu) dan tipografi `font-semibold` yang seimbang pada menu utama.
-  6. **Fitur QoL Unggulan**: Pemutar Murottal *Auto-Scroll* yang otomatis menyorot dan menggulir ke ayat yang sedang dilantunkan, pilihan multi-qari (Syaikh Misyari Rasyid, Syaikh As-Sudais, Syaikh Al-Ghamidi), dan tema membaca kertas kuno (*Sepia / Parchment*).
-
----
-
-## 2. User Experience & Visual Design
-
-### A. Widget Salat & Tugas Minimalis (`/widget` & In-App Floating)
-1. **Mode Jendela Minimalis (`/widget`)**:
-   - Halaman khusus ultra-ringkas berlatar belakang semi-transparan yang cocok untuk jendela mengambang, PiP, atau disematkan di homescreen wallpaper.
-   - Header ringkas: Jam waktu nyata, indikator waktu salat aktif & countdown menuju salat berikutnya.
-   - **Ceklis 5 Waktu Salat**: Tombol ceklis cepat Subuh, Dzuhur, Ashar, Maghrib, Isya dengan efek centang instan dan sinkronisasi real-time.
-   - **Ceklis Tugas**: Daftar tugas hari ini dengan kotak centang sekali klik untuk menyelesaikan agenda kuliah/tugas.
-   - Pengatur ukuran tampilan: Preset ukuran Mini, Sedang, dan Penuh (*resizable*).
-2. **Floating Mini-Widget di Dalam Aplikasi**:
-   - Tombol mengambang elegan di sudut layar yang dapat diminimize menjadi kapsul ringkas atau dibuka menjadi widget cepat tanpa meninggalkan halaman yang sedang dibaca.
-
-### B. Pengingat Salat 30 Menit & Integrasi Suara Azan
-1. **Notifikasi 30 Menit**:
-   - Tepat 30 menit setelah azan berkumandang, jika salat tersebut belum diceklis, sistem push server dan timer aplikasi mengirimkan notifikasi:
-     - Judul: *"Sudah Salat [Nama Salat]?"*
-     - Isi: *"Waktu salat [Nama Salat] telah berjalan 30 menit. Ketuk 'Sudah Salat' untuk menandai otomatis."*
-     - Aksi: `[ Sudah Salat ✅ ]` dan `[ Buka Aplikasi ]`.
-   - Mengklik "Sudah Salat" langsung mencatat salat tersebut ke riwayat ibadah tanpa perlu membuka halaman penuh.
-2. **Pemutaran Suara Azan**:
-   - Pada notifikasi push azan, ditambahkan aksi `[ Dengar Azan 🔊 ]`.
-   - Mengetuk notifikasi azan membuka aplikasi dengan parameter `?playAzan=1&prayer=[NamaSalat]` yang langsung memicu pemutaran audio azan lokal (`/audio/azan-fardhu.mp3` atau `/audio/azan-subuh.mp3`).
-
-### C. Memphis Modern Tipis pada Menu Qur'an & Doa Zikir
-- **Qur'an**: Menyelaraskan border menjadi 1.5px hitam solid tipis (`border-[1.5px] border-[#121212]`), bayangan offset 2px (`shadow-[2px_2px_0px_#121212]`), dengan tetap mempertahankan ornamen bintang segi-8 Islami SVG dan zebra striping yang rapi.
-- **Doa & Zikir**: Merombak tampilan `DoaZikir.tsx` agar memiliki keselarasan visual dengan Qur'an: tab yang bersih, kolom pencarian, kartu wirid/doa ber-border 1.5px tipis, tasbih digital interaktif, dan tombol salin cepat.
-- **Menu Utama (`Menu.tsx`)**: Mengurangi bobot huruf yang terlalu tebal (*bold shouting*), mengganti font menjadi `font-semibold` yang rapi dan teratur, mengelompokkan menu ke dalam kategori yang jelas, dan menyertakan ikon SVG tajam.
-
-### D. Ikon SVG Kustom Navigation Bar Bawah
-- Mengganti ikon pihak ketiga standar di bilah navigasi bawah (`Layout.tsx`) dengan ikon SVG vektor murni yang dirancang khusus:
-  - **Home**: Ikon kubah lengkung modern / beranda
-  - **Jadwal**: Ikon kalender / agenda bergaris presisi
-  - **Ibadah**: Ikon kompas kiblat / jam salat melingkar
-  - **Doa**: Ikon tadah tangan doa / ornamen berkah
-  - **Qur'an**: Ikon mushaf terbuka dengan pita kaligrafi
-  - **Menu**: Ikon 4-titik grid dashboard modern
-
-### E. Fitur Quality of Life (QoL) Al-Qur'an
-1. **Murottal Auto-Scroll & Highlighting**:
-   - Saat audio ayat diputar kontinu, ayat yang sedang dibacakan qari akan disorot dengan latar hijau lembut dan digulirkan secara otomatis ke tengah layar pembaca.
-2. **Pilihan Suara Qari**:
-   - Menyediakan pilihan qari ternama di popover pengaturan pembaca:
-     - Syaikh Misyari Rasyid Al-Afasy
-     - Syaikh Abdurrahman As-Sudais
-     - Syaikh Sa'ad Al-Ghamidi
-3. **Tema Membaca Kertas Sepia / Parchment**:
-   - Pilihan latar belakang membaca ketiga selain putih dan gelap: warna kertas mushaf klasik (`#F4EEDD` / `#2D241E`) yang sangat ramah mata di malam hari.
+- **Widget Desktop / Laptop & Homescreen**: Rute `/widget` kini dilengkapi tombol **"Buka Jendela Desktop (Pop-Out)"** menggunakan ukuran jendela ringkas tanpa browser chrome (serta dukungan Document Picture-in-Picture jika didukung peramban), serta pintasan PWA langsung di `manifest.webmanifest`.
+- **Kalender Interaktif pada Jadwal & Ibadah**:
+  - Tombol navigasi hari (`<` dan `>`) untuk berpindah hari secara cepat.
+  - Tanggal yang dipilih dapat melihat dan mengisi ibadah hari sebelumnya.
+  - **Kunci Waktu Salat Masa Depan**: Salat pada hari esok atau waktu hari ini yang belum tiba (misal: baru Subuh, maka Zuhur, Asar, Magrib, Isya terkunci) tidak bisa diceklis sampai waktunya masuk.
+- **Salat Jumat untuk Laki-laki**: Jika gender pengguna diatur sebagai *Laki-laki* dan hari yang dipilih adalah hari Jumat, nama ibadah zuhur otomatis disesuaikan menjadi **Salat Jumat** (atau *Jumat / Zuhur*).
+- **Anti Tumpang-Tindih Teks (Zero-Truncation / Anti-Overlap)**: Penataan ulang layout pada layar ponsel sempit agar judul (seperti *"Kumpulan Doa & Zikir"*, *"Widget Layar & Wallpaper"*, dan nama surah panjang) mengecilkan font secara proporsional atau memindahkan tombol aksi ke baris tersendiri tanpa pernah terpotong atau tertimpa.
+- **Tajwid Berwarna**: Integrasi teks ayat dengan penandaan warna tajwid Kemenag RI yang membedakan hukum bacaan secara visual, disertai switch toggle di pengaturan.
+- **Perbaikan Audio & Pembersihan Sound Pack**: Menghilangkan pemicu ganda (*double tap*) saat membuka surah dan meredam efek suara keras agar pengalaman membaca tenang dan khusyuk.
+- **Pemberitahuan Izin Notifikasi di Onboarding**: Memberikan dialog edukasi preferensi notifikasi di awal saat pengguna pertama kali mengatur profil.
 
 ---
 
-## 3. Technical Architecture & Data Strategy
+## 2. Diagram Alur & Arsitektur Sistem
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                    WAKTOUIBADAH v2.8.0                      │
-├──────────────────────────────┬──────────────────────────────┤
-│      WIDGET ENGINE           │ PUSH & NOTIFICATION CRON     │
-│ • /widget route (resizable)  │ • +30 min post-prayer event  │
-│ • Floating In-App overlay    │ • Direct 'sudah_salat' action│
-│ • 5-Prayer & Task Checkers   │ • Azan audio playback trigger│
-├──────────────────────────────┴──────────────────────────────┤
-│                 UI & STYLING ARCHITECTURE                   │
-│ • Thin Modern Memphis (1.5px border, 2px shadow)            │
-│ • Unified Quran & DoaZikir visual system                    │
-│ • Bespoke SVG bottom navigation bar                         │
-│ • Refined Menu typography & grouping                        │
-├─────────────────────────────────────────────────────────────┤
-│                   QURAN QoL EXTENSIONS                      │
-│ • Continuous Murottal Auto-Scroll & Ayah Highlighting       │
-│ • Multi-Qari Audio Engine (Misyari, Sudais, Al-Ghamidi)     │
-│ • Sepia Parchment Eye-Comfort Reading Mode                  │
-└─────────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        WAKTIUBADAH v2.9.0 CORE                         │
+└───────────────────────────────────┬────────────────────────────────────┘
+                                    │
+    ┌───────────────────────────────┼───────────────────────────────┐
+    ▼                               ▼                               ▼
+┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐
+│  WIDGET POP-OUT &    │  │  KALENDER JADWAL &   │  │  AL-QUR'AN TAJWID    │
+│  PWA HOMESCREEN      │  │  LOG IBADAH HARIAN   │  │  BERWARNA (KEMENAG)  │
+├──────────────────────┤  ├──────────────────────┤  ├──────────────────────┤
+│ • Window Pop-Out     │  │ • Tombol Geser < / > │  │ • Parser Warna Tajwid│
+│ • PiP Floating Mode  │  │ • Akses Hari Lampau  │  │ • Ghunnah/Ikhfa/Mad  │
+│ • Ceklis Salat/Tugas │  │ • Lock Waktu Depan   │  │ • Sakelar On/Off     │
+│ • Manifest Shortcut  │  │ • Label Salat Jumat  │  │ • Unbold Font Judul  │
+└──────────────────────┘  └──────────────────────┘  └──────────────────────┘
+    │                               │                               │
+    └───────────────────────────────┼───────────────────────────────┘
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   PERBAIKAN QoL, UI & BUG AUDIO                       │
+├────────────────────────────────────────────────────────────────────────┤
+│ • Eliminasi Double Sound tap + open surah                              │
+│ • Modal Wirid & Doa instan pasca-ceklis salat (dengan opsi silent)     │
+│ • Responsif font mobile: flex-wrap, text-shrink, zero-overlap          │
+│ • Onboarding: konfirmasi izin notifikasi di awal                       │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-### Pembaruan Versi Aplikasi (v2.8.0)
-- Menambahkan rilis **v2.8.0** ke `APP_PATCH_NOTES` di `src/types.ts` dan memperbarui `CURRENT_VERSION` di `src/lib/storage.ts`:
-  - **Highlights**: Mode Widget Salat & Tugas minimalis terpisah dan floating, notifikasi check-in 30 menit pasca-salat dengan aksi otomatis 'Sudah Salat', pemutaran azan push notification & in-app, penyesuaian style Memphis modern tipis 1.5px di Qur'an & Doa Zikir, perapian tipografi Menu dengan ikon SVG, perombakan ikon navigation bar bawah SVG kustom, serta fitur QoL Murottal auto-scroll, pemilih qari, dan tema kertas sepia.
-  - **Saran Update Selanjutnya**:
-    1. *Fitur Terdekat*: Mode Hafalan Qur'an (fitur sembunyikan ayat sebagian untuk melatih hafalan juz).
-    2. *UI/UX*: Animasi transisi lembar halaman mushaf (page-flip effect).
-    3. *QoL*: Ekspor checklist ibadah bulanan ke format gambar estetik untuk dibagikan ke media sosial.
-    4. *Perbaikan*: Penghematan baterai background sync saat status perangkat berada dalam mode hemat daya.
+---
+
+## 3. Rincian Teknis Per Komponen
+
+### A. Widget Desktop & Homescreen (`/src/pages/WidgetPage.tsx`, `/public/manifest.webmanifest`)
+1. Menambahkan tombol **"Pop-out Desktop Widget"** dengan `window.open('/widget', 'WidgetWaktuIbadah', 'width=380,height=600,menubar=no,toolbar=no,location=no,status=no,resizable=yes')` untuk laptop dan PC.
+2. Menambahkan dukungan API `documentPictureInPicture` bila peramban mendukung, memungkinkan widget selalu mengambang di atas semua aplikasi desktop (*always-on-top*).
+3. Memperbarui `manifest.webmanifest` dengan pintasan resmi *shortcuts* khusus `/widget`.
+
+### B. Kalender Geser & Kunci Waktu Salat (`/src/pages/Jadwal.tsx`, `/src/pages/Ibadah.tsx`)
+1. **Navigasi Tanggal Geser**: Tombol panah kiri (`subDays(selectedDate, 1)`) dan panah kanan (`addDays(selectedDate, 1)`) serta tombol *Hari Ini* dan kalender pemilih cepat.
+2. **Pengisian Hari Lampau**: Tanggal sebelum hari ini dapat dibuka untuk mencatat ibadah yang terlewat.
+3. **Kunci Salat Masa Depan**:
+   - Jika `selectedDate > today`: Semua ceklis salat fardhu dinonaktifkan (`disabled`) dengan keterangan *"Waktu belum tiba"*.
+   - Jika `selectedDate === today`: Membandingkan waktu sekarang (`HH:mm`) dengan waktu salat masing-masing dari jadwal resmi. Salat yang belum masuk waktunya terkunci dari centangan.
+4. **Dukungan Salat Jumat**: Jika pengguna berjenis kelamin laki-laki (`user.gender === 'male'` atau `"Laki-laki"`) dan hari tersebut adalah hari Jumat, teks "Zuhur" ditampilkan sebagai **"Salat Jumat"** (atau *"Salat Jumat / Zuhur"*).
+
+### C. Alur Wirid & Doa Pasca-Salat
+1. Ketika salat fardhu dicentang selesai, periksa pengaturan `reminderSettings.autoPromptWirid !== false`.
+2. Jika aktif, munculkan modal dialog elegan yang menawarkan: *"Alhamdulillah telah menunaikan [Nama Salat]. Lanjutkan dengan wirid & doa sesudah salat?"*
+3. Terdapat tombol *"Buka Wirid"* dan tombol centang *"Jangan ingatkan lagi"* yang tersimpan di `localStorage`.
+
+### D. Tajwid Berwarna Al-Qur'an (`/src/lib/tajweed.ts`, `/src/pages/QuranHadis.tsx`, `/src/components/QuranReaderSettingsModal.tsx`)
+1. Membuat modul parser tajwid Kemenag `parseTajweedVerse(arabicText: string)` yang mendeteksi pola tajwid:
+   - **Ghunnah** (Nun & Mim Tasydid): Hijau Emerald (`text-emerald-600 dark:text-emerald-400 font-semibold`)
+   - **Ikhfa / Ikhfa Syafawi**: Oranye Amber (`text-amber-600 dark:text-amber-400 font-semibold`)
+   - **Idgham**: Biru Cyan (`text-cyan-600 dark:text-cyan-400 font-semibold`)
+   - **Iqlab**: Ungu Violet (`text-purple-600 dark:text-purple-400 font-semibold`)
+   - **Qalqalah**: Merah Rose (`text-rose-600 dark:text-rose-400 font-semibold`)
+   - **Mad Wajib / Jaiz**: Merah Tua Crimson (`text-red-600 dark:text-red-500 font-semibold`)
+2. Menambahkan opsi di `QuranReaderSettingsModal`: **"Warna Tajwid Kemenag"** (Aktif / Nonaktif).
+3. Menyesuaikan ketebalan huruf judul surah di daftar Al-Qur'an dari `font-extrabold` menjadi `font-medium` / `font-semibold` yang lebih nyaman dipandang.
+
+### E. Penanganan Bug Audio & Perapian Layout
+1. **Double Sound Elimination**: Menghentikan tumpang-tindih antara `playButtonTapSound()` global di `Layout.tsx` dan `playQuranSound('open')` di `QuranHadis.tsx`. Meredam suara pembuka surah agar tenang.
+2. **Pembersihan Audio Pack**: Memastikan sound effect tidak berisik dan volume seimbang (`~0.20`).
+3. **Anti Tumpang-Tindih Judul di Mobile**:
+   - Memastikan `truncate` dan `break-words` diterapkan dengan pembungkus fleksibel (`min-w-0 flex-1`).
+   - Tombol aksi di sebelah kanan judul pada layar kecil disetel agar tidak menimpa teks.
+   - Pengecilan ukuran font header tanggal di Ibadah (dari teks raksasa menjadi `text-xs sm:text-sm`).
+
+### F. Onboarding Izin Notifikasi
+- Di halaman Onboarding (`/src/pages/Onboarding.tsx`), tambahkan langkah pilihan preferensi notifikasi azan & pengingat salat secara eksplisit.
+
+---
+
+## 4. Rencana Rilis Versi v2.9.0
+
+Sesuai aturan format versi:
+- Versi dinaikkan ke **v2.9.0** (posisi angka ke-2 naik karena ada penambahan fitur penting).
+- `APP_PATCH_NOTES` di `src/types.ts` dan `CURRENT_VERSION` di `src/lib/storage.ts` diperbarui.
+- Catatan rilis v2.9.0 akan muncul saat mengklik tombol versi di Dashboard Admin dan menu Pengaturan, lengkap dengan rekomendasi fitur selanjutnya.

@@ -20,6 +20,8 @@ export interface QuranReaderSettingsModalProps {
   setSelectedQari: (qariId: string) => void;
   autoScroll: boolean;
   toggleAutoScroll: () => void;
+  tajweedEnabled: boolean;
+  toggleTajweed: () => void;
 }
 
 export const FONT_PRESETS = [
@@ -54,7 +56,9 @@ export const QuranReaderSettingsModal: React.FC<QuranReaderSettingsModalProps> =
   selectedQari,
   setSelectedQari,
   autoScroll,
-  toggleAutoScroll
+  toggleAutoScroll,
+  tajweedEnabled,
+  toggleTajweed
 }) => {
   if (!isOpen) return null;
 
@@ -298,6 +302,64 @@ export const QuranReaderSettingsModal: React.FC<QuranReaderSettingsModalProps> =
                 }`}
               />
             </button>
+          </div>
+
+          {/* Tajwid Berwarna Kemenag RI */}
+          <div className="py-2 border-t border-gray-100 dark:border-slate-800 space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold text-gray-900 dark:text-white block">
+                  Warna Tajwid Standar Kemenag
+                </span>
+                <span className="text-[10px] text-gray-500 dark:text-gray-400">
+                  Pemberian warna kaidah tajwid pada lafaz ayat
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={toggleTajweed}
+                className={`w-11 h-6 rounded-full transition-colors relative p-0.5 border border-black ${
+                  tajweedEnabled ? 'bg-emerald-600' : 'bg-gray-300 dark:bg-slate-700'
+                }`}
+                aria-label="Toggle Tajwid"
+              >
+                <div
+                  className={`w-5 h-5 rounded-full bg-white shadow-xs transition-transform ${
+                    tajweedEnabled ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+
+            {/* Kemenag Tajweed Legend */}
+            {tajweedEnabled && (
+              <div className="p-2 bg-gray-50 dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 grid grid-cols-3 gap-1.5 text-[9.5px]">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#10B981]" />
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Ghunnah</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#F59E0B]" />
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Ikhfa</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#06B6D4]" />
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Idgham</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#8B5CF6]" />
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Iqlab</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#EF4444]" />
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Qalqalah</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#DC2626]" />
+                  <span className="font-semibold text-gray-700 dark:text-gray-300">Mad</span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 

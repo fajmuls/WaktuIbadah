@@ -1,6 +1,6 @@
 {
-  "summary": "Rencana implementasi pembaruan v2.8.0: Standalone & floating mini-widget salat & tugas, notifikasi check-in 30 menit pasca-salat dengan aksi otomatis 'Sudah Salat', pemutaran azan push notification & in-app, penyesuaian style Memphis modern tipis 1.5px di Qur'an & Doa Zikir, perapian tipografi Menu dengan ikon SVG, perombakan ikon navigation bar bawah SVG kustom, serta fitur QoL Murottal auto-scroll, pemilih qari, dan tema kertas sepia.",
-  "updatedAt": "2026-11-06T06:55:00.006669695Z",
+  "summary": "Comprehensive implementation plan for WaktuIbadah v2.9.0 covering:\n1. Desktop & homescreen standalone widget window with PiP pop-out and PWA shortcuts.\n2. Calendar date picker strip in Jadwal and Ibadah with smooth day-shift navigation and backfilling of missed prayers.\n3. Time-locked prayer validation (blocking future prayers until their actual time arrives).\n4. Immediate post-prayer Wirid & Doa dialog with 'Do not remind again' setting.\n5. Responsive zero-truncation UI fix across mobile headers, menu cards, and reader action clusters.\n6. Audio bug fix (eliminating double tap sound and harsh Quran open noise) and audio pack pruning.\n7. Color-coded Kemenag Tajwid in Quran reader with customizable toggle.\n8. Friday prayer dynamic adaptation ('Salat Jumat' for male users).\n9. Upfront notification permission prompt in onboarding.\n10. Version bump to v2.9.0 with updated patch notes and ongoing improvement suggestions.",
+  "updatedAt": "2026-11-06T08:13:42.273265492Z",
   "requestFeedback": true,
   "userFacing": true
 }

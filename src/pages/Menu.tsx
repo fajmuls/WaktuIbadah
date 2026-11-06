@@ -102,7 +102,7 @@ export default function Menu() {
       desc: 'Ceklis cepat 5 waktu salat & tugas (bisa resize & pop-out)', 
       bg: 'bg-gradient-to-br from-amber-300 to-orange-400', 
       color: 'text-black',
-      badge: 'Baru v2.8'
+      badge: 'v2.9'
     },
     { 
       label: "Doa & Zikir Lengkap", 
@@ -169,7 +169,7 @@ export default function Menu() {
       color: 'text-[#6EE7B7]' 
     },
     { 
-      label: 'Pengaturan & Versi v2.8.0', 
+      label: 'Pengaturan & Versi v2.9.0', 
       icon: SettingsMenuSvg, 
       path: '/settings', 
       desc: 'Notifikasi azan, suara qari, tema, & cloud sync', 
@@ -205,7 +205,7 @@ export default function Menu() {
         </Link>
       </div>
 
-      {/* Menu Navigation Grid (Balanced, clean font-semibold hierarchy) */}
+      {/* Menu Navigation Grid */}
       <div className="grid gap-2 sm:gap-2.5">
         {menuItems.map((item) => (
           <Link
@@ -218,7 +218,7 @@ export default function Menu() {
             </div>
 
             <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap">
                 <h3 className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white truncate group-hover:text-emerald-600 transition-colors">
                   {item.label}
                 </h3>

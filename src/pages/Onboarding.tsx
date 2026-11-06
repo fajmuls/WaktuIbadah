@@ -107,6 +107,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         reminderEnabled: formData.reminderEnabled || false,
         useFocusMode: formData.useFocusMode !== false,
         pin: cleanPin.length === 4 ? cleanPin : undefined,
+        gender: (formData.gender as any) || 'Laki-laki',
         isOnboarded: true,
         createdAt: new Date().toISOString(),
       };
@@ -119,8 +120,14 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         console.warn('Initial cloud profile setup failed (can retry in settings):', err);
       }
 
-      // Izin notifikasi + langganan push diminta lewat NotificationGatekeeperModal
-      // (di Dashboard) agar terjadi dalam satu sentuhan pengguna dan setelah ajakan pasang PWA.
+      // Proactively request notification permission if enabled
+      if (formData.reminderEnabled && 'Notification' in window && Notification.permission === 'default') {
+        try {
+          await Notification.requestPermission();
+        } catch (e) {
+          // ignore
+        }
+      }
 
       setIsSyncing(false);
       onComplete();
@@ -217,6 +224,37 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
               <p className="text-[11px] text-gray-400 mt-1">
                 Menjaga data Anda tetap aman jika ada mahasiswa lain yang kebetulan memiliki nama sama.
               </p>
+            </div>
+
+            {/* Gender Selection */}
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                Jenis Kelamin (Untuk Penyesuaian Salat Jumat)
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, gender: 'Laki-laki' })}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                    (formData.gender === 'Laki-laki' || !formData.gender)
+                      ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-600 text-emerald-800 dark:text-emerald-200'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  🧔 Laki-laki (Ikhwan)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setFormData({ ...formData, gender: 'Perempuan' })}
+                  className={`py-2 px-3 rounded-xl border text-xs font-bold transition-all ${
+                    formData.gender === 'Perempuan'
+                      ? 'bg-emerald-50 dark:bg-emerald-950 border-emerald-600 text-emerald-800 dark:text-emerald-200'
+                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400'
+                  }`}
+                >
+                  🧕 Perempuan (Akhwat)
+                </button>
+              </div>
             </div>
 
             {pinError && (

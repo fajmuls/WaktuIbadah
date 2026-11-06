@@ -17,6 +17,9 @@ export interface User {
     city?: string;
     cityId?: string;
   };
+  gender?: 'male' | 'female' | 'Laki-laki' | 'Perempuan';
+  autoPromptWirid?: boolean;
+  tajweedEnabled?: boolean;
 }
 
 export interface ReminderSettings {
@@ -264,6 +267,36 @@ export interface PatchNoteItem {
 }
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
+  {
+    version: '2.9.0',
+    releaseDate: '6 November 2026',
+    title: 'Widget Desktop & Pop-Out, Navigasi Kalender Geser, Kunci Salat Mendatang, Tajwid Warna Kemenag, Salat Jumat Otomatis, & Dialog Wirid Sesudah Salat',
+    highlights: [
+      'Widget Desktop Pop-Out & PWA Shortcuts: Mode jendela desktop terpisah (Window Pop-Out / Picture-in-Picture) untuk disematkan di sudut layar laptop/PC tanpa reload atau share link rusak.',
+      'Navigasi Kalender Geser (Strip Hari) di Jadwal & Ibadah: Tombol panah geser (< dan >) dan pemilih tanggal ringkas untuk melihat dan mencatat ibadah hari-hari sebelumnya (qadha/backfill).',
+      'Penguncian Cerdas Salat Mendatang: Salat fardhu pada hari yang belum tiba atau jam yang belum masuk otomatis terkunci dengan label status "Waktu belum tiba", mencegah salah ceklis sebelum waktunya.',
+      'Dialog Ajakan Wirid & Doa Setelah Salat: Pop-up otomatis pengingat wirid sesudah mencentang salat fardhu apa pun, lengkap dengan tombol "Jangan ingatkan lagi" dan pengaturan aktif/nonaktif di Setting.',
+      'Tajwid Berwarna Standar Kemenag RI: Teks ayat suci Al-Qur\'an kini dapat ditampilkan dengan warna tajwid resmi Kemenag (Ghunnah hijau, Ikhfa kuning, Idgham cyan, Iqlab ungu, Qalqalah merah, Mad merah tua) dengan sakelar on/off di pengaturan baca.',
+      'Penyesuaian Otomatis Salat Jumat: Pengguna ikhwan (Laki-laki) otomatis melihat label "Salat Jumat" pada hari Jumat menggantikan nama Zuhur.',
+      'Eliminasi Double Sound & Audio Noise: Memperbaiki benturan suara ganda (suara klik global + suara buka surah) saat membuka surah Al-Qur\'an agar pembacaan tenang dan nyaman.',
+      'Anti-Overlap & Tipografi Responsif: Memperbaiki judul dan kartu yang sebelumnya tertimpa atau terpotong pada layar ponsel kecil (Kumpulan Doa & Zikir, Widget Layar, dan heading pencatatan ibadah).',
+      'Izin Notifikasi Awal di Onboarding: Meminta izin notifikasi secara transparan sejak awal setup agar jadwal azan dan pengingat langsung siap berbunyi.'
+    ],
+    soundPackUpdates: [
+      'Penyelarasan audio pembuka Al-Qur\'an agar tidak bertabrakan dengan feedback klik tombol global'
+    ],
+    uiOverhaul: [
+      'Strip kalender geser horizontal di halaman Jadwal dan Ibadah dengan tombol lompat Hari Ini',
+      'Ukuran judul pencatatan ibadah diperhalus agar proporsional dan tidak mendominasi layar ponsel',
+      'Font judul surah pada daftar Al-Qur\'an dibuat lebih ramping (unbold) untuk tampilan clean look',
+      'Jendela pop-out widget dengan ukuran ideal 360x560px siap pakai'
+    ],
+    recommendations: [
+      'Saran Fitur Selanjutnya: Mode Uji Hafalan (sembunyikan kata/ayat bertahap untuk muraja\'ah mandiri)',
+      'Saran UI/UX & QoL: Opsi download seluruh audio Al-Qur\'an sekaligus dalam satu klik untuk penggunaan offline total tanpa kuota',
+      'Saran Perbaikan Bug: Penanganan sinkronisasi zona waktu otomatis ketika pengguna bepergian melintasi zona WIB, WITA, dan WIT'
+    ]
+  },
   {
     version: '2.8.0',
     releaseDate: '6 November 2026',

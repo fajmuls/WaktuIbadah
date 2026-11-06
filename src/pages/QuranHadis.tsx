@@ -22,6 +22,7 @@ import { QuranReaderSettingsModal } from '../components/QuranReaderSettingsModal
 import { QURAN_JUZ_LIST, QuranJuzItem } from '../data/quran-juz';
 import { getSurahAyahs, getSurahTafsir } from '../lib/quran-api';
 import { getCachedAudioUrl } from '../lib/murottal-cache';
+import { renderTajweedHtml } from '../lib/tajweed';
 
 // Helper to convert western digits to authentic Arabic numerals (١, ٢, ٣...)
 export const toArabicNumerals = (num: number | string): string => {
@@ -129,6 +130,14 @@ export default function QuranHadis() {
     const next = !autoScroll;
     setAutoScroll(next);
     localStorage.setItem('wi_quran_autoscroll', String(next));
+  };
+
+  const [tajweedEnabled, setTajweedEnabled] = useState<boolean>(() => storage.getTajweedEnabled());
+
+  const toggleTajweed = () => {
+    const next = !tajweedEnabled;
+    setTajweedEnabled(next);
+    storage.setTajweedEnabled(next);
   };
 
   // Tafsir Bottom Sheet Drawer State
@@ -246,7 +255,6 @@ export default function QuranHadis() {
 
   // Open Surah Detail with resilient multi-tier fallback
   const openSurah = async (surah: SurahItem, targetAyah?: number) => {
-    playQuranSound('open');
     setSelectedSurah(surah);
     setIsLoadingAyahs(true);
     setAyahs([]);
@@ -665,10 +673,10 @@ export default function QuranHadis() {
                     <div className="flex items-center gap-3 min-w-0">
                       <IslamicStarBadge number={surah.nomor} className="w-9 h-9" />
                       <div className="min-w-0">
-                        <h3 className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
+                        <h3 className="font-semibold text-xs sm:text-sm text-gray-900 dark:text-white truncate group-hover:text-emerald-700 dark:group-hover:text-emerald-300">
                           {surah.namaLatin}
                         </h3>
-                        <p className="text-[10px] sm:text-[11px] font-semibold text-gray-500 uppercase tracking-wide mt-0.5">
+                        <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 uppercase tracking-wide mt-0.5">
                           {surah.tempatTurun} | {surah.jumlahAyat} AYAT
                         </p>
                       </div>
@@ -1193,7 +1201,11 @@ export default function QuranHadis() {
                             className="hover:bg-emerald-100/60 dark:hover:bg-emerald-950/60 rounded px-1 transition-colors cursor-pointer"
                             title={`Tafsir Ayat ${a.nomorAyat}`}
                           >
-                            {a.teksArab}
+                            {tajweedEnabled ? (
+                              <span dangerouslySetInnerHTML={{ __html: renderTajweedHtml(a.teksArab) }} />
+                            ) : (
+                              a.teksArab
+                            )}
                           </span>
                           {/* Circular Ayah End Ornament */}
                           <button
@@ -1291,7 +1303,11 @@ export default function QuranHadis() {
                               dir="rtl"
                               title="Ketuk ayat untuk membaca Tafsir Kemenag RI"
                             >
-                              <span>{ayah.teksArab}</span>
+                              {tajweedEnabled ? (
+                                <span dangerouslySetInnerHTML={{ __html: renderTajweedHtml(ayah.teksArab) }} />
+                              ) : (
+                                <span>{ayah.teksArab}</span>
+                              )}
                               {/* End of Verse Circle */}
                               <span 
                                 className="inline-flex items-center justify-center mx-1.5 w-6 h-6 rounded-full border border-[#C4A882] dark:border-slate-600 bg-[#FCFAF5] dark:bg-slate-900 text-gray-800 dark:text-gray-200 text-[11px] font-serif font-medium select-none align-middle"
@@ -1419,6 +1435,8 @@ export default function QuranHadis() {
         setSelectedQari={handleSetSelectedQari}
         autoScroll={autoScroll}
         toggleAutoScroll={toggleAutoScroll}
+        tajweedEnabled={tajweedEnabled}
+        toggleTajweed={toggleTajweed}
       />
 
       {/* ======================= BOTTOM SHEET TAFSIR KEMENAG RI ======================= */}
