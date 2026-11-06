@@ -230,9 +230,9 @@ export default function Dashboard() {
       <AdminReviewBanner />
 
       {/* Memphis Header Section with Brand Icon */}
-      <header className="p-3.5 sm:p-4 bg-white border-2 sm:border-[2.5px] border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex justify-between items-center flex-wrap gap-2 mb-2">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl border-2 border-black bg-white p-0.5 shadow-[2px_2px_0px_#121212] overflow-hidden flex items-center justify-center shrink-0">
+      <header className="p-3 bg-white border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex justify-between items-center gap-2 mb-2 min-w-0">
+        <div className="flex items-center gap-2.5 min-w-0 flex-1">
+          <div className="w-9 h-9 rounded-lg border-[1.5px] border-black bg-white p-0.5 shadow-[1.5px_1.5px_0px_#121212] overflow-hidden flex items-center justify-center shrink-0">
             <img 
               src="/icon-waktuibadah.png" 
               alt="Icon WaktuIbadah" 
@@ -242,34 +242,26 @@ export default function Dashboard() {
               }}
             />
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-[#121212]">
-                Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Mahasiswa'}! 👋
-              </h1>
-            </div>
-            <p className="text-[#121212]/80 mt-0.5 font-bold text-xs flex items-center gap-2 flex-wrap">
-              <span>{format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}</span>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#121212] truncate">
+              Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Fajmuls'}!
+            </h1>
+            <p className="text-[#121212]/80 mt-0.5 text-[11px] flex items-center gap-1.5 truncate">
+              <span className="truncate">{format(new Date(), 'EEEE, d MMM yyyy', { locale: id })}</span>
               <span>•</span>
               {prayerData && (
-                <span className="bg-[#00F0FF] text-black px-2 py-0.5 rounded border border-black text-[9px] font-black uppercase">
+                <span className="text-[10px] font-semibold text-emerald-800 shrink-0">
                   {prayerData.hijri.day} {prayerData.hijri.month} {prayerData.hijri.year.replace(/\s*H\s*$/i, '')} H
                 </span>
               )}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Link
-            to="/admin"
-            className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] uppercase font-black"
-            title="Akses Admin Dashboard"
-          >
-            Admin
-          </Link>
+        <div className="flex items-center gap-2 shrink-0">
           <Link
             to="/settings"
-            className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-2 border-black rounded-xl flex items-center justify-center text-black font-black shadow-[2px_2px_0px_#121212]"
+            aria-label="Profil & Pengaturan"
+            className="w-8 h-8 sm:w-9 sm:h-9 bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-[1.5px] border-black rounded-lg flex items-center justify-center text-black font-bold text-xs shadow-[1.5px_1.5px_0px_#121212] active:translate-y-0.5"
             title="Buka Pengaturan"
           >
             {user?.name?.charAt(0).toUpperCase() || 'M'}
@@ -278,61 +270,55 @@ export default function Dashboard() {
       </header>
 
       {/* PRAYER FOCUS HERO SECTION WITH GRAND MOSQUE VECTOR BACKGROUND */}
-      <section className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-3xl p-5 sm:p-6 shadow-[5px_5px_0px_#121212] relative overflow-hidden border-[3px] border-[#121212]">
+      <section className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-2xl p-3.5 sm:p-5 shadow-[3px_3px_0px_#121212] relative overflow-hidden border-[1.5px] border-[#121212]">
         
         {/* GRAND MOSQUE SILHOUETTE VECTOR ART BACKGROUND */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
           <svg className="absolute bottom-0 left-0 right-0 w-full h-44 text-emerald-300 fill-current" viewBox="0 0 1200 320" preserveAspectRatio="none">
-            {/* Mosque minarets, grand central domes, and architectural arches */}
             <path d="M0,320 L0,220 L35,220 L35,130 L45,130 L45,90 L50,70 L55,90 L55,130 L65,130 L65,220 L160,220 C160,150 215,130 255,130 C295,130 350,150 350,220 L440,220 L440,110 L450,110 L450,60 L455,40 L460,60 L460,110 L470,110 L470,220 L540,220 C540,120 640,80 700,80 C760,80 860,120 860,220 L930,220 L930,120 L940,120 L940,70 L945,50 L950,70 L950,120 L960,120 L960,220 L1050,220 C1050,160 1105,140 1145,140 L1200,140 L1200,320 Z" />
             <circle cx="455" cy="35" r="4" />
             <circle cx="945" cy="45" r="4" />
             <circle cx="700" cy="72" r="5" />
           </svg>
-          {/* Subtle Ambient Twinkling Stars */}
-          <div className="absolute top-4 left-1/4 w-1.5 h-1.5 bg-amber-200 rounded-full animate-ping" />
-          <div className="absolute top-10 right-1/4 w-1 h-1 bg-white rounded-full opacity-60" />
-          <div className="absolute top-6 left-2/3 w-1.5 h-1.5 bg-emerald-200 rounded-full opacity-70" />
         </div>
 
-        {/* Ambient Top Glow */}
-        <div className="absolute -top-16 left-1/2 -translate-x-1/2 w-80 h-32 bg-amber-400/15 rounded-full blur-3xl pointer-events-none" />
-
         {/* Top Control Bar: Location & Quick Sound / Notification Buttons */}
-        <div className="relative z-10 flex flex-wrap items-center justify-between gap-2.5 mb-4 border-b border-white/10 pb-3">
+        <div className="relative z-10 flex items-center justify-between gap-2 mb-3 border-b border-white/10 pb-2.5">
           <button 
             onClick={() => setIsCityModalOpen(true)}
-            className="flex items-center gap-1.5 text-emerald-100 bg-white/15 hover:bg-white/25 px-3 py-1.5 rounded-full text-xs font-semibold backdrop-blur-md transition-colors text-left group shadow-xs"
+            aria-label="Pilih Lokasi Kota"
+            className="flex items-center gap-1.5 text-emerald-100 bg-white/15 hover:bg-white/25 px-2.5 py-1 rounded-full text-xs font-medium backdrop-blur-md transition-colors text-left group shadow-xs min-w-0"
           >
             <MapPin className="w-3.5 h-3.5 shrink-0 text-amber-300" />
-            <span className="truncate max-w-[170px]">
-              {isFetchingLocation ? 'Mencari lokasi...' : (prayerData?.location || 'Pilih Kota')}
+            <span className="truncate max-w-[140px] text-[11px]">
+              {isFetchingLocation ? 'Mencari...' : (prayerData?.location || 'Pilih Kota')}
             </span>
-            <span className="text-[10px] bg-white/20 px-1.5 py-0.5 rounded text-white group-hover:bg-white/30 ml-0.5">Ubah</span>
+            <span className="text-[9.5px] bg-white/20 px-1 py-0.2 rounded text-white shrink-0">Ubah</span>
           </button>
           
           {/* Quick Sound Effect & Notification Test Actions */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 shrink-0">
             <button
               onClick={handleTestLoudAzan}
-              className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 shadow-sm ${
+              aria-label="Tes Suara Azan"
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1 shadow-xs border border-black/40 ${
                 isTestingSound 
-                  ? 'bg-amber-400 text-emerald-950 ring-2 ring-amber-300 animate-pulse'
-                  : 'bg-white/15 hover:bg-white/25 text-white backdrop-blur-md'
+                  ? 'bg-amber-400 text-emerald-950 animate-pulse'
+                  : 'bg-white/15 text-white backdrop-blur-md'
               }`}
-              title="Putar pengujian audio suara azan dengan volume keras dan getaran"
+              title="Putar pengujian audio azan"
             >
               {isTestingSound ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-amber-300" />}
-              <span>{isTestingSound ? 'Hentikan Azan' : 'Tes Suara Azan (Keras)'}</span>
+              <span>{isTestingSound ? 'Hentikan' : 'Tes Azan'}</span>
             </button>
 
             <button
               onClick={() => setIsGatekeeperOpen(true)}
-              className="px-2.5 py-1.5 bg-white/15 hover:bg-white/25 text-white rounded-full text-xs font-bold transition-all flex items-center gap-1 backdrop-blur-md shadow-sm"
-              title="Uji keterhubungan notifikasi di HP/Laptop"
+              aria-label="Tes Notifikasi"
+              className="p-1.5 bg-white/15 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 backdrop-blur-md border border-black/40"
+              title="Uji notifikasi HP"
             >
               <Bell className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden sm:inline">Tes Notifikasi</span>
             </button>
           </div>
         </div>
@@ -340,30 +326,30 @@ export default function Dashboard() {
         {/* Current Active Prayer Indicator */}
         {currentPrayer && (
           <div className="relative z-10 text-center mb-1">
-            <div className="inline-flex items-center gap-2 bg-emerald-500/30 border border-emerald-400/40 px-4 py-1 rounded-full shadow-xs backdrop-blur-md">
-               <span className="w-2 h-2 rounded-full bg-emerald-300 animate-pulse" />
-               <span className="text-xs font-semibold text-emerald-100">Sekarang Waktu: <strong className="text-white text-sm">{currentPrayer.prayer}</strong></span>
+            <div className="inline-flex items-center gap-1.5 bg-emerald-500/30 border border-emerald-400/30 px-3 py-0.5 rounded-full backdrop-blur-md">
+               <span className="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse" />
+               <span className="text-[11px] font-medium text-emerald-100">Waktu: <strong className="text-white text-xs font-bold">{currentPrayer.prayer}</strong></span>
             </div>
           </div>
         )}
 
         {/* Next Prayer Countdown Hero */}
         {nextPrayer && (
-          <div className="relative z-10 text-center my-3 sm:my-4">
-            <h2 className="text-emerald-200 font-medium text-xs mb-1 uppercase tracking-wider">
-              Menjelang Salat Fardhu Berikutnya
+          <div className="relative z-10 text-center my-2">
+            <h2 className="text-emerald-200 font-medium text-[11px] uppercase tracking-wider">
+              Salat Berikutnya
             </h2>
-            <div className="text-3xl sm:text-4xl font-extrabold tracking-tight mb-1 flex items-center justify-center gap-2.5">
+            <div className="text-2xl sm:text-3xl font-bold tracking-tight mb-0.5 flex items-center justify-center gap-2">
               <span className="text-amber-300">{prayerIcons[nextPrayer.prayer]}</span>
               <span>{nextPrayer.prayer}</span>
             </div>
-            <div className="text-base sm:text-lg font-bold text-emerald-100">
+            <div className="text-base font-bold text-emerald-100">
               Pukul {formatTimeString(nextPrayer.time, user?.timeFormat || '24h')} {nextPrayer.isTomorrow && <span className="text-xs font-normal">(Besok)</span>}
             </div>
             {minutesToNext > 0 && minutesToNext < 180 && (
-              <div className="mt-2 inline-flex items-center gap-1.5 bg-amber-400/25 border border-amber-300/40 text-amber-200 px-3.5 py-0.5 rounded-full text-xs font-bold backdrop-blur-md animate-pulse">
+              <div className="mt-1.5 inline-flex items-center gap-1 bg-amber-400/20 border border-amber-300/30 text-amber-200 px-3 py-0.5 rounded-full text-[11px] font-semibold backdrop-blur-md">
                 <Sparkles className="w-3 h-3" />
-                <span>Masuk dalam {minutesToNext} menit lagi</span>
+                <span>{minutesToNext} menit lagi</span>
               </div>
             )}
           </div>
@@ -371,48 +357,46 @@ export default function Dashboard() {
 
         {/* PERFECTLY CENTERED 5-COLUMN PRAYER TIMES GRID */}
         <div className="relative z-10 pt-2">
-          <div className="grid grid-cols-5 gap-1.5 sm:gap-2.5 max-w-xl mx-auto w-full items-stretch justify-center">
+          <div className="grid grid-cols-5 gap-1 max-w-xl mx-auto w-full items-stretch justify-center">
             {prayerData && prayersList.map((p) => {
               const isNext = nextPrayer?.prayer === p && !nextPrayer?.isTomorrow;
               const isCurrent = currentPrayer?.prayer === p;
               const isPassed = !isNext && !isCurrent && parse(prayerData.times[p], 'HH:mm', new Date()) < new Date();
               
               return (
-                <motion.div 
+                <div 
                   key={p}
-                  whileHover={{ scale: 1.04 }}
-                  whileTap={{ scale: 0.96 }}
-                  className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-2xl border text-center transition-all ${
+                  className={`flex flex-col items-center justify-center p-1.5 sm:p-2 rounded-xl border text-center transition-all ${
                     isCurrent
-                      ? 'bg-gradient-to-b from-emerald-500 to-teal-600 text-white border-emerald-300 shadow-lg shadow-emerald-500/30 ring-2 ring-emerald-300/60'
+                      ? 'bg-gradient-to-b from-emerald-500 to-teal-600 text-white border-emerald-300 shadow-sm'
                       : isNext 
-                        ? 'bg-white text-emerald-950 border-white shadow-xl ring-2 ring-white/80' 
+                        ? 'bg-white text-emerald-950 border-white shadow-md' 
                         : isPassed
-                          ? 'bg-white/5 border-white/10 text-white/45'
-                          : 'bg-white/10 border-white/20 text-white hover:bg-white/20'
+                          ? 'bg-white/5 border-white/10 text-white/50'
+                          : 'bg-white/10 border-white/20 text-white'
                   }`}
                 >
-                  <div className={`mb-1 ${isNext ? 'text-emerald-800' : 'opacity-90'}`}>
+                  <div className={`mb-0.5 ${isNext ? 'text-emerald-800' : 'opacity-90'}`}>
                     {prayerIcons[p]}
                   </div>
-                  <span className={`text-[10px] sm:text-xs font-bold block ${isNext ? 'text-emerald-950' : ''}`}>
+                  <span className={`text-[10px] font-bold block ${isNext ? 'text-emerald-950' : ''}`}>
                     {p}
                   </span>
-                  <span className={`text-xs sm:text-sm mt-0.5 ${isNext || isCurrent ? 'font-extrabold text-amber-900 dark:text-emerald-950' : 'font-medium'}`}>
+                  <span className={`text-[11px] sm:text-xs mt-0.5 ${isNext || isCurrent ? 'font-bold text-amber-900 dark:text-emerald-950' : 'font-medium'}`}>
                     {formatTimeString(prayerData.times[p], user?.timeFormat || '24h')}
                   </span>
-                </motion.div>
+                </div>
               );
             })}
           </div>
 
           {prayerData && (
-            <div className="flex justify-center items-center gap-4 text-[11px] text-emerald-200 mt-3 pt-2 border-t border-white/10">
+            <div className="flex justify-center items-center gap-2 text-[10.5px] text-emerald-200 mt-2.5 pt-2 border-t border-white/10 flex-wrap">
               <span>Imsak: <strong>{formatTimeString(prayerData.imsak, user?.timeFormat || '24h')}</strong></span>
               <span>•</span>
               <span>Terbit: <strong>{formatTimeString(prayerData.times.Subuh, user?.timeFormat || '24h')}</strong></span>
               <span>•</span>
-              <span>Magrib/Buka: <strong>{formatTimeString(prayerData.times.Magrib, user?.timeFormat || '24h')}</strong></span>
+              <span>Magrib: <strong>{formatTimeString(prayerData.times.Magrib, user?.timeFormat || '24h')}</strong></span>
             </div>
           )}
         </div>

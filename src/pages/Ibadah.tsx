@@ -147,148 +147,145 @@ export default function Ibadah() {
   return (
     <div className="space-y-3.5 sm:space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
       {/* Memphis Header */}
-      <div className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+      <div className="p-3 bg-white border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between gap-2">
+        <div className="min-w-0">
+          <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#121212] truncate">
             Pencatatan Ibadah
           </h1>
-          <p className="text-gray-600 text-xs font-bold mt-0.5">
-            Pantau salat 5 waktu dan tilawah Al-Qur'an harianmu
+          <p className="text-gray-600 text-[11px] font-medium truncate mt-0.5">
+            Pantau salat 5 waktu dan tilawah Al-Qur'an harian
           </p>
         </div>
 
         {/* Date manual input picker and Doa modal shortcut */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 shrink-0">
           <button
             onClick={() => setIsDoaModalOpen(true)}
-            className="memphis-btn memphis-btn-green px-2.5 py-1 text-[11px] font-black uppercase tracking-wider gap-1 shrink-0"
+            className="px-2.5 py-1.5 bg-emerald-400 text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1px_1px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
             title="Buka Wirid & Doa Setelah Salat"
           >
             <Sparkles className="w-3.5 h-3.5" />
-            <span className="hidden sm:inline">Wirid &</span> Doa Salat
+            <span className="hidden sm:inline">Doa Salat</span>
           </button>
           <input
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="memphis-input px-2.5 py-1 text-xs font-black"
+            className="border-[1.5px] border-black rounded-lg px-2 py-1 text-xs font-bold bg-white"
           />
         </div>
       </div>
 
       {/* Date Quick Selector (Memphis Compact Fit) */}
-      <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full hide-scrollbar">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 max-w-full hide-scrollbar">
         {datePills.map(p => {
           const isSelected = selectedDate === p.dateStr;
           return (
             <button
               key={p.dateStr}
               onClick={() => setSelectedDate(p.dateStr)}
-              className={`flex flex-col items-center justify-center min-w-[54px] sm:min-w-[64px] py-1.5 px-1 rounded-xl border-2 border-black transition-all ${
+              className={`flex flex-col items-center justify-center w-[52px] h-[58px] rounded-xl border-[1.5px] border-black transition-all shrink-0 ${
                 isSelected 
-                  ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-black shadow-[3px_3px_0px_#121212] -translate-y-0.5' 
+                  ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-bold shadow-[2px_2px_0px_#121212] -translate-y-0.5' 
                   : p.isToday 
-                    ? 'bg-emerald-50 text-emerald-900 font-bold shadow-[2px_2px_0px_#121212]'
-                    : 'bg-white text-gray-700 font-bold shadow-[2px_2px_0px_#121212] hover:bg-gray-50'
+                    ? 'bg-emerald-50 text-emerald-900 font-bold shadow-[1.5px_1.5px_0px_#121212]'
+                    : 'bg-white text-gray-700 font-bold shadow-[1.5px_1.5px_0px_#121212]'
               }`}
             >
-              <span className="text-[10px] mb-0.5 uppercase tracking-wider">{p.dayName}</span>
-              <span className="text-base sm:text-lg font-black">{p.dayNum}</span>
+              <span className="text-[10px] uppercase tracking-wider">{p.dayName}</span>
+              <span className="text-base font-bold mt-0.5">{p.dayNum}</span>
             </button>
           );
         })}
       </div>
 
       {/* Daily Progress Status Banner (Memphis Card) */}
-      <div className="memphis-card p-3 sm:p-4 shadow-[3px_3px_0px_#121212]">
-        <div className="flex items-center justify-between gap-3 mb-2.5">
-          <div className="flex items-center gap-2.5">
-            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl border-2 border-black flex items-center justify-center font-black text-xs sm:text-sm shadow-[1.5px_1.5px_0px_#121212] ${
+      <div className="bg-white border-[1.5px] border-black rounded-xl p-3 shadow-[2px_2px_0px_#121212]">
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className={`w-9 h-9 rounded-lg border-[1.5px] border-black flex items-center justify-center font-bold text-xs shadow-[1px_1px_0px_#121212] shrink-0 ${
               completedCount === 5 
                 ? 'bg-gradient-to-br from-emerald-400 to-teal-400 text-black' 
                 : 'bg-white text-black'
             }`}>
               {progressPercent}%
             </div>
-            <div>
-              <h3 className="text-xs sm:text-sm font-black uppercase tracking-tight text-black">
+            <div className="min-w-0">
+              <h3 className="text-xs sm:text-sm font-bold text-black truncate">
                 {completedCount === 5 ? 'Alhamdulillah, Salat Lengkap!' : `${completedCount} dari 5 Waktu Salat`}
               </h3>
-              <p className="text-[10px] sm:text-[11px] font-bold text-gray-500">
+              <p className="text-[10.5px] text-gray-500 font-medium truncate">
                 {completedCount === 5 
-                  ? 'Semoga seluruh amalan salat diterima oleh Allah SWT' 
-                  : 'Centang kotak waktu salat setelah menunaikannya'}
+                  ? 'Semoga amalan salat diterima oleh Allah SWT' 
+                  : 'Centang kotak setelah menunaikan salat'}
               </p>
             </div>
           </div>
 
           <Link
             to="/progress"
-            className="memphis-btn memphis-btn-white px-2.5 py-1 text-[10px] uppercase font-black shrink-0"
+            className="px-2.5 py-1 text-[11px] font-bold bg-white border border-black rounded-lg shadow-[1px_1px_0px_#121212] shrink-0"
           >
             Grafik
           </Link>
         </div>
 
         {/* Progress bar */}
-        <div className="w-full bg-gray-100 border-2 border-black h-3 rounded-full overflow-hidden flex gap-1 p-0.5 shadow-[1px_1px_0px_#121212]">
+        <div className="w-full bg-gray-100 border-[1.5px] border-black h-2.5 rounded-full overflow-hidden flex gap-0.5 p-0.5 shadow-[1px_1px_0px_#121212]">
           {prayers.map((p) => (
             <div
               key={p}
               className={`flex-1 h-full rounded-full transition-all duration-300 ${
-                log.prayers[p] ? 'bg-[#10B981]' : 'bg-transparent'
+                log.prayers[p] ? 'bg-emerald-500' : 'bg-transparent'
               }`}
             />
           ))}
         </div>
       </div>
 
-      {/* Prayer Checklist with Memphis Style */}
-      <div className="space-y-1.5 sm:space-y-2">
-        <h3 className="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-wider px-1">
-          Daftar Salat 5 Waktu ({format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: id })})
+      {/* Prayer Checklist with 56px Rows & 24px Checkbox */}
+      <div className="space-y-1.5">
+        <h3 className="text-[10.5px] font-bold text-gray-500 uppercase tracking-wider px-0.5">
+          Salat 5 Waktu ({format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: id })})
         </h3>
         
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-1.5">
           {prayers.map(prayer => {
             const isCompleted = log.prayers[prayer];
             return (
               <button
                 key={prayer}
                 onClick={() => handleToggle(prayer)}
-                className={`w-full flex items-center justify-between p-2.5 sm:p-3 rounded-xl border-2 border-black transition-all text-left group ${
+                className={`w-full h-[56px] flex items-center justify-between px-3 rounded-xl border-[1.5px] border-black transition-all text-left ${
                   isCompleted 
-                    ? 'bg-emerald-100 shadow-[2px_2px_0px_#121212]' 
-                    : 'bg-white shadow-[2px_2px_0px_#121212] hover:bg-gray-50'
+                    ? 'bg-emerald-100 shadow-[1.5px_1.5px_0px_#121212]' 
+                    : 'bg-white shadow-[1.5px_1.5px_0px_#121212]'
                 }`}
               >
-                <div className="flex items-center gap-2.5">
-                  <div className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg border-2 border-black flex items-center justify-center transition-all ${
+                <div className="flex items-center gap-2.5 min-w-0">
+                  {/* 24px Checkbox */}
+                  <div className={`w-6 h-6 rounded-lg border-[1.5px] border-black flex items-center justify-center shrink-0 transition-all ${
                     isCompleted 
-                      ? 'bg-[#10B981] text-white shadow-[1px_1px_0px_#121212]' 
-                      : 'bg-white text-transparent'
+                      ? 'bg-emerald-500 text-white shadow-[1px_1px_0px_#121212]' 
+                      : 'bg-white'
                   }`}>
-                    <Check className={`w-4 h-4 stroke-[3] ${isCompleted ? 'opacity-100' : 'opacity-0'}`} />
+                    <Check className={`w-3.5 h-3.5 stroke-[3] ${isCompleted ? 'opacity-100' : 'opacity-0'}`} />
                   </div>
                   
-                  <div>
-                    <h4 className="text-xs sm:text-sm font-black uppercase tracking-tight text-black">
+                  <div className="min-w-0">
+                    <h4 className="text-xs font-bold uppercase tracking-tight text-black truncate">
                       {prayer}
                     </h4>
-                    <span className="text-[10px] sm:text-[11px] text-gray-500 font-bold">
+                    <span className="text-[12px] text-gray-600 font-medium">
                       Pukul {formatTimeString(times[prayer], user?.timeFormat || '24h')} WIB
                     </span>
                   </div>
                 </div>
                 
-                <div className="text-xs font-black">
-                  {isCompleted ? (
-                    <span className="memphis-badge bg-[#10B981] text-white text-[9px]">
+                <div className="text-xs font-bold shrink-0">
+                  {isCompleted && (
+                    <span className="bg-emerald-500 text-white text-[9.5px] font-bold px-2 py-0.5 rounded border border-black shadow-[1px_1px_0px_#121212]">
                       Sudah Salat
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-gray-400 font-bold">
-                      Klik centang
                     </span>
                   )}
                 </div>
@@ -298,31 +295,22 @@ export default function Ibadah() {
         </div>
       </div>
 
-      {/* Salat Sunnah Pilihan Tracker (Memphis Style) */}
-      <div className="memphis-card p-3 sm:p-4 space-y-2.5 shadow-[3px_3px_0px_#121212]">
-        <div className="flex items-center justify-between border-b-2 border-black pb-2">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-emerald-100 border border-black text-black flex items-center justify-center font-bold">
-              <Sparkles className="w-4 h-4" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <h3 className="text-xs sm:text-sm font-black uppercase tracking-tight text-black">
-                  Salat Sunnah Pilihan
-                </h3>
-              </div>
-              <p className="text-[10px] sm:text-[11px] font-bold text-gray-500">
-                Pantau salat Dhuha, Tahajud, dan Witir di sela kuliah
-              </p>
-            </div>
+      {/* Salat Sunnah Pilihan Tracker */}
+      <div className="bg-white border-[1.5px] border-black rounded-xl p-3 space-y-2 shadow-[2px_2px_0px_#121212]">
+        <div className="flex items-center justify-between border-b border-black pb-2">
+          <div className="flex items-center gap-2 min-w-0">
+            <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
+            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight text-black truncate">
+              Salat Sunnah Pilihan
+            </h3>
           </div>
 
-          <span className="memphis-badge bg-gradient-to-r from-emerald-400 to-teal-400 text-black text-[9px]">
+          <span className="bg-emerald-200 border border-black text-black font-bold text-[9.5px] px-2 py-0.5 rounded shrink-0">
             {Object.values(log.sunnahPrayers || {}).filter(Boolean).length} / 3 Selesai
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-2">
+        <div className="grid grid-cols-1 gap-1.5">
           {sunnahPrayersList.map((sunnah) => {
             const isCompleted = !!(log.sunnahPrayers && log.sunnahPrayers[sunnah.id]);
             const Icon = sunnah.icon;
@@ -331,46 +319,42 @@ export default function Ibadah() {
               <button
                 key={sunnah.id}
                 onClick={() => handleToggleSunnah(sunnah.id)}
-                className={`w-full flex items-center justify-between p-2.5 rounded-xl border-2 border-black transition-all text-left ${
+                className={`w-full flex items-center justify-between p-2.5 rounded-xl border-[1.5px] border-black transition-all text-left ${
                   isCompleted
-                    ? 'bg-emerald-100 shadow-[2px_2px_0px_#121212]'
-                    : 'bg-[#FFFDF8] shadow-[1.5px_1.5px_0px_#121212] hover:bg-gray-50'
+                    ? 'bg-emerald-100 shadow-[1.5px_1.5px_0px_#121212]'
+                    : 'bg-[#FFFDF8] shadow-[1.5px_1.5px_0px_#121212]'
                 }`}
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className={`w-7 h-7 rounded-lg border-2 border-black flex items-center justify-center shrink-0 ${
+                  <div className={`w-6 h-6 rounded-lg border-[1.5px] border-black flex items-center justify-center shrink-0 ${
                     isCompleted 
-                      ? 'bg-[#10B981] text-white shadow-[1px_1px_0px_#121212]' 
-                      : 'bg-white text-transparent'
+                      ? 'bg-emerald-500 text-white shadow-[1px_1px_0px_#121212]' 
+                      : 'bg-white'
                   }`}>
-                    <Check className={`w-4 h-4 stroke-[3] ${isCompleted ? 'opacity-100' : 'opacity-0'}`} />
+                    <Check className={`w-3.5 h-3.5 stroke-[3] ${isCompleted ? 'opacity-100' : 'opacity-0'}`} />
                   </div>
 
                   <div className="min-w-0">
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       <Icon className="w-3.5 h-3.5 text-black shrink-0" />
-                      <h4 className="text-xs sm:text-sm font-black uppercase tracking-tight text-black truncate">
+                      <h4 className="text-xs font-bold uppercase tracking-tight text-black truncate">
                         {sunnah.name}
                       </h4>
-                      <span className="memphis-badge bg-[#00F0FF] text-black text-[8px] py-0 px-1">
+                      <span className="bg-[#00F0FF] text-black text-[9px] font-bold px-1.5 py-0.2 rounded border border-black shrink-0">
                         {sunnah.rakaat}
                       </span>
                     </div>
 
-                    <p className="text-[10px] text-gray-600 font-semibold truncate mt-0.5">
-                      🕒 {sunnah.waktu} • {sunnah.keutamaan}
+                    <p className="text-[10.5px] text-gray-600 font-medium truncate mt-0.5">
+                      🕒 {sunnah.waktu}
                     </p>
                   </div>
                 </div>
 
-                <div className="text-xs font-black shrink-0 ml-2">
-                  {isCompleted ? (
-                    <span className="memphis-badge bg-[#10B981] text-white text-[8px]">
-                      Ditunaikan
-                    </span>
-                  ) : (
-                    <span className="text-[10px] text-gray-400 font-bold">
-                      Centang
+                <div className="text-xs font-bold shrink-0 ml-1">
+                  {isCompleted && (
+                    <span className="bg-emerald-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded border border-black">
+                      Selesai
                     </span>
                   )}
                 </div>

@@ -38,33 +38,24 @@ export function AdminReviewBanner() {
   }
 
   return (
-    <div className="bg-gradient-to-r from-teal-700 via-emerald-700 to-teal-800 text-white rounded-2xl p-3.5 shadow-md border border-teal-500/30 flex items-center justify-between gap-3 animate-in fade-in slide-in-from-top-2 relative overflow-hidden">
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="w-9 h-9 rounded-xl bg-white/20 text-white flex items-center justify-center shrink-0 backdrop-blur-xs">
-          <MessageSquareHeart className="w-5 h-5 text-teal-100" />
-        </div>
-        <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="text-[9px] font-extrabold uppercase tracking-widest bg-amber-400 text-teal-950 px-1.5 py-0.5 rounded">
-              Evaluasi Proyek PAI
-            </span>
-          </div>
-          <h4 className="text-xs sm:text-sm font-bold truncate mt-0.5">
-            {config.title || 'Kuesioner Evaluasi Penggunaan Website'}
-          </h4>
-          <p className="text-[11px] text-teal-100 line-clamp-1 opacity-90 hidden sm:block">
-            {config.description}
-          </p>
-        </div>
+    <div className="bg-gradient-to-r from-teal-700 via-emerald-700 to-teal-800 text-white rounded-xl px-3 h-12 border-[1.5px] border-black shadow-[2px_2px_0px_#121212] flex items-center justify-between gap-2 text-xs">
+      <div className="flex items-center gap-2 min-w-0">
+        <MessageSquareHeart className="w-4 h-4 text-amber-300 shrink-0" />
+        <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-400 text-teal-950 px-1.5 py-0.5 rounded shrink-0">
+          Evaluasi PAI
+        </span>
+        <h4 className="text-xs font-semibold truncate text-emerald-50 min-w-0">
+          {config.title || 'Kuesioner Evaluasi Website'}
+        </h4>
       </div>
 
-      <div className="flex items-center gap-2 shrink-0">
+      <div className="flex items-center gap-1.5 shrink-0">
         {(config.reviewMode === 'website' || config.reviewMode === 'both') && (
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('wi_check_five_prayers_review'))}
-            className="px-3 py-1.5 bg-white text-emerald-900 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+            className="px-2.5 py-1 bg-white text-emerald-950 border border-black rounded-lg text-[11px] font-bold shadow-[1px_1px_0px_#121212] active:translate-y-0.5 whitespace-nowrap"
           >
-            <span>⭐ Rating Bintang</span>
+            Rating
           </button>
         )}
         {(config.reviewMode === 'gform' || config.reviewMode === 'both') && config.gformUrl && (
@@ -72,16 +63,16 @@ export function AdminReviewBanner() {
             href={config.gformUrl}
             target="_blank"
             rel="noreferrer"
-            className="px-3 py-1.5 bg-amber-400 hover:bg-amber-300 text-teal-950 rounded-xl text-xs font-bold transition-all flex items-center gap-1 shadow-sm active:scale-95"
+            className="px-2.5 py-1 bg-amber-400 text-teal-950 border border-black rounded-lg text-[11px] font-bold shadow-[1px_1px_0px_#121212] active:translate-y-0.5 flex items-center gap-1 whitespace-nowrap"
           >
-            <span>Google Form</span>
+            <span>Form</span>
             <ExternalLink className="w-3 h-3" />
           </a>
         )}
         <button
           onClick={() => setIsDismissed(true)}
-          className="p-1 text-teal-200 hover:text-white rounded-lg transition-colors"
-          title="Tutup banner sementara"
+          className="p-1 text-teal-200 hover:text-white rounded-lg"
+          aria-label="Tutup banner evaluasi"
         >
           <X className="w-4 h-4" />
         </button>

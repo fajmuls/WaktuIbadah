@@ -28,7 +28,7 @@ const KEYS = {
   LAST_READ_AYAH: "wi_last_read_ayah",
 };
 
-export const CURRENT_VERSION = "2.3.0";
+export const CURRENT_VERSION = "2.3.1";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',

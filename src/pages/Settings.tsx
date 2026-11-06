@@ -273,123 +273,123 @@ export default function Settings() {
     <div className="space-y-6 pb-24 animate-in fade-in duration-300 max-w-3xl mx-auto">
       
       {/* Memphis Header */}
-      <div className="p-4 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-[2.5px] border-[#121212] rounded-2xl shadow-[4px_4px_0px_#121212] flex items-center justify-between flex-wrap gap-3">
+      <div className="p-3.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between flex-wrap gap-2">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#121212]">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#121212]">
               Pengaturan & Sinkronisasi
             </h1>
-            <span className="memphis-badge bg-black text-[#6EE7B7]">
+            <span className="bg-black text-[#6EE7B7] text-[10px] font-bold px-1.5 py-0.2 rounded">
               v{CURRENT_VERSION}
             </span>
           </div>
-          <p className="text-xs font-bold text-[#121212]/80 mt-0.5">
-            Manajemen multi-device, style Memphis Classic, audio pack asli & notifikasi latar
+          <p className="text-[11px] font-medium text-[#121212]/80 mt-0.5">
+            Manajemen multi-device, style Memphis Classic, & audio pack
           </p>
         </div>
 
         <button
           onClick={() => setShowPatchNotesModal(true)}
-          className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
+          className="px-2.5 py-1.5 bg-white text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1 active:translate-y-0.5 shrink-0"
         >
-          <Sparkles className="w-4 h-4 text-[#FF4B91]" />
-          Catatan Versi v{CURRENT_VERSION}
+          <Sparkles className="w-3.5 h-3.5 text-[#FF4B91]" />
+          <span>Patch Notes v{CURRENT_VERSION}</span>
         </button>
       </div>
 
       {syncMessage && (
-        <div className={`p-4 rounded-xl border-[2.5px] border-[#121212] shadow-[3px_3px_0px_#121212] text-xs font-bold flex items-center gap-2.5 ${
+        <div className={`p-3 rounded-xl border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] text-xs font-bold flex items-center gap-2 ${
           syncMessage.type === 'success' 
             ? 'bg-[#10B981] text-white'
             : syncMessage.type === 'error'
             ? 'bg-[#FF4B91] text-white'
             : 'bg-[#00F0FF] text-[#121212]'
         }`}>
-          <CheckCircle2 className="w-5 h-5 shrink-0" />
+          <CheckCircle2 className="w-4 h-4 shrink-0" />
           <span>{syncMessage.text}</span>
         </div>
       )}
 
       {/* Profil & Multi-Device Sync Card */}
-      <div className="memphis-card p-5 space-y-5">
-        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-4">
-          <div className="flex items-center gap-3">
-            <div className="w-11 h-11 bg-[#00F0FF] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
-              <UserIcon className="w-6 h-6 stroke-[2.5]" />
+      <div className="bg-white border-[1.5px] border-black rounded-xl p-3.5 sm:p-4 space-y-4 shadow-[2px_2px_0px_#121212]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#121212] pb-3 gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 bg-[#00F0FF] border-[1.5px] border-[#121212] shadow-[1.5px_1.5px_0px_#121212] rounded-lg flex items-center justify-center font-bold shrink-0">
+              <UserIcon className="w-5 h-5 stroke-[2.5]" />
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <h3 className="font-black text-base uppercase tracking-tight">{user.name}</h3>
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <h3 className="font-bold text-sm tracking-tight text-black truncate">{user.name}</h3>
                 {user.pin ? (
-                  <span className="memphis-badge bg-[#10B981] text-white text-[9px] py-0.5">
-                    <Lock className="w-2.5 h-2.5 mr-1" /> Terproteksi PIN
+                  <span className="bg-emerald-500 text-white text-[9.5px] font-bold px-1.5 py-0.2 rounded border border-black flex items-center gap-0.5 shrink-0">
+                    <Lock className="w-2.5 h-2.5" /> Terproteksi PIN
                   </span>
                 ) : (
-                  <span className="memphis-badge bg-[#FFE600] text-[#121212] text-[9px] py-0.5">
+                  <span className="bg-amber-300 text-black text-[9.5px] font-bold px-1.5 py-0.2 rounded border border-black shrink-0">
                     Nama Terbuka
                   </span>
                 )}
               </div>
-              <p className="text-xs font-bold text-gray-500">
-                Gunakan nama yang sama di HP/Laptop untuk membuka database yang sama
+              <p className="text-[10.5px] font-medium text-gray-500 mt-0.5">
+                Gunakan nama yang sama untuk sinkronisasi multi-device
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5 shrink-0 flex-wrap">
             <button
               onClick={() => {
                 setPinInput(user.pin || '');
                 setShowPinModal(true);
               }}
-              className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
+              className="px-2.5 py-1.5 h-9 bg-white text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
             >
               <KeyRound className="w-3.5 h-3.5" />
-              {user.pin ? 'Ubah PIN' : 'Pasang PIN'}
+              <span>{user.pin ? 'Ubah PIN' : 'Pasang PIN'}</span>
             </button>
             <button
               onClick={() => setShowSwitchModal(true)}
-              className="memphis-btn memphis-btn-yellow px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5"
+              className="px-2.5 py-1.5 h-9 bg-amber-300 text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
-              Ganti Akun
+              <span>Ganti Akun</span>
             </button>
           </div>
         </div>
 
-        {/* Sync Controls */}
-        <div className="p-4 bg-[#FFFDF8] border-2 border-[#121212] rounded-xl shadow-[3px_3px_0px_#121212] space-y-3">
+        {/* Sync Controls (40px Height Buttons) */}
+        <div className="p-3 bg-[#FFFDF8] border-[1.5px] border-[#121212] rounded-xl shadow-[1.5px_1.5px_0px_#121212] space-y-2.5">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Cloud className="w-5 h-5 text-[#10B981] stroke-[2.5]" />
-              <span className="font-black text-sm uppercase tracking-wide">Sinkronisasi Firestore Cloud</span>
+            <div className="flex items-center gap-1.5">
+              <Cloud className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
+              <span className="font-bold text-xs uppercase tracking-wide">Sinkronisasi Cloud</span>
             </div>
-            <span className="text-[10px] font-bold text-gray-500">
-              {user.lastCloudSync ? `Terakhir: ${new Date(user.lastCloudSync).toLocaleTimeString('id-ID')}` : 'Belum pernah sync'}
+            <span className="text-[10px] font-medium text-gray-500">
+              {user.lastCloudSync ? `Terakhir: ${new Date(user.lastCloudSync).toLocaleTimeString('id-ID')}` : 'Belum sync'}
             </span>
           </div>
 
-          <p className="text-xs font-semibold text-gray-600">
-            Semua data (jadwal kuliah, tugas countdown, salat fardhu & sunnah, tilawah Qur'an, target khatam) tersimpan aman di Firestore cloud.
+          <p className="text-[11px] font-medium text-gray-600 leading-snug">
+            Seluruh data aplikasi (jadwal, tugas, salat, tilawah) tersimpan di cloud.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-0.5">
             <button
               onClick={handlePushToCloud}
               disabled={isSyncingToCloud}
-              className="memphis-btn memphis-btn-primary py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-50"
+              className="h-10 bg-emerald-400 text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1.5px_1.5px_0px_#121212] flex items-center justify-center gap-2 active:translate-y-0.5 disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${isSyncingToCloud ? 'animate-spin' : ''}`} />
-              {isSyncingToCloud ? 'Mengunggah Data...' : 'Unggah Data ke Cloud'}
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncingToCloud ? 'animate-spin' : ''}`} />
+              <span>{isSyncingToCloud ? 'Mengunggah...' : 'Unggah Data ke Cloud'}</span>
             </button>
 
             <button
               onClick={handlePullFromCloud}
               disabled={isPullingCloud}
-              className="memphis-btn memphis-btn-cyan py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-50"
+              className="h-10 bg-[#00F0FF] text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1.5px_1.5px_0px_#121212] flex items-center justify-center gap-2 active:translate-y-0.5 disabled:opacity-50"
             >
-              <RefreshCw className={`w-4 h-4 ${isPullingCloud ? 'animate-spin' : ''}`} />
-              {isPullingCloud ? 'Menyinkronkan...' : 'Tarik Data dari Cloud'}
+              <RefreshCw className={`w-3.5 h-3.5 ${isPullingCloud ? 'animate-spin' : ''}`} />
+              <span>{isPullingCloud ? 'Menyinkronkan...' : 'Tarik Data dari Cloud'}</span>
             </button>
           </div>
         </div>
@@ -1043,10 +1043,16 @@ export default function Settings() {
       />
 
       {/* Footer */}
-      <div className="text-center pt-2">
-        <p className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+      <div className="text-center pt-2 pb-4 space-y-1.5">
+        <p className="text-[10.5px] font-medium text-gray-400 uppercase tracking-widest">
           WaktuIbadah v{CURRENT_VERSION} • Memphis Edition • PWA Offline Ready
         </p>
+        <button
+          onClick={() => navigate('/admin')}
+          className="text-[10px] text-gray-400 hover:text-gray-700 underline font-semibold transition-colors block mx-auto"
+        >
+          Akses Dashboard Admin
+        </button>
       </div>
 
     </div>

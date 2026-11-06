@@ -53,6 +53,39 @@ export default function QuranHadis() {
     }
   });
 
+  // Font size & visibility controls (Section G)
+  const [quranFontSize, setQuranFontSize] = useState<number>(() => {
+    const saved = localStorage.getItem('wi_quran_font_size');
+    return saved ? Number(saved) : 26;
+  });
+  const [showLatin, setShowLatin] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_show_latin');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [showTranslation, setShowTranslation] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_show_translation');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [isReaderSettingsOpen, setIsReaderSettingsOpen] = useState(false);
+
+  const changeFontSize = (delta: number) => {
+    const next = Math.min(34, Math.max(22, quranFontSize + delta));
+    setQuranFontSize(next);
+    localStorage.setItem('wi_quran_font_size', String(next));
+  };
+
+  const toggleShowLatin = () => {
+    const next = !showLatin;
+    setShowLatin(next);
+    localStorage.setItem('wi_quran_show_latin', String(next));
+  };
+
+  const toggleShowTranslation = () => {
+    const next = !showTranslation;
+    setShowTranslation(next);
+    localStorage.setItem('wi_quran_show_translation', String(next));
+  };
+
   // Log Modal State
   const [isLogModalOpen, setIsLogModalOpen] = useState(false);
   const [logModalProps, setLogModalProps] = useState<{
@@ -174,6 +207,18 @@ export default function QuranHadis() {
     setLastReadSurah(record);
     localStorage.setItem('wi_last_read', JSON.stringify(record));
   };
+
+  // Auto-scroll to target ayah on load
+  useEffect(() => {
+    if (selectedSurah && ayahs.length > 0 && lastReadSurah?.lastAyah) {
+      const el = document.getElementById(`ayah-${lastReadSurah.lastAyah}`);
+      if (el) {
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 250);
+      }
+    }
+  }, [selectedSurah, ayahs]);
 
   // Toggle Offline Storage for a Surah
   const handleToggleOfflineSurah = async (surah: SurahItem, e?: React.MouseEvent) => {
@@ -530,10 +575,10 @@ export default function QuranHadis() {
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
-              placeholder="Cari surat atau nomor surat (contoh: Al-Baqarah, Yasin, 18)..."
+              placeholder="Cari surat atau nomor..."
               value={quranSearch}
               onChange={(e) => setQuranSearch(e.target.value)}
-              className="w-full pl-9 pr-3 py-2 memphis-input text-xs sm:text-sm"
+              className="w-full pl-9 pr-3 py-2 border-[1.5px] border-black rounded-xl text-xs sm:text-sm font-medium"
             />
           </div>
 
@@ -961,54 +1006,100 @@ export default function QuranHadis() {
       {/* ======================= SURAH DETAIL MODAL ======================= */}
       {selectedSurah && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex justify-end animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-gray-900 w-full max-w-2xl h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+          <div className="bg-[#FAF9F5] dark:bg-slate-900 w-full max-w-2xl h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
             
-            {/* Modal Header */}
-            <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between bg-emerald-700 text-white">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center font-bold text-base">
-                  {selectedSurah.nomor}
-                </div>
-                <div>
-                  <h3 className="text-base sm:text-lg font-bold">
-                    {selectedSurah.namaLatin} ({selectedSurah.nama})
-                  </h3>
-                  <p className="text-xs text-white/80">
-                    {selectedSurah.arti} • {selectedSurah.jumlahAyat} Ayat • {selectedSurah.tempatTurun}
+            {/* Sticky Single-Row Header (Max 64px) */}
+            <div className="h-14 sm:h-16 px-3 sm:px-4 border-b-2 border-black bg-emerald-700 text-white flex items-center justify-between shrink-0 sticky top-0 z-20">
+              <div className="flex items-center gap-2 min-w-0">
+                <button
+                  onClick={() => {
+                    setSelectedSurah(null);
+                    if (audioRef.current) audioRef.current.pause();
+                    setPlayingAudio(null);
+                  }}
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0 active:scale-95 transition-all"
+                  aria-label="Tutup Bacaan"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <h3 className="text-sm sm:text-base font-bold truncate">
+                      {selectedSurah.namaLatin}
+                    </h3>
+                    <span className="text-xs text-white/70 font-serif shrink-0">
+                      ({selectedSurah.nama})
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-white/80 truncate">
+                    {selectedSurah.jumlahAyat} ayat • {selectedSurah.tempatTurun} • {selectedSurah.arti}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center gap-1.5">
-                {/* Offline Cache Button */}
+              {/* Quick Action Icons in Header */}
+              <div className="flex items-center gap-1 shrink-0">
+                {/* Font Size Adjusters */}
                 <button
-                  onClick={(e) => handleToggleOfflineSurah(selectedSurah, e)}
-                  className={`p-2 rounded-xl transition-colors ${
-                    storage.isSurahOffline(selectedSurah.nomor)
-                      ? 'bg-amber-400 text-emerald-950 font-bold'
-                      : 'bg-white/20 hover:bg-white/30 text-white'
-                  }`}
-                  title={storage.isSurahOffline(selectedSurah.nomor) ? "Tersimpan Offline" : "Simpan untuk Dibaca Tanpa Kuota"}
+                  onClick={() => changeFontSize(-2)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs"
+                  title="Kecilkan Ukuran Huruf"
+                  aria-label="Kecilkan Huruf"
                 >
-                  <Download className="w-4 h-4" />
+                  A-
+                </button>
+                <button
+                  onClick={() => changeFontSize(2)}
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs"
+                  title="Besarkan Ukuran Huruf"
+                  aria-label="Besarkan Huruf"
+                >
+                  A+
                 </button>
 
-                {/* Audio Murottal */}
+                {/* Reader Settings Drawer Toggle */}
+                <button
+                  onClick={() => setIsReaderSettingsOpen(!isReaderSettingsOpen)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                    isReaderSettingsOpen ? 'bg-amber-400 text-emerald-950 font-bold' : 'bg-white/15 hover:bg-white/25 text-white'
+                  }`}
+                  title="Pengaturan Tampilan Bacaan"
+                  aria-label="Pengaturan Tampilan"
+                >
+                  <Eye className="w-4 h-4" />
+                </button>
+
+                {/* Audio Murottal Full Surah */}
                 {selectedSurah.audioFull?.['05'] && (
                   <button
                     onClick={() => toggleAudio(selectedSurah.audioFull!['05'])}
-                    className="p-2 bg-white/20 hover:bg-white/30 rounded-xl transition-colors"
+                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors"
                     title={playingAudio === selectedSurah.audioFull['05'] ? 'Jeda Audio' : 'Putar Murottal'}
+                    aria-label="Putar Murottal Surat"
                   >
                     {playingAudio === selectedSurah.audioFull['05'] ? (
-                      <Pause className="w-4 h-4 text-white" />
+                      <Pause className="w-4 h-4" />
                     ) : (
-                      <Volume2 className="w-4 h-4 text-white" />
+                      <Volume2 className="w-4 h-4" />
                     )}
                   </button>
                 )}
 
-                {/* Catat Tilawah Quick Button */}
+                {/* Offline Cache Button */}
+                <button
+                  onClick={(e) => handleToggleOfflineSurah(selectedSurah, e)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                    storage.isSurahOffline(selectedSurah.nomor)
+                      ? 'bg-amber-400 text-emerald-950 font-bold'
+                      : 'bg-white/15 hover:bg-white/25 text-white'
+                  }`}
+                  title={storage.isSurahOffline(selectedSurah.nomor) ? "Tersimpan Offline" : "Simpan Offline"}
+                  aria-label="Simpan Surat Offline"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+
+                {/* Catat Tilawah Button */}
                 <button
                   onClick={() => {
                     setLogModalProps({
@@ -1020,58 +1111,91 @@ export default function QuranHadis() {
                     });
                     setIsLogModalOpen(true);
                   }}
-                  className="px-2.5 py-1.5 bg-white/20 hover:bg-white/30 rounded-xl text-xs font-semibold flex items-center gap-1"
-                  title="Catat Tilawah"
+                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors"
+                  title="Catat Jurnal Tilawah"
+                  aria-label="Catat Tilawah"
                 >
-                  <BookOpen className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">Catat Tilawah</span>
-                </button>
-
-                {/* Close Button */}
-                <button
-                  onClick={() => {
-                    setSelectedSurah(null);
-                    if (audioRef.current) audioRef.current.pause();
-                    setPlayingAudio(null);
-                  }}
-                  className="p-2 hover:bg-white/20 rounded-xl transition-colors"
-                >
-                  <X className="w-5 h-5" />
+                  <BookOpen className="w-4 h-4" />
                 </button>
               </div>
             </div>
 
+            {/* Reader Settings Drawer / Quick Controls Sheet */}
+            {isReaderSettingsOpen && (
+              <div className="bg-amber-50 dark:bg-slate-800 border-b-2 border-black p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2 duration-150">
+                <div className="flex items-center gap-2">
+                  <span className="font-bold text-gray-800 dark:text-gray-200">Ukuran Teks:</span>
+                  <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-black rounded-lg p-0.5">
+                    {[22, 26, 30, 34].map(size => (
+                      <button
+                        key={size}
+                        onClick={() => {
+                          setQuranFontSize(size);
+                          localStorage.setItem('wi_quran_font_size', String(size));
+                        }}
+                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                          quranFontSize === size
+                            ? 'bg-emerald-600 text-white'
+                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                        }`}
+                      >
+                        {size}px
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showLatin}
+                      onChange={toggleShowLatin}
+                      className="w-4 h-4 accent-emerald-600 rounded"
+                    />
+                    <span>Teks Latin</span>
+                  </label>
+                  <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showTranslation}
+                      onChange={toggleShowTranslation}
+                      className="w-4 h-4 accent-emerald-600 rounded"
+                    />
+                    <span>Terjemahan</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
             {/* Ayah List */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
-              {/* Bismillah banner (unless At-Taubah #9) */}
+            <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3 pb-24">
+              {/* Bismillah banner (unless At-Taubah #9 and Al-Fatihah #1) */}
               {selectedSurah.nomor !== 9 && selectedSurah.nomor !== 1 && (
-                <div className="text-center py-3 text-xl sm:text-2xl font-serif font-bold text-emerald-700 dark:text-emerald-400">
+                <div className="text-center py-2 text-lg sm:text-2xl font-serif font-bold text-emerald-800 dark:text-emerald-400">
                   بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ
                 </div>
               )}
 
               {isLoadingAyahs ? (
-                <div className="space-y-4 py-8">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="h-28 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />
+                <div className="space-y-3 py-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <div key={i} className="h-24 bg-gray-100 dark:bg-gray-800 rounded-xl animate-pulse" />
                   ))}
                 </div>
               ) : ayahs.length === 0 ? (
-                <div className="text-center py-16 px-4 space-y-3 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 p-8 shadow-xs">
-                  <div className="w-12 h-12 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 mx-auto flex items-center justify-center font-bold text-lg">
+                <div className="text-center py-12 px-4 space-y-3 bg-white dark:bg-gray-800 rounded-2xl border-1.5 border-black p-6 shadow-[2px_2px_0px_#121212]">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 mx-auto flex items-center justify-center font-bold text-base">
                     📖
                   </div>
-                  <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                    Ayat belum tampil atau terjadi kendala jaringan
+                  <h4 className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                    Ayat belum tampil atau kendala koneksi
                   </h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-                    Sistem multi-sumber cadangan siap memuat ulang teks ayat surat {selectedSurah.namaLatin}.
-                  </p>
                   <button
                     onClick={() => openSurah(selectedSurah)}
-                    className="mt-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md shadow-emerald-600/20 transition-all active:scale-95 inline-flex items-center gap-2"
+                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-xs active:scale-95 inline-flex items-center gap-2"
                   >
-                    <span>Muat Ulang Ayat Sekarang</span>
+                    <span>Muat Ulang Ayat</span>
                   </button>
                 </div>
               ) : (
@@ -1079,145 +1203,155 @@ export default function QuranHadis() {
                   const ayahId = `${selectedSurah.nomor}:${ayah.nomorAyat}`;
                   const isFav = storage.isAyahFavorite(ayahId);
                   const isLastRead = lastReadMarker?.surahNumber === selectedSurah.nomor && lastReadMarker?.ayahNumber === ayah.nomorAyat;
+                  const favoriteEntry = favoriteAyahs.find(f => f.id === ayahId);
 
                   return (
                     <div
                       key={ayah.nomorAyat}
                       id={`ayah-${ayah.nomorAyat}`}
-                      className={`p-4 sm:p-5 rounded-2xl border-2 border-[#121212] shadow-[3px_3px_0px_#121212] space-y-3.5 transition-all ${
+                      className={`p-3 sm:p-4 rounded-xl border-[1.5px] border-black shadow-[2px_2px_0px_#121212] space-y-2.5 transition-all ${
                         isLastRead 
-                          ? 'bg-[#E6FFFA] border-emerald-800' 
-                          : 'bg-[#FFFDF8] text-[#121212]'
+                          ? 'bg-[#E6FFFA] dark:bg-teal-950/40 border-emerald-700' 
+                          : 'bg-white dark:bg-slate-800 text-gray-900 dark:text-gray-100'
                       }`}
                     >
-                      {/* Ayah Action Row */}
-                      <div className="flex items-center justify-between flex-wrap gap-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-7 h-7 rounded-lg bg-[#121212] text-[#6EE7B7] text-xs font-black flex items-center justify-center shrink-0">
-                            {ayah.nomorAyat}
-                          </span>
-                          
-                          {/* BUTTON 1: Tandai Terakhir Baca (Single active marker) */}
+                      {/* Ayah Header Action Row */}
+                      <div className="flex items-center justify-between gap-2">
+                        {/* Number Badge */}
+                        <span className="w-7 h-7 rounded-lg bg-black text-[#6EE7B7] text-xs font-bold flex items-center justify-center shrink-0">
+                          {ayah.nomorAyat}
+                        </span>
+
+                        {/* 32px Icon-Only Action Buttons on Mobile (<640px) */}
+                        <div className="flex items-center gap-1.5">
+                          {/* 1. Bookmark / Last Read */}
                           <button
                             onClick={() => handleMarkAyahRead(ayah.nomorAyat)}
-                            className={`px-2.5 py-1 rounded-lg border-2 border-black text-[11px] font-black uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                            className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 rounded-lg border border-black text-xs font-bold flex items-center justify-center gap-1 transition-all ${
                               isLastRead
-                                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[2px_2px_0px_#121212]'
-                                : 'bg-white hover:bg-emerald-50 text-gray-800 shadow-[1.5px_1.5px_0px_#121212]'
+                                ? 'bg-emerald-600 text-white shadow-[1px_1px_0px_#121212]'
+                                : 'bg-gray-50 dark:bg-slate-700 hover:bg-emerald-50 text-gray-800 dark:text-gray-200'
                             }`}
-                            title="Set sebagai posisi terakhir dibaca"
+                            title={isLastRead ? "Terakhir Dibaca" : "Tandai Terakhir Dibaca"}
+                            aria-label="Tandai Terakhir Dibaca"
                           >
-                            <Bookmark className={`w-3.5 h-3.5 ${isLastRead ? 'fill-white' : ''}`} />
-                            <span>{isLastRead ? '📌 Terakhir Dibaca' : 'Tandai Baca'}</span>
+                            <Bookmark className={`w-4 h-4 ${isLastRead ? 'fill-white' : ''}`} />
+                            <span className="hidden sm:inline text-[11px]">{isLastRead ? 'Terakhir Dibaca' : 'Tandai Baca'}</span>
                           </button>
-                        </div>
 
-                        <div className="flex items-center gap-2">
-                          {/* BUTTON 2: Simpan Favorit & Catatan Tadabbur */}
-                          {(() => {
-                            const b = favoriteAyahs.find(f => f.id === ayahId);
-                            const categoryColorClasses: Record<string, string> = {
-                              Hafalan: 'bg-emerald-400 text-black border-black',
-                              Doa: 'bg-[#FFE600] text-black border-black',
-                              Motivasi: 'bg-[#00F0FF] text-black border-black',
-                              Tadabbur: 'bg-[#FF4B91] text-white border-black'
-                            };
+                          {/* 2. Favorite / Heart */}
+                          <button
+                            onClick={() => setBookmarkModalTarget({ surah: selectedSurah, ayah })}
+                            className={`w-8 h-8 sm:w-auto sm:px-2.5 sm:h-8 rounded-lg border border-black text-xs font-bold flex items-center justify-center gap-1 transition-all ${
+                              favoriteEntry
+                                ? 'bg-amber-400 text-black shadow-[1px_1px_0px_#121212]'
+                                : 'bg-gray-50 dark:bg-slate-700 hover:bg-amber-50 text-gray-800 dark:text-gray-200'
+                            }`}
+                            title={favoriteEntry ? `Favorit (${favoriteEntry.category || 'Tadabbur'})` : "Simpan Ayat Favorit"}
+                            aria-label="Simpan Favorit"
+                          >
+                            <Heart className={`w-4 h-4 ${favoriteEntry ? 'fill-current text-rose-600' : 'text-gray-500'}`} />
+                            <span className="hidden sm:inline text-[11px]">{favoriteEntry ? (favoriteEntry.category || 'Favorit') : 'Favorit'}</span>
+                          </button>
 
-                            if (b) {
-                              const badgeStyle = categoryColorClasses[b.category || 'Tadabbur'] || categoryColorClasses.Tadabbur;
-                              return (
-                                <button
-                                  onClick={() => setBookmarkModalTarget({ surah: selectedSurah, ayah })}
-                                  className={`px-2.5 py-1 rounded-lg border-2 text-[11px] font-black flex items-center gap-1 transition-transform active:scale-95 shadow-[1.5px_1.5px_0px_#121212] ${badgeStyle}`}
-                                  title="Edit Kategori & Catatan Tadabbur"
-                                >
-                                  <Heart className="w-3.5 h-3.5 fill-current" />
-                                  <span>⭐ {b.category || 'Favorit'}</span>
-                                </button>
-                              );
-                            }
-
-                            return (
-                              <button
-                                onClick={() => setBookmarkModalTarget({ surah: selectedSurah, ayah })}
-                                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-black uppercase tracking-wider gap-1"
-                                title="Simpan ke Ayat Favorit"
-                              >
-                                <Heart className="w-3.5 h-3.5 text-rose-500" />
-                                <span>Simpan Favorit</span>
-                              </button>
-                            );
-                          })()}
-
-                          {/* Audio Player */}
+                          {/* 3. Audio Play/Pause */}
                           {ayah.audio?.['05'] && (
                             <button
                               onClick={() => toggleAudio(ayah.audio!['05'])}
-                              className="memphis-btn memphis-btn-white px-2 py-1 text-[11px] font-black uppercase gap-1"
+                              className={`w-8 h-8 sm:w-auto sm:px-2 sm:h-8 rounded-lg border border-black text-xs font-bold flex items-center justify-center gap-1 transition-all ${
+                                playingAudio === ayah.audio['05']
+                                  ? 'bg-emerald-600 text-white'
+                                  : 'bg-gray-50 dark:bg-slate-700 hover:bg-emerald-50 text-gray-800 dark:text-gray-200'
+                              }`}
+                              title={playingAudio === ayah.audio['05'] ? "Hentikan Audio" : "Dengar Audio Ayat"}
+                              aria-label="Dengar Audio Ayat"
                             >
                               {playingAudio === ayah.audio['05'] ? (
-                                <>
-                                  <Pause className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span>Stop</span>
-                                </>
+                                <Pause className="w-4 h-4 text-white" />
                               ) : (
-                                <>
-                                  <Play className="w-3.5 h-3.5 text-[#121212]" />
-                                  <span>Dengar</span>
-                                </>
+                                <Play className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                               )}
+                              <span className="hidden sm:inline text-[11px]">{playingAudio === ayah.audio['05'] ? 'Stop' : 'Dengar'}</span>
                             </button>
                           )}
                         </div>
                       </div>
 
-                      {/* Arabic Text WITH AUTHENTIC CIRCULAR AYAH NUMBER INDICATOR AT THE END OF AYAH */}
-                      <div className="text-right font-serif text-2xl sm:text-3xl leading-[2.5] sm:leading-[2.8] text-[#121212] font-bold pr-2" dir="rtl">
+                      {/* Arabic Text (driven by quranFontSize, ~2.1 line-height, right-aligned) */}
+                      <div 
+                        className="text-right font-serif font-bold text-gray-900 dark:text-white leading-[2.1] pr-1" 
+                        style={{ fontSize: `${quranFontSize}px` }}
+                        dir="rtl"
+                      >
                         <span>{ayah.teksArab}</span>
-                        {/* Circular Ayat Indicator Ornament (ayah number in Arabic digits) */}
+                        {/* Inline 20px Ayah Number Badge Indicator */}
                         <span 
-                          className="inline-flex items-center justify-center mx-2 w-8 h-8 rounded-full border-2 border-black bg-gradient-to-br from-emerald-400 to-teal-400 text-black text-xs font-serif font-black shadow-[1.5px_1.5px_0px_#121212] select-none align-middle"
+                          className="inline-flex items-center justify-center mx-1.5 w-5 h-5 rounded-full border border-black bg-emerald-300 dark:bg-emerald-600 text-black dark:text-white text-[10px] font-serif font-bold select-none align-middle"
                           title={`Ayat ${ayah.nomorAyat}`}
                         >
-                          <span>{toArabicNumerals(ayah.nomorAyat)}</span>
+                          {toArabicNumerals(ayah.nomorAyat)}
                         </span>
                       </div>
 
-                      {/* Latin Transliteration */}
-                      <p className="text-xs text-emerald-900 font-bold italic bg-emerald-50/80 p-2 rounded-lg border border-emerald-300">
-                        {ayah.teksLatin}
-                      </p>
+                      {/* Latin Transliteration (13px italic without heavy box) */}
+                      {showLatin && (
+                        <p className="text-[13px] text-emerald-800 dark:text-emerald-300 italic font-medium bg-emerald-50/60 dark:bg-emerald-950/30 p-2 rounded-lg border-l-2 border-emerald-500">
+                          {ayah.teksLatin}
+                        </p>
+                      )}
 
-                      {/* Indonesian Translation */}
-                      <p className="text-xs sm:text-sm text-[#121212] font-semibold leading-relaxed">
-                        {ayah.teksIndonesia}
-                      </p>
+                      {/* Indonesian Translation (14px contrast text) */}
+                      {showTranslation && (
+                        <p className="text-[14px] text-gray-800 dark:text-gray-200 leading-relaxed">
+                          {ayah.teksIndonesia}
+                        </p>
+                      )}
 
-                      {/* Catatan Tadabbur Pribadi (Jika ada) */}
-                      {(() => {
-                        const b = favoriteAyahs.find(f => f.id === ayahId);
-                        if (b && b.note) {
-                          return (
-                            <div className="p-2.5 bg-purple-50 rounded-xl border-2 border-black shadow-[1.5px_1.5px_0px_#121212] flex items-start gap-2 text-xs">
-                              <Quote className="w-3.5 h-3.5 text-purple-700 shrink-0 mt-0.5" />
-                              <div>
-                                <span className="font-black text-[10px] text-purple-900 block uppercase tracking-wider">
-                                  Catatan Tadabbur ({b.category || 'Tadabbur'}):
-                                </span>
-                                <p className="text-[#121212] font-bold italic mt-0.5">
-                                  "{b.note}"
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })()}
+                      {/* Personal Tadabbur Note if exists */}
+                      {favoriteEntry?.note && (
+                        <div className="p-2 bg-purple-50 dark:bg-purple-950/40 rounded-lg border border-black text-xs flex items-start gap-1.5">
+                          <Quote className="w-3.5 h-3.5 text-purple-700 shrink-0 mt-0.5" />
+                          <div>
+                            <span className="font-bold text-[10px] text-purple-900 dark:text-purple-300 block uppercase">
+                              Catatan Tadabbur ({favoriteEntry.category}):
+                            </span>
+                            <p className="text-gray-900 dark:text-gray-100 italic text-[12px]">
+                              "{favoriteEntry.note}"
+                            </p>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   );
                 })
               )}
             </div>
+
+            {/* Fixed Mini Audio Player when audio is playing */}
+            {playingAudio && (
+              <div className="fixed bottom-[60px] left-0 right-0 z-40 bg-emerald-900 text-white p-2.5 px-4 flex items-center justify-between border-t border-emerald-700 h-14 shadow-lg animate-in slide-in-from-bottom duration-200">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-700 flex items-center justify-center animate-pulse">
+                    <Volume2 className="w-4 h-4 text-white" />
+                  </div>
+                  <div className="min-w-0 text-xs">
+                    <p className="font-bold truncate text-white">Memutar Audio Murottal</p>
+                    <p className="text-[11px] text-emerald-200 truncate">{selectedSurah.namaLatin}</p>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => {
+                    if (audioRef.current) audioRef.current.pause();
+                    setPlayingAudio(null);
+                  }}
+                  className="px-3 py-1 bg-rose-500 hover:bg-rose-600 text-white text-xs font-bold rounded-lg border border-black shadow-xs active:scale-95 flex items-center gap-1"
+                >
+                  <Pause className="w-3.5 h-3.5" />
+                  <span>Hentikan</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

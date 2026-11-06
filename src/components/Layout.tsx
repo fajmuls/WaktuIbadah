@@ -137,11 +137,11 @@ export const Layout = () => {
       </aside>
 
       {/* Main Content - Guaranteed No Horizontal Overflow & Compact Mobile Padding */}
-      <main className="flex-1 md:ml-64 pb-20 md:pb-8 min-h-screen max-w-5xl mx-auto w-full relative overflow-x-hidden">
+      <main className="flex-1 md:ml-64 pb-24 md:pb-8 min-h-screen max-w-5xl mx-auto w-full relative overflow-x-hidden">
         {/* Mobile Top Header with Brand Icon */}
-        <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-xs border-b-[2.5px] border-[#121212] px-3.5 py-2 flex items-center justify-between shadow-[0px_2px_0px_#121212] mb-3">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg border-2 border-black bg-white p-0.5 shadow-[1.5px_1.5px_0px_#121212] overflow-hidden flex items-center justify-center shrink-0">
+        <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b-[1.5px] border-[#121212] px-3.5 h-14 flex items-center justify-between shadow-[0px_2px_0px_#121212]">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-lg border-[1.5px] border-black bg-white p-0.5 shadow-[1.5px_1.5px_0px_#121212] overflow-hidden flex items-center justify-center shrink-0">
               <img 
                 src="/icon-waktuibadah.png" 
                 alt="WaktuIbadah Logo" 
@@ -151,11 +151,11 @@ export const Layout = () => {
                 }}
               />
             </div>
-            <div>
-              <span className="font-black text-xs uppercase tracking-tight text-[#121212] block leading-none">
+            <div className="min-w-0">
+              <span className="font-bold text-xs tracking-tight text-[#121212] block leading-none truncate">
                 WaktuIbadah
               </span>
-              <span className="text-[8px] font-bold text-gray-500 uppercase tracking-wider block mt-0.5">
+              <span className="text-[9.5px] font-medium text-gray-500 uppercase tracking-wider block mt-0.5 truncate">
                 Islamic Planner
               </span>
             </div>
@@ -163,19 +163,20 @@ export const Layout = () => {
           
           <button 
             onClick={() => navigate('/settings')}
-            className="memphis-btn memphis-btn-white px-2 py-1 text-[10px] uppercase font-black"
+            aria-label="Pengaturan Profil"
+            className="border-[1.5px] border-black bg-white px-2.5 py-1 text-[11px] font-bold rounded-lg shadow-[1.5px_1.5px_0px_#121212] truncate max-w-[120px] active:translate-y-0.5"
           >
             {user?.name || 'Mahasiswa'}
           </button>
         </div>
 
-        <div className="p-3 sm:p-6 lg:p-8 w-full max-w-full overflow-x-hidden">
+        <div className="p-3 sm:p-5 lg:p-8 w-full max-w-full overflow-x-hidden">
           <Outlet />
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation (Memphis Style) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t-[3px] border-[#121212] flex justify-around items-center px-1 py-1.5 pb-[calc(env(safe-area-inset-bottom)+0.4rem)] z-40 shadow-[0px_-3px_0px_#121212]">
+      {/* Mobile Bottom Navigation (60px height, equal width items, light Memphis pill active indicator) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-white border-t-[1.5px] border-[#121212] grid grid-cols-6 items-center px-1 pb-[env(safe-area-inset-bottom,0px)] z-40 shadow-[0px_-2px_0px_#121212]">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
@@ -183,15 +184,24 @@ export const Layout = () => {
             data-nav="true"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center px-1.5 py-1 rounded-xl transition-all",
-                isActive 
-                  ? "bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-2 border-[#121212] shadow-[2px_2px_0px_#121212] text-black font-black -translate-y-0.5" 
-                  : "text-gray-600 hover:text-black font-bold"
+                "flex flex-col items-center justify-center h-full w-full py-1 transition-all min-w-0",
+                isActive ? "text-emerald-800 font-bold" : "text-gray-600 hover:text-black font-normal"
               )
             }
           >
-            <item.icon className="w-4 h-4 stroke-[2.5]" />
-            <span className="text-[9px] uppercase tracking-tight mt-0.5">{item.label}</span>
+            {({ isActive }) => (
+              <>
+                <div className={cn(
+                  "flex items-center justify-center px-2.5 py-0.5 rounded-full transition-all",
+                  isActive ? "bg-emerald-200 border-[1.5px] border-black shadow-[1px_1px_0px_#121212]" : ""
+                )}>
+                  <item.icon className={cn("w-4 h-4", isActive ? "stroke-[2.5] text-emerald-950" : "stroke-[2] text-gray-700")} />
+                </div>
+                <span className={cn("text-[10.5px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-black" : "text-gray-600")}>
+                  {item.label}
+                </span>
+              </>
+            )}
           </NavLink>
         ))}
       </nav>

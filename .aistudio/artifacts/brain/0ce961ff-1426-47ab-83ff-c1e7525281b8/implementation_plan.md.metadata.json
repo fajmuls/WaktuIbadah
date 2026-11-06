@@ -1,6 +1,6 @@
 {
-  "summary": "Rencana implementasi terpadu untuk pengkondisian izin notifikasi (Notification Gatekeeper Modal) sebelum masuk dashboard, kalibrasi volume audio UI vs Azan keras, sakelar tema terang/gelap manual di Pengaturan, pembacaan Al-Qur'an bertema putih bersih, serta pemisahan fitur Tandai Terakhir Baca dan Simpan Ayat Favorit.",
-  "updatedAt": "2026-11-03T15:09:57.702913081Z",
+  "summary": "Implementation plan for UI/UX mobile-first optimization (v2.3.1) of WaktuIbadah for 360px, 390px, and 412px mobile screens while preserving Memphis green identity and all functional logic.",
+  "updatedAt": "2026-11-06T00:36:55.353704338Z",
   "requestFeedback": true,
   "userFacing": true
 }

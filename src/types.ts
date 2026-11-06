@@ -256,6 +256,32 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.3.1',
+    releaseDate: '5 November 2026',
+    title: 'Optimasi UI/UX Mobile (360px-412px), Perbaikan Firestore Rules, & Sticky Header Al-Qur\'an Ringkas',
+    highlights: [
+      'Penyelarasan Tampilan Mobile (360-412px): Border presisi 1.5px dan bayangan offset 2px Memphis style di seluruh aplikasi.',
+      'Bottom Navigation Ringkas (60px): Indikator tab aktif berupa pil warna lembut dengan label 10-11px tanpa teks terpotong.',
+      'Header Al-Qur\'an Sticky Single-Row (64px): Kontrol ukuran huruf (A-/A+), sakelar Latin/Terjemahan, dan murottal audio ringkas.',
+      'Tombol Aksi Ayat 32px Icon-Only: 📌 Tandai Baca, ⭐ Favorit, dan 🔊 Dengar tanpa teks panjang terpotong di layar HP.',
+      'Penataan Ulang Card & Button: Penyusunan ulang badge PIN & Ubah PIN, kartu waktu salat ringkas, dan chip tanggal Jadwal 52x60px.',
+      'Perbaikan Firestore Rules Permissions: Mengizinkan nama profil 1 karakter dan query list publik review tanpa error permisis.'
+    ],
+    soundPackUpdates: [
+      'Volume murottal dan efek suara UI diselaraskan secara responsif'
+    ],
+    uiOverhaul: [
+      'Pembersihan elemen terpotong pada pil tanggal, tab Al-Qur\'an, dan tab Doa',
+      'Integrasi tombol Admin tersamar di bagian paling bawah halaman Pengaturan',
+      'Kartu ayat Al-Qur\'an berlatar terang dengan angka ayat Arab melingkar inline'
+    ],
+    recommendations: [
+      'Saran UI/UX: Integrasi fitur Pencarian Ayat & Tafsir Ringkas Kemenag per kata',
+      'Saran QoL: Sediakan mode offline PWA countdown widget waktu salat berikutnya',
+      'Saran Bugfix/Perbaikan: Sediakan fitur backup/restore data lokal via file JSON terenkripsi'
+    ]
+  },
+  {
     version: '2.3.0',
     releaseDate: '3 November 2026',
     title: 'Permission Gatekeeper Notifikasi, Kalibrasi Volume Audio, Tema Manual & Latar Putih Al-Qur\'an',
