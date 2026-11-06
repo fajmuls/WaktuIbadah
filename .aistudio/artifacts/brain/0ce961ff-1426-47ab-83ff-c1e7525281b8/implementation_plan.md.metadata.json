@@ -1,6 +1,6 @@
 {
-  "summary": "Implementation plan for Quran Mushaf continuous page view, Kemenag Tafsir drawer, Fullscreen mode, Export/Import JSON data backup, and version update to v2.4.0.",
-  "updatedAt": "2026-11-06T00:55:44.305946148Z",
+  "summary": "Rencana implementasi pembaruan UI/UX Al-Qur'an terinspirasi screenshot referensi: tata letak 3 tab (Surah, Juz 1-30, Bookmark), ornamen bintang segi-8 Islami SVG, sistem multi-hanca bernama dengan unbookmark, zebra-striping per ayat, tab surah horizontal geser, tombol aksi ayat 4-baris ringkas, popover pengaturan tampilan huruf A-- hingga A++, offline murottal download, perbaikan tema, serta kenaikan versi aplikasi ke v2.7.0.",
+  "updatedAt": "2026-11-06T03:58:15.916705570Z",
   "requestFeedback": true,
   "userFacing": true
 }

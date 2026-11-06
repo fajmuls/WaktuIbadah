@@ -1,118 +1,124 @@
-# Modul Al-Qur'an Mushaf Continuous Page View, Tafsir Kemenag Drawer, Reader Settings & Export/Import Data Backup (v2.4.0)
+# Desain Baru Al-Qur'an (Clean Look, Multi-Hanca, Ornamen Bintang Islami & Navigasi Juz)
 
-Pembaruan tingkat menengah (**v2.4.0**) yang menambahkan fitur **Mode Per Halaman Mushaf Al-Qur'an (Teks Arab Kontinu)**, **Drawer Tafsir Ringkas Kemenag RI per Ayat**, **Mode Fullscreen Reader**, **Export & Import Backup Data JSON** di Pengaturan, serta **Offline Murottal IndexedDB Caching**.
+Rencana pembaruan komprehensif untuk antarmuka Al-Qur'an agar menyerupai referensi desain yang bersih, rapi, dan mudah dicari, dilengkapi ornamen Islami SVG asli, navigasi Juz 1–30, sistem multi-hanca bernama dengan dukungan unbookmark, dan pengaturan ukuran teks bertahap (A-- hingga A++).
+
+---
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Keputusan dan preferensi pengguna yang telah dikonfirmasi melalui klarifikasi:
-
-- **Confirmed Choice 1 (Visual & Navigasi Mushaf)**: Mode Baca Per Halaman menampilkan teks Arab mengalir secara sambung ala Mushaf standar dengan nomor ayat melingkar di akhir ayat dan sakelar toggle antar Mode Per Ayat (Kartu) vs Mode Per Halaman (Mushaf).
-- **Confirmed Choice 2 (Mekanisme Akses Tafsir Kemenag RI)**: Mengetuk teks ayat Al-Qur'an (baik di mode per ayat maupun mode mushaf) langsung membuka *Bottom Sheet / Drawer Tafsir Ringkas Kemenag RI* per ayat.
-- **Confirmed Choice 3 (Mode Fullscreen Reader & Sakelar Teks)**: Tombol Fullscreen dedicated di sticky header Al-Qur'an beserta drawer pengatur visibilitas teks Arab, Transliterasi Latin, dan Terjemahan Indonesia (termasuk opsi Hanya Arab, Arab+Latin, atau Lengkap).
-- **Confirmed Choice 4 (Fitur Backup Data & Versioning v2.4.0)**: Opsi Export (.json) & Import data cadangan di Pengaturan, serta pembaruan versi aplikasi menjadi `v2.4.0` dengan Patch Notes resmi.
+> Berdasarkan jawaban klarifikasi dan instruksi Anda, keputusan desain utama telah dikunci sebagai berikut:
+> 1. **Sistem Penanda Terakhir Baca (Hanca)**: Menggunakan model **Multi-Hanca Bernama** (misal: *Harian*, *Tahfidz*, *Tadabbur*, atau kustom) di mana pengguna dapat membuat set baru, berpindah antar target bacaan, mencatat tanggal, serta melakukan unbookmark/reset kapan saja.
+> 2. **Navigasi Antar Surah di Reader**: Menggunakan **Tab Bar Geser Horizontal** di bagian atas layar pembaca (seperti screenshot referensi: Al-Fatihah, Al-Baqarah, Ali 'Imran, dst.) sehingga berpindah surah dapat dilakukan dengan sekali sentuh.
+> 3. **Tingkatan Ukuran Huruf Arab**: Disediakan **5 level ukuran tanpa angka piksel teknis**: `A--` (sangat ringkas/kecil), `A-` (ringkas), `A` (normal), `A+` (besar), dan `A++` (sangat besar).
+> 4. **Penomoran Versi**: Sesuai aturan versioning Anda, penambahan fitur signifikan dan perombakan arsitektur ini menaikkan versi dari **v2.6.0 ke v2.7.0**, dilengkapi patch notes di Admin Dashboard dan saran perbaikan berkala.
 
 ---
 
 ## 1. Overview & Core Concept
 
-1. **Mode Baca Mushaf (Per Halaman Kontinu)**:
-   - Pengguna dapat memilih mode baca Al-Qur'an: **Per Ayat (Card View)** atau **Per Halaman / Mushaf (Continuous Page View)**.
-   - Pada mode Mushaf Kontinu, teks Arab mengalir tersambung alami seperti halaman kitab suci Al-Qur'an dengan ornament nomor ayat melingkar Arabic numerik.
-2. **Sakelar Teks Kustom di Pengaturan Reader**:
-   - Pengguna dapat mengatur kombinasi elemen yang tampil:
-     - Teks Arab saja (Hanya Arab)
-     - Teks Arab + Transliterasi Latin
-     - Teks Arab + Terjemahan Indonesia
-     - Teks Lengkap (Arab + Latin + Terjemahan)
-3. **Bottom Sheet Tafsir Kemenag RI**:
-   - Mengambil data tafsir ringkas per surat dari API `https://equran.id/api/v2/tafsir/{surahNumber}`.
-   - Saat teks ayat diketuk, muncul drawer bawah interaktif yang menampilkan teks ayat, terjemahan, dan analisis tafsir Kemenag RI.
-4. **Mode Fullscreen Reader**:
-   - Tombol toggle Fullscreen di header Al-Qur'an menyembunyikan header modal & bottom navigation untuk kenyamanan membaca tanpa distraksi.
-5. **Backup & Restore Data JSON**:
-   - Menu di halaman Pengaturan untuk mengunduh semua data lokal (jadwal ibadah, jurnal tilawah, ayat/hadits favorit, catatan tadabbur, dan preferensi pengaturan) dalam format file JSON.
-   - Tombol restore/import file JSON dengan validasi skema data.
-6. **IndexedDB Audio Caching**:
-   - Audio murottal per ayat yang pernah diputar disimpan secara otomatis ke IndexedDB storage browser sehingga dapat diputar kembali tanpa kuota/internet.
+- **Apa yang Dibangun**: Pembaruan menyeluruh modul Al-Qur'an yang memadukan keanggunan kaligrafi Arab, ornamen geometri Islam segi-8 (*Rub el Hizb*) berbasis SVG presisi, pemisahan tab modern (**SURAH**, **JUZ**, **BOOKMARK**), tampilan per ayat bernuansa zebra lembut (*cream* dan *white*), serta antarmuka pembaca per halaman mushaf yang jernih (*clean look*).
+- **Target Pengguna**: Pembaca Al-Qur'an harian, penghafal (*tahfidz*), dan pembaca terjemah/tafsir yang membutuhkan antarmuka bebas distraksi, tidak makan tempat, dan mudah digunakan dengan satu tangan pada layar ponsel.
+- **Nilai Utama**: Membaca terasa tenang dan nyaman di mata; tombol aksi tidak lagi menghalangi teks suci; status unduhan audio offline jelas; dan pencarian surah/juz terasa instan.
 
 ---
 
-## 2. Technical Architecture & System Flow
+## 2. User Experience & Visual Design
+
+### A. Tiga Tab Utama (Surah, Juz, Bookmark)
+1. **Header Bersih & Pencarian**:
+   - Header atas bergaya hijau zamrud khas aplikasi (`#0d5c46` / `#0f766e`) dengan logo kaligrafi Al-Qur'an melingkar, tombol kembali, ikon urutkan/filter, ikon pencarian, dan menu aksi.
+   - Tab navigasi bergaris bawah cokelat/emas hangat: **SURAH**, **JUZ**, dan **BOOKMARK**.
+2. **Tab Surah**:
+   - Ornamen bintang segi-8 (*Rub el Hizb*) SVG di sisi kiri dengan nomor surah di tengah.
+   - Judul surah (nama latin, tempat turun, dan jumlah ayat) sejajar dengan teks kaligrafi nama surah dalam aksara Arab di sisi kanan.
+   - Ikon unduh murottal atau ikon speaker yang aktif jika audio telah tersimpan offline.
+3. **Tab Juz (1–30)**:
+   - Daftar 30 Juz lengkap dengan ornamen bintang nomor Juz.
+   - Keterangan awal bacaan: *"Mulai di: [Nama Surah] Ayat [Nomor]"* (misal Juz 1: Mulai di Al-Fatihah Ayat 1; Juz 2: Mulai di Al-Baqarah Ayat 142).
+   - Mengetuk item Juz langsung membuka surat dan melompat (*scroll*) tepat ke ayat awal juz tersebut.
+4. **Tab Bookmark & Multi-Hanca**:
+   - Menampilkan daftar set hanca aktif (misal "Tilawah Harian", "Hafalan Juz 'Amma") dengan tanggal terakhir dibaca dan tombol cepat lanjut membaca.
+   - Tombol buat set hanca baru dan opsi hapus/unbookmark.
+
+### B. Antarmuka Pembaca (Per Ayat & Per Halaman)
+1. **Sub-Header & Tab Surah Geser**:
+   - Di bawah app bar utama, terdapat pita tab geser horizontal (*horizontal scrollable surah chips*) yang menampilkan surah-surah berurutan (misal: `1. Al-Fatihah`, `2. Al-Baqarah`, `3. Ali 'Imran`, ...) memudahkan melompat ke surah berikutnya tanpa harus kembali ke daftar.
+   - Di bawahnya terdapat kotak hiasan kepala surat (*Surah Header Frame*) dengan kaligrafi surat, jenis wahyu (Makkah/Madinah), dan jumlah ayat.
+2. **Tampilan Zebra-Striping Per Ayat**:
+   - Latar belakang bergantian yang lembut: Ayat ganjil berlatar putih bersih (`bg-white dark:bg-slate-900`), ayat genap berlatar krem gading lembut (`bg-[#FAF7EE] dark:bg-slate-800/60`).
+   - Sisi kiri: Ornamen bintang segi-8 dengan nomor ayat western.
+   - Teks Arab: Kaligrafi jelas dengan tanda waqaf dan nomor ayat Arab dalam lingkaran di akhir ayat `(١)`.
+   - Terjemahan: Warna teks toska gelap/emerald yang sejuk dibaca.
+3. **Tombol Aksi Ayat Kompak (4-Baris Samping / Footer Ringkas)**:
+   - Tombol aksi tidak lagi berukuran raksasa atau menumpuk di atas teks.
+   - Dibuat menjadi baris aksi 4 tombol yang terpadu dan minimalis:
+     1. **Putar Audio** (Play/Pause ayat)
+     2. **Tafsir Kemenag** (Membuka lembar penjelasan tafsir ringkas)
+     3. **Favorit** (Simpan/Hapus dari favorit)
+     4. **Hanca / Bookmark** (Tandai sebagai posisi terakhir baca atau unbookmark)
+4. **Menu Pengaturan Pembaca Cepat (Ikon Gerigi di Kanan Atas)**:
+   - Popover ringkas untuk mengatur:
+     - Tampilkan Teks Latin: On / Off
+     - Tampilkan Terjemahan: On / Off
+     - Ukuran Teks Arab: 5 preset tombol (`A--`, `A-`, `A`, `A+`, `A++`) dengan batas ukuran terkecil yang nyaman hingga ukuran besar.
+
+### C. Pembenahan Sistem Tema Aplikasi
+- Memperbaiki binding tema di `Settings.tsx` dan `Layout.tsx` agar perpindahan tema (Emerald Green, Gold Beige, Midnight Dark, Minimal White) langsung diterapkan ke seluruh halaman termasuk reader Al-Qur'an.
+
+---
+
+## 3. Key Product Decisions & Trade-Offs
+
+- **Multi-Hanca vs Single Last-Read**:
+  - *Pendekatan*: Menyimpan array `ReadingHancaSet[]` di penyimpanan lokal/cloud dengan ID, nama set (misal "Khatam Ramadan", "Hafalan Subuh"), nomor surah, nama surah, nomor ayat, dan tanggal.
+  - *Alasan*: Pengguna sering membaca Al-Qur'an dengan beberapa keperluan sekaligus (membaca harian satu juz, tahfidz beberapa surat pendek, dan tadabbur).
+- **Ornamen Bintang Segi-8 Islami (*Rub el Hizb*)**:
+  - *Pendekatan*: Menggunakan SVG murni dengan dua persegi bersilang dengan sudut rotasi 45 derajat atau poligon 8 sisi bertakik yang tajam dan presisi, bukan ikon lingkaran biasa.
+  - *Alasan*: Menghadirkan nuansa mushaf Al-Qur'an standar Madinah/Kemenag yang otentik dan anggun tanpa menambah beban aset eksternal.
+- **Preset Huruf 5 Level (A-- sampai A++)**:
+  - *Pendekatan*: Menggunakan array ukuran font diskrit (`[18px, 22px, 26px, 30px, 36px]`) alih-alih slider piksel acak.
+  - *Alasan*: Menghilangkan rasa teknis yang berantakan, serta memastikan rendering harakat kaligrafi Arab tidak rusak pada ukuran ekstrim.
+
+---
+
+## 4. Technical Architecture & Data Strategy
 
 ```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                          ANTARMUKA PENGGUNA (VITE + REACT)                  │
-├───────────────────────────────┬─────────────────────────────┬───────────────┤
-│    QuranHadis (Modul Al-Qur'an)│     TafsirDrawer Component  │ Settings Page │
-│  - Mode Per Ayat vs Mushaf    │  - Bottom Sheet Kemenag RI  │ - Backup JSON │
-│  - Single-row Sticky Header   │  - Multi-source fallback    │ - Restore JSON│
-│  - Fullscreen Toggle          │  - Catatan Tadabbur link    │ - Versi v2.4.0│
-└───────────────┬───────────────┴──────────────┬──────────────┴───────┬───────┘
-                │                              │                      │
-                ▼                              ▼                      ▼
-┌───────────────────────────────┬─────────────────────────────┬───────────────┐
-│     Quran Storage & Cache     │   Equran.id API / Tafsir    │ LocalStorage  │
-│  - IndexedDB Murottal Caching │   https://equran.id/api/v2/ │ -wi_user, etc │
-│  - LocalStorage Reader Config │   tafsir/{surahNumber}      │ -wi_version   │
-└───────────────────────────────┴─────────────────────────────┴───────────────┘
+┌─────────────────────────────────────────────────────────────┐
+│                    QURAN / HADIS MODULE                     │
+├──────────────────────────────┬──────────────────────────────┤
+│          HEADER BAR          │ 3-ZONE TOP NAVIGATION        │
+│                              │ Search, Filter, Reader Tools │
+├──────────────────────────────┴──────────────────────────────┤
+│               3 TABS: SURAH | JUZ | BOOKMARK                │
+├───────────────────┬───────────────────┬─────────────────────┤
+│    Tab 1: SURAH   │    Tab 2: JUZ     │   Tab 3: BOOKMARK   │
+│ • Star Badge SVG  │ • 30 Juz Index    │ • Multi-Hanca List  │
+│ • Surah Calligr.  │ • Start Ayah Info │ • Create/Rename Set │
+│ • Download Audio  │ • Direct Jump Nav │ • Unbookmark / Clear│
+├───────────────────┴───────────────────┴─────────────────────┤
+│                       READER VIEW                           │
+├─────────────────────────────────────────────────────────────┤
+│ • Horizontal Surah Tab Scroller (1. Al-Fatihah, 2. ...)     │
+│ • Decorative Surah Frame (Surah title + revelation info)   │
+│ • Zebra Rows (Cream / White alternating backgrounds)        │
+│ • Ayah Star Badge & End-of-Ayah Circle Marker               │
+│ • 4-Action Cluster: [Play] [Tafsir] [Favorit] [Bookmark]    │
+│ • Quick Settings Modal: [Latin] [Terjemah] [A-- ... A++]    │
+└─────────────────────────────────────────────────────────────┘
+                               │
+               ┌───────────────┴───────────────┐
+               ▼                               ▼
+       Local & Cloud Storage           Audio / Offline Cache
+     (Hanca, Font, Favs, Theme)         (Murottal IndexedDB)
 ```
 
----
-
-## 3. Implementation Steps
-
-### Step 1: Update Constants & Versioning (`src/lib/storage.ts` & `src/types.ts`)
-- Update `CURRENT_VERSION` menjadi `"2.4.0"`.
-- Tambahkan entri patch note `v2.4.0` di `APP_PATCH_NOTES` (`src/types.ts`) yang merangkum Mode Mushaf Kontinu, Tafsir Kemenag RI Drawer, Fullscreen Reader, dan Backup/Restore JSON.
-
-### Step 2: Implement Tafsir API Service (`src/lib/quran-api.ts`)
-- Tambahkan fungsi `getSurahTafsir(surahNumber: number)` yang mengambil tafsir ringkas Kemenag dari `https://equran.id/api/v2/tafsir/${surahNumber}`.
-- Sediakan fallback cache di `localStorage`/`IndexedDB` jika perangkat sedang offline.
-
-### Step 3: Integrate IndexedDB Murottal Audio Cacher (`src/lib/murottal-cache.ts`)
-- Buat utility IndexedDB sederhana untuk menyimpan blob audio murottal yang telah diunduh/diputar per ayat/surat.
-- Saat audio diputar, cek apakah blob audio tersedia di IndexedDB; jika ada, gunakan `URL.createObjectURL(blob)`, jika tidak, fetch dan simpan ke cache.
-
-### Step 4: Enhance Reader Settings & Add Continuous Mushaf View in `src/pages/QuranHadis.tsx`
-- **State Tambahan**:
-  - `readingMode`: `'card'` (per ayat) | `'mushaf'` (per halaman/kontinu)
-  - `showArabic`: `boolean` (default: `true`)
-  - `showLatin`: `boolean`
-  - `showTranslation`: `boolean`
-  - `isFullscreen`: `boolean`
-  - `selectedTafsirAyah`: `{ surah: SurahItem; ayah: AyatItem; tafsirText: string } | null`
-  - `isTafsirDrawerOpen`: `boolean`
-- **Mode Mushaf Kontinu**:
-  - Render blok container `bg-[#FAF9F5] dark:bg-slate-900 border-1.5 border-black p-4 sm:p-6 rounded-2xl` tempat seluruh ayat Arab mengalir tersambung secara paragraf alami (`text-right font-serif leading-[2.6]`).
-  - Setiap ayat dilengkapi angka Arab melingkar yang dapat diketuk.
-  - Opsi menampilkan terjemahan/Latin di bawah blok paragraf atau secara popover saat ayat diketuk.
-- **Tafsir Drawer Component**:
-  - Bottom sheet yang mulus (animated slide-up) saat ayat diketuk.
-  - Menampilkan judul surat, ayat ke-X, teks Arab, terjemahan, dan paragraf Tafsir Ringkas Kemenag RI.
-
-### Step 5: Implement Export & Import Data Backup in `src/pages/Settings.tsx`
-- **Export Data**:
-  - Mengambil seluruh item dari `localStorage` bertawalan `wi_` (termasuk tugas, jadwal, logs, profil, doa favorit, catatan tadabbur).
-  - Membuat objek JSON terenkripsi/terformat dan memicu unduhan file `waktuibadah_backup_YYYY-MM-DD.json`.
-- **Import Data**:
-  - File picker untuk membaca file JSON cadangan.
-  - Validasi struktur file sebelum menyimpan kembali ke `localStorage` dan mereload state aplikasi.
-
----
-
-## 4. Verification Plan
-
-1. **Uji Mode Mushaf Kontinu**:
-   - Buka surat Al-Fatihah dan Al-Baqarah dalam mode Mushaf.
-   - Uji tombol pengatur Teks Arab (ON/OFF), Transliterasi Latin (ON/OFF), dan Terjemahan (ON/OFF).
-   - Pastikan teks Arab mengalir dengan rapi tanpa overflow pada viewport 360px, 390px, dan 412px.
-2. **Uji Tafsir Kemenag RI**:
-   - Ketuk salah satu ayat Al-Qur'an dan pastikan Bottom Sheet Tafsir terbuka dengan memuat teks tafsir Kemenag RI yang sesuai.
-3. **Uji Fullscreen Reader**:
-   - Aktifkan tombol Fullscreen di header Al-Qur'an dan verifikasi header serta bottom bar tersembunyi dengan bersih.
-4. **Uji Backup & Restore JSON**:
-   - Jalankan fungsi Export Data di Pengaturan, verifikasi file `.json` terunduh.
-   - Uji Impor file JSON dan pastikan data kembali secara utuh.
-5. **Uji Kompilasi & Linting**:
-   - Jalankan `compile_applet` dan `lint_applet` untuk memastikan zero syntax/build errors.
+### Pembaruan Versi Aplikasi & Patch Notes (v2.7.0)
+- Menambahkan rilis **v2.7.0** ke `APP_PATCH_NOTES` di `src/types.ts`:
+  - **Highlights**: UI Al-Qur'an baru bergaya bersih dengan ornamen Islami SVG, tab Juz 1–30, multi-hanca bernama dengan unbookmark, zebra-striping per ayat, tab surah geser horizontal, tombol aksi ayat 4-baris kompak, serta popover pengaturan ukuran huruf 5 level.
+  - **Saran Update Selanjutnya**:
+    1. *Fitur Terdekat*: Pemutar audio per surah kontinu (*auto-scroll* mengikuti ayat yang sedang dilantunkan qari).
+    2. *UI/UX*: Pilihan tema warna kertas kuno (*parchment / sepia*) untuk pembacaan malam hari.
+    3. *QoL*: Pencarian cerdas ayat berdasarkan arti terjemahan bahasa Indonesia, bukan hanya nomor atau nama surah.
+    4. *Perbaikan*: Sinkronisasi status audio unduhan offline secara instan saat koneksi internet terputus.

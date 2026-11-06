@@ -64,9 +64,9 @@ export const Layout = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFFDF8] text-[#121212] flex overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen bg-[#FFFDF8] dark:bg-slate-950 text-[#121212] dark:text-slate-100 flex overflow-x-hidden w-full max-w-full transition-colors duration-200">
       {/* Desktop Sidebar (Memphis Retro Style) */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r-[1.5px] border-[#121212] p-5 fixed h-full z-10 shadow-[4px_0px_0px_#121212]">
+      <aside className="hidden md:flex flex-col w-64 bg-white dark:bg-slate-900 border-r-[1.5px] border-[#121212] dark:border-slate-700 p-5 fixed h-full z-10 shadow-[4px_0px_0px_#121212]">
         {/* Brand Header with Official Icon */}
         <div className="flex items-center gap-3 mb-6 p-2.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212]">
           <div className="w-10 h-10 bg-white border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center p-0.5 shadow-[2px_2px_0px_#121212] shrink-0 overflow-hidden">
@@ -99,7 +99,7 @@ export const Layout = () => {
                   "flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-xs transition-all duration-100",
                   isActive 
                     ? "bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-[#121212] border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] translate-x-1 font-bold" 
-                    : "text-gray-700 hover:bg-emerald-500/10 hover:text-black hover:border-2 hover:border-[#121212]"
+                    : "text-gray-700 dark:text-gray-300 hover:bg-emerald-500/10 hover:text-black dark:hover:text-white hover:border-2 hover:border-[#121212]"
                 )
               }
             >
@@ -123,12 +123,12 @@ export const Layout = () => {
         {/* Cloud Sync Status Indicator */}
         <div 
           onClick={() => navigate('/settings')}
-          className="mt-3 p-2.5 bg-[#FFFDF8] border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-emerald-500/10 transition-all"
+          className="mt-3 p-2.5 bg-[#FFFDF8] dark:bg-slate-800 border-[1.5px] border-[#121212] dark:border-slate-700 rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-emerald-500/10 transition-all"
           title="Klik untuk membuka Pengaturan Sinkronisasi Multi-Device"
         >
           <div className="flex items-center gap-2 truncate">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-black"></div>
-            <span className="font-bold text-[#121212] truncate text-[11px]">{user?.name || 'Mahasiswa'}</span>
+            <span className="font-bold text-[#121212] dark:text-slate-100 truncate text-[11px]">{user?.name || 'Mahasiswa'}</span>
           </div>
           <span className="text-[9px] bg-black text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
             Cloud
@@ -139,7 +139,7 @@ export const Layout = () => {
       {/* Main Content - Guaranteed No Horizontal Overflow & Compact Mobile Padding */}
       <main className="flex-1 md:ml-64 pb-24 md:pb-8 min-h-screen max-w-5xl mx-auto w-full relative overflow-x-hidden">
         {/* Mobile Top Header with Brand Icon */}
-        <div className="md:hidden sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b-[1.5px] border-[#121212] px-3.5 h-14 flex items-center justify-between shadow-[0px_2px_0px_#121212]">
+        <div className="md:hidden sticky top-0 z-30 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b-[1.5px] border-[#121212] dark:border-slate-800 px-3.5 h-14 flex items-center justify-between shadow-[0px_2px_0px_#121212]">
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-8 h-8 rounded-lg border-[1.5px] border-black bg-white p-0.5 shadow-[1.5px_1.5px_0px_#121212] overflow-hidden flex items-center justify-center shrink-0">
               <img 
@@ -152,10 +152,10 @@ export const Layout = () => {
               />
             </div>
             <div className="min-w-0">
-              <span className="font-bold text-xs tracking-tight text-[#121212] block leading-none truncate">
+              <span className="font-bold text-xs tracking-tight text-[#121212] dark:text-slate-100 block leading-none truncate">
                 WaktuIbadah
               </span>
-              <span className="text-[9.5px] font-medium text-gray-500 uppercase tracking-wider block mt-0.5 truncate">
+              <span className="text-[9.5px] font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider block mt-0.5 truncate">
                 Islamic Planner
               </span>
             </div>
@@ -164,7 +164,7 @@ export const Layout = () => {
           <button 
             onClick={() => navigate('/settings')}
             aria-label="Pengaturan Profil"
-            className="border-[1.5px] border-black bg-white px-2.5 py-1 text-[11px] font-bold rounded-lg shadow-[1.5px_1.5px_0px_#121212] truncate max-w-[120px] active:translate-y-0.5"
+            className="border-[1.5px] border-black bg-white dark:bg-slate-800 text-[#121212] dark:text-slate-100 px-2.5 py-1 text-[11px] font-bold rounded-lg shadow-[1.5px_1.5px_0px_#121212] truncate max-w-[120px] active:translate-y-0.5"
           >
             {user?.name || 'Mahasiswa'}
           </button>
@@ -176,7 +176,7 @@ export const Layout = () => {
       </main>
 
       {/* Mobile Bottom Navigation (60px height, equal width items, light Memphis pill active indicator) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-white border-t-[1.5px] border-[#121212] grid grid-cols-6 items-center px-1 pb-[env(safe-area-inset-bottom,0px)] z-40 shadow-[0px_-2px_0px_#121212]">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[60px] bg-white dark:bg-slate-900 border-t-[1.5px] border-[#121212] dark:border-slate-800 grid grid-cols-6 items-center px-1 pb-[env(safe-area-inset-bottom,0px)] z-40 shadow-[0px_-2px_0px_#121212]">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
@@ -185,7 +185,7 @@ export const Layout = () => {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center justify-center h-full w-full py-1 transition-all min-w-0",
-                isActive ? "text-emerald-800 font-bold" : "text-gray-600 hover:text-black font-normal"
+                isActive ? "text-emerald-800 dark:text-emerald-400 font-bold" : "text-gray-600 dark:text-gray-400 hover:text-black dark:hover:text-white font-normal"
               )
             }
           >
@@ -193,11 +193,11 @@ export const Layout = () => {
               <>
                 <div className={cn(
                   "flex items-center justify-center px-2.5 py-0.5 rounded-full transition-all",
-                  isActive ? "bg-emerald-200 border-[1.5px] border-black shadow-[1px_1px_0px_#121212]" : ""
+                  isActive ? "bg-emerald-200 dark:bg-emerald-900/60 border-[1.5px] border-black dark:border-emerald-500 shadow-[1px_1px_0px_#121212]" : ""
                 )}>
-                  <item.icon className={cn("w-4 h-4", isActive ? "stroke-[2.5] text-emerald-950" : "stroke-[2] text-gray-700")} />
+                  <item.icon className={cn("w-4 h-4", isActive ? "stroke-[2.5] text-emerald-950 dark:text-emerald-200" : "stroke-[2] text-gray-700 dark:text-gray-300")} />
                 </div>
-                <span className={cn("text-[10.5px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-black" : "text-gray-600")}>
+                <span className={cn("text-[10.5px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-black dark:text-white" : "text-gray-600 dark:text-gray-400")}>
                   {item.label}
                 </span>
               </>

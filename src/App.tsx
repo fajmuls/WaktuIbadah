@@ -105,6 +105,22 @@ export default function App() {
     // Validate Firestore connection on boot
     testFirestoreConnection().catch(console.error);
 
+    // Initialize Theme Mode (Light / Dark / System)
+    const applyTheme = (mode: 'light' | 'dark' | 'system') => {
+      const isDark = mode === 'dark' || (mode === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      if (isDark) {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    };
+    applyTheme(storage.getThemeMode());
+
+    const handleThemeChange = () => {
+      applyTheme(storage.getThemeMode());
+    };
+    window.addEventListener('wi_theme_changed', handleThemeChange);
+
     const user = storage.getUser();
     if (user && user.isOnboarded) {
       setHasOnboarded(true);

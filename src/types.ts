@@ -244,6 +244,15 @@ export interface WebsiteReview {
   date: string; // YYYY-MM-DD
 }
 
+export interface ReadingHancaItem {
+  id: string;
+  name: string; // e.g. 'Tilawah Harian', 'Tahfidz Juz 30', 'Khatam Ramadan'
+  surahNumber: number;
+  surahName: string;
+  ayahNumber: number;
+  updatedAt: string;
+}
+
 export interface PatchNoteItem {
   version: string;
   releaseDate: string;
@@ -255,6 +264,35 @@ export interface PatchNoteItem {
 }
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
+  {
+    version: '2.7.0',
+    releaseDate: '6 November 2026',
+    title: 'Desain Baru Al-Qur\'an Bersih (Clean Look), Ornamen Bintang Islami SVG, Indeks 30 Juz, Sistem Multi-Hanca, & Baris Aksi 4 Tombol Ringkas',
+    highlights: [
+      'Desain Baru Al-Qur\'an Bersih (Clean Look): Tampilan daftar surah dengan kaligrafi Arab otentik dan ornamen bintang segi-8 Islami (Rub el Hizb) SVG.',
+      'Navigasi 3 Tab Terpadu: Tab SURAH, tab JUZ (indeks lengkap 30 Juz dengan lompatan ayat langsung), dan tab BOOKMARK (Sistem Multi-Hanca).',
+      'Sistem Multi-Hanca Bernama: Menandai batas terakhir membaca Al-Qur\'an ke dalam beberapa set (contoh: Tilawah Harian, Tahfidz Juz 30, Tadabbur) dengan tombol cepat lanjut baca dan kemampuan unbookmark/hapus tanda kapan saja.',
+      'Tampilan Membaca Zebra-Striping: Latar ayat bergantian lembut (krem gading dan putih bersih) yang nyaman di mata.',
+      'Tab Bar Geser Horizontal Surah: Pilihan berpindah surah langsung di bagian atas pembaca (misal 1. Al-Fatihah, 2. Al-Baqarah, 3. Ali \'Imran).',
+      'Baris Aksi Ayat Kompak 4 Tombol: Tombol Putar Audio, Tafsir Kemenag RI, Simpan Favorit, dan Tandai Hanca tersusun rapi di sisi kanan tanpa menghalangi ayat suci.',
+      'Pengaturan Pembaca Cepat 5 Level Huruf: Sakelar Teks Latin, Terjemahan, dan 5 preset ukuran font Arab (A--, A-, A, A+, A++) yang bisa diperkecil hingga ukuran paling ringkas.',
+      'Perbaikan Sakelar Tema: Mode Terang/Gelap/Sistem kini aktif seketika dan tersinkronisasi di seluruh aplikasi.'
+    ],
+    soundPackUpdates: [
+      'Dukungan unduh audio murottal per surah untuk pemutaran offline dengan penanda status unduhan yang jelas'
+    ],
+    uiOverhaul: [
+      'Ornamen bintang segi-8 Islami murni berbasis vektor SVG tajam pada nomor surah, nomor juz, dan nomor ayat',
+      'Header Al-Qur\'an elegan bergaya mushaf dengan bingkai nama surah, jenis wahyu, dan total ayat',
+      'Penyesuaian tata letak responsif ponsel satu tangan yang ergonomis'
+    ],
+    recommendations: [
+      'Saran Fitur Terdekat: Pemutar audio kontinu otomatis gulir (auto-scroll) mengikuti ayat yang sedang dibacakan qari',
+      'Saran UI/UX: Tambahkan tema warna kertas kuno (sepia / parchment) untuk kenyamanan membaca di malam hari',
+      'Saran QoL: Pencarian cerdas ayat Al-Qur\'an berdasarkan kata kunci terjemahan bahasa Indonesia',
+      'Saran Perbaikan: Indikator persentase progres unduhan murottal saat mengunduh surat berukuran besar'
+    ]
+  },
   {
     version: '2.6.0',
     releaseDate: '6 November 2026',

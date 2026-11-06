@@ -1,4 +1,4 @@
-import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig, WebsiteReview } from "../types";
+import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig, WebsiteReview, ReadingHancaItem } from "../types";
 
 const KEYS = {
   USER: "wi_user",
@@ -26,9 +26,10 @@ const KEYS = {
   THEME_MODE: "wi_theme_mode",
   QURAN_WHITE_THEME: "wi_quran_white_theme",
   LAST_READ_AYAH: "wi_last_read_ayah",
+  READING_HANCAS: "wi_reading_hancas",
 };
 
-export const CURRENT_VERSION = "2.6.0";
+export const CURRENT_VERSION = "2.7.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -383,6 +384,93 @@ export const storage = {
     setItem(KEYS.LAST_READ_AYAH, data);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('wi_last_read_updated', { detail: data }));
+    }
+  },
+  clearLastReadAyah: () => {
+    localStorage.removeItem(KEYS.LAST_READ_AYAH);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_last_read_updated', { detail: null }));
+    }
+  },
+
+  // Multi-Hanca Bookmark Sets (Bisa punya beberapa set: Tilawah Harian, Tahfidz, Tadabbur, dsb.)
+  getReadingHancas: (): ReadingHancaItem[] => {
+    const list = getItem<ReadingHancaItem[]>(KEYS.READING_HANCAS, []);
+    // Migration: jika belum ada hanca tapi ada last_read_ayah, buat default 'Tilawah Utama'
+    if (list.length === 0) {
+      const last = getItem<{ surahNumber: number; surahName: string; ayahNumber: number; date: string } | null>(KEYS.LAST_READ_AYAH, null);
+      if (last) {
+        const initialHanca: ReadingHancaItem = {
+          id: 'default-hanca',
+          name: 'Tilawah Harian',
+          surahNumber: last.surahNumber,
+          surahName: last.surahName,
+          ayahNumber: last.ayahNumber,
+          updatedAt: last.date
+        };
+        setItem(KEYS.READING_HANCAS, [initialHanca]);
+        return [initialHanca];
+      }
+    }
+    return list;
+  },
+  saveReadingHanca: (hanca: ReadingHancaItem) => {
+    const list = getItem<ReadingHancaItem[]>(KEYS.READING_HANCAS, []);
+    const idx = list.findIndex(h => h.id === hanca.id);
+    if (idx >= 0) {
+      list[idx] = hanca;
+    } else {
+      list.unshift(hanca);
+    }
+    setItem(KEYS.READING_HANCAS, list);
+    // Juga update active last read marker
+    storage.setLastReadAyah({
+      surahNumber: hanca.surahNumber,
+      surahName: hanca.surahName,
+      ayahNumber: hanca.ayahNumber,
+      date: hanca.updatedAt
+    });
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_hanca_updated', { detail: list }));
+    }
+  },
+  deleteReadingHanca: (id: string) => {
+    const list = getItem<ReadingHancaItem[]>(KEYS.READING_HANCAS, []).filter(h => h.id !== id);
+    setItem(KEYS.READING_HANCAS, list);
+    if (list.length > 0) {
+      const first = list[0];
+      storage.setLastReadAyah({
+        surahNumber: first.surahNumber,
+        surahName: first.surahName,
+        ayahNumber: first.ayahNumber,
+        date: first.updatedAt
+      });
+    } else {
+      storage.clearLastReadAyah();
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_hanca_updated', { detail: list }));
+    }
+  },
+  unbookmarkAyah: (surahNumber: number, ayahNumber: number) => {
+    const list = getItem<ReadingHancaItem[]>(KEYS.READING_HANCAS, []);
+    const filtered = list.filter(h => !(h.surahNumber === surahNumber && h.ayahNumber === ayahNumber));
+    setItem(KEYS.READING_HANCAS, filtered);
+    const last = getItem<{ surahNumber: number; surahName: string; ayahNumber: number; date: string } | null>(KEYS.LAST_READ_AYAH, null);
+    if (last && last.surahNumber === surahNumber && last.ayahNumber === ayahNumber) {
+      if (filtered.length > 0) {
+        storage.setLastReadAyah({
+          surahNumber: filtered[0].surahNumber,
+          surahName: filtered[0].surahName,
+          ayahNumber: filtered[0].ayahNumber,
+          date: filtered[0].updatedAt
+        });
+      } else {
+        storage.clearLastReadAyah();
+      }
+    }
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_hanca_updated', { detail: filtered }));
     }
   },
 

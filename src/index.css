@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --color-primary: #059669;
   --color-primary-dark: #047857;
@@ -28,6 +30,12 @@
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
+
+  html.dark, html.dark body {
+    background-color: #0b1120;
+    color: #f1f5f9;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.08) 1.5px, transparent 1.5px);
+  }
 }
 
 /* Memphis Style Utility Classes with Solid Borders & Retro Offsets */
@@ -37,6 +45,13 @@
   box-shadow: 2px 2px 0px #121212;
   border-radius: 0.75rem;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.dark .memphis-card {
+  background-color: #1e293b;
+  border-color: #334155;
+  box-shadow: 2px 2px 0px #0f172a;
+  color: #f1f5f9;
 }
 
 @media (min-width: 640px) {
