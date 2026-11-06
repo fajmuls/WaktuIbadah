@@ -15,7 +15,7 @@ import { formatTimeString } from '../lib/utils';
 import { CitySelectorModal } from '../components/CitySelectorModal';
 import { checkSchedulePrayerConflicts } from '../lib/schedule-prayer-conflict';
 import { AdminReviewBanner } from '../components/AdminReviewBanner';
-import { NotificationGatekeeperModal } from '../components/NotificationGatekeeperModal';
+import { OPEN_EVENT } from '../components/NotificationSetupModal';
 import { playPrayerAzan, testAlarmTone, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess } from '../lib/audio';
 
 const DAILY_WISDOM = [
@@ -57,7 +57,6 @@ export default function Dashboard() {
   const [isCityModalOpen, setIsCityModalOpen] = useState(false);
   const [todayQuranLogs, setTodayQuranLogs] = useState(storage.getQuranLogsByDate(format(new Date(), 'yyyy-MM-dd')));
   const [isTestingSound, setIsTestingSound] = useState(false);
-  const [isGatekeeperOpen, setIsGatekeeperOpen] = useState(false);
   const [dailyHadith, setDailyHadith] = useState<any>(null);
 
   useEffect(() => {
@@ -270,7 +269,7 @@ export default function Dashboard() {
       </header>
 
       {/* PRAYER FOCUS HERO SECTION WITH GRAND MOSQUE VECTOR BACKGROUND */}
-      <section className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-2xl p-3.5 sm:p-5 shadow-[3px_3px_0px_#121212] relative overflow-hidden border-[1.5px] border-[#121212]">
+      <section className="bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white rounded-2xl p-3.5 sm:p-5 shadow-[2px_2px_0px_#121212] relative overflow-hidden border-[1.5px] border-[#121212]">
         
         {/* GRAND MOSQUE SILHOUETTE VECTOR ART BACKGROUND */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-20">
@@ -313,7 +312,7 @@ export default function Dashboard() {
             </button>
 
             <button
-              onClick={() => setIsGatekeeperOpen(true)}
+              onClick={() => window.dispatchEvent(new Event(OPEN_EVENT))}
               aria-label="Tes Notifikasi"
               className="p-1.5 bg-white/15 text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1 backdrop-blur-md border border-black/40"
               title="Uji notifikasi HP"
@@ -339,7 +338,7 @@ export default function Dashboard() {
             <h2 className="text-emerald-200 font-medium text-[11px] uppercase tracking-wider">
               Salat Berikutnya
             </h2>
-            <div className="text-2xl sm:text-3xl font-bold tracking-tight mb-0.5 flex items-center justify-center gap-2">
+            <div className="text-2xl sm:text-2xl font-bold tracking-tight mb-0.5 flex items-center justify-center gap-2">
               <span className="text-amber-300">{prayerIcons[nextPrayer.prayer]}</span>
               <span>{nextPrayer.prayer}</span>
             </div>
@@ -402,11 +401,7 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* Notification Gatekeeper Modal (Auto-tests or opens on demand) */}
-      <NotificationGatekeeperModal
-        forceOpen={isGatekeeperOpen}
-        onClose={() => setIsGatekeeperOpen(false)}
-      />
+
 
       {/* Sunnah Fasting Information (if applicable) */}
       {(() => {
@@ -440,21 +435,21 @@ export default function Dashboard() {
       })()}
 
       {/* Quick Action: Doa & Zikir Banner */}
-      <section className="memphis-card p-3.5 sm:p-4 flex items-center justify-between bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border-2 border-black">
+      <section className="memphis-card p-3.5 sm:p-4 flex items-center justify-between bg-gradient-to-r from-emerald-50 via-teal-50 to-green-50 border-[1.5px] border-black">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 border-2 border-black flex items-center justify-center font-black text-white shadow-[2px_2px_0px_#121212]">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-green-600 border-[1.5px] border-black flex items-center justify-center font-bold text-white shadow-[2px_2px_0px_#121212]">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <div className="text-[10px] font-black text-emerald-800 uppercase tracking-wider">Kumpulan Doa & Zikir</div>
-            <div className="text-xs sm:text-sm font-black text-[#121212] mt-0.5">
+            <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider">Kumpulan Doa & Zikir</div>
+            <div className="text-xs sm:text-sm font-bold text-[#121212] mt-0.5">
               Wirid Setelah Salat, Doa Makan, Tidur & Belajar
             </div>
           </div>
         </div>
         <Link 
           to="/doa" 
-          className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1 shrink-0"
+          className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-bold gap-1 shrink-0"
         >
           <span>Buka Doa</span>
           <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -464,12 +459,12 @@ export default function Dashboard() {
       {/* Daily Quran Tilawah Summary */}
       <section className="memphis-card p-3.5 sm:p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-2 border-black flex items-center justify-center font-black text-black shadow-[2px_2px_0px_#121212]">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-[1.5px] border-black flex items-center justify-center font-bold text-black shadow-[2px_2px_0px_#121212]">
             <BookOpen className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <div className="text-[10px] font-black text-gray-500 uppercase tracking-wider">Tilawah Qur'an Hari Ini</div>
-            <div className="text-xs sm:text-sm font-black text-[#121212] mt-0.5">
+            <div className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tilawah Qur'an Hari Ini</div>
+            <div className="text-xs sm:text-sm font-bold text-[#121212] mt-0.5">
               {todayQuranLogs.length > 0 
                 ? `${todayQuranLogs.length} Sesi Dibaca (${todayQuranLogs.reduce((acc, l) => acc + (l.endAyah - l.startAyah + 1), 0)} Ayat)` 
                 : 'Belum ada catatan membaca hari ini'}
@@ -478,7 +473,7 @@ export default function Dashboard() {
         </div>
         <Link 
           to="/quran" 
-          className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1"
+          className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-bold gap-1"
         >
           <span>{todayQuranLogs.length > 0 ? 'Lanjut' : 'Mulai'}</span>
           <ChevronRight className="w-3.5 h-3.5 stroke-[3]" />
@@ -490,14 +485,14 @@ export default function Dashboard() {
         <section className="memphis-card p-3.5 sm:p-5 space-y-2.5">
           <div className="flex items-center justify-between border-b-2 border-black pb-2">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl bg-[#00F0FF] border-2 border-black flex items-center justify-center font-black text-xs shadow-[2px_2px_0px_#121212]">
+              <div className="w-8 h-8 rounded-xl bg-[#00F0FF] border-[1.5px] border-black flex items-center justify-center font-bold text-xs shadow-[2px_2px_0px_#121212]">
                 <Quote className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
-                <span className="text-[10px] font-black text-[#FF4B91] uppercase tracking-wider block">
+                <span className="text-[10px] font-bold text-[#FF4B91] uppercase tracking-wider block">
                   Hadits Pilihan Hari Ini (API MyQuran)
                 </span>
-                <h4 className="text-xs sm:text-sm font-black text-[#121212]">
+                <h4 className="text-xs sm:text-sm font-bold text-[#121212]">
                   Hadits #{dailyHadith.no}: {dailyHadith.judul}
                 </h4>
               </div>
@@ -505,7 +500,7 @@ export default function Dashboard() {
 
             <Link
               to="/hadis"
-              className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-black uppercase tracking-wider gap-1"
+              className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider gap-1"
             >
               <span>Semua</span>
               <ChevronRight className="w-3 h-3 stroke-[3]" />
@@ -516,7 +511,7 @@ export default function Dashboard() {
             {dailyHadith.arab}
           </div>
 
-          <p className="text-xs text-gray-800 italic bg-[#FFFDF8] p-3 rounded-xl border-2 border-black font-semibold leading-relaxed">
+          <p className="text-xs text-gray-800 italic bg-[#FFFDF8] p-3 rounded-xl border-[1.5px] border-black font-semibold leading-relaxed">
             "{dailyHadith.indo}"
           </p>
         </section>
@@ -524,13 +519,13 @@ export default function Dashboard() {
 
       {/* Daily Wisdom (Green Multi-Tone Memphis Card) */}
       <section className="memphis-card-green p-4 flex gap-3 items-start bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400">
-        <div className="w-8 h-8 bg-black text-[#6EE7B7] rounded-xl border-2 border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#121212] text-sm font-black">
+        <div className="w-8 h-8 bg-black text-[#6EE7B7] rounded-xl border-[1.5px] border-black flex items-center justify-center shrink-0 shadow-[2px_2px_0px_#121212] text-sm font-bold">
           💡
         </div>
         <div>
-          <h3 className="text-xs font-black uppercase tracking-wider text-black mb-1">Daily Wisdom</h3>
+          <h3 className="text-xs font-bold text-black mb-1">Daily Wisdom</h3>
           <p className="text-[#121212] font-bold italic text-xs leading-relaxed mb-1">"{wisdomOfTheDay.text}"</p>
-          <p className="text-[10px] text-[#121212]/80 font-black uppercase tracking-wider">— {wisdomOfTheDay.source}</p>
+          <p className="text-[10px] text-[#121212]/80 font-bold uppercase tracking-wider">— {wisdomOfTheDay.source}</p>
         </div>
       </section>
 
@@ -538,11 +533,11 @@ export default function Dashboard() {
         {/* Aktivitas Terdekat */}
         <section className="memphis-card p-4 sm:p-5 space-y-3">
           <div className="flex justify-between items-center border-b-2 border-black pb-2">
-            <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight flex items-center gap-2">
+            <h3 className="font-bold text-xs sm:text-sm tracking-tight flex items-center gap-2">
               <Calendar className="w-4 h-4 stroke-[2.5]" />
               Jadwal Hari Ini
             </h3>
-            <Link to="/jadwal" className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black">
+            <Link to="/jadwal" className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-bold">
               Semua
             </Link>
           </div>
@@ -556,20 +551,20 @@ export default function Dashboard() {
                 const hasConflict = conflicts.length > 0;
 
                 return (
-                  <div key={schedule.id} className="flex gap-2.5 sm:gap-3 items-center p-2.5 rounded-xl border-2 border-black bg-[#FFFDF8] shadow-[2px_2px_0px_#121212]">
+                  <div key={schedule.id} className="flex gap-2.5 sm:gap-3 items-center p-2.5 rounded-xl border-[1.5px] border-black bg-[#FFFDF8] shadow-[2px_2px_0px_#121212]">
                     <div className="text-center min-w-[46px] sm:min-w-[50px]">
-                      <div className="text-xs font-black text-black">{schedule.startTime}</div>
+                      <div className="text-xs font-bold text-black">{schedule.startTime}</div>
                       <div className="text-[9px] font-bold text-gray-500">{schedule.endTime}</div>
                     </div>
                     <div className="w-0.5 bg-black h-8 shrink-0" />
                     <div className="min-w-0 flex-1">
-                      <div className="font-black text-xs truncate">{schedule.title}</div>
+                      <div className="font-bold text-xs truncate">{schedule.title}</div>
                       <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                        <span className="text-[9px] font-black uppercase bg-[#00F0FF] text-black px-1.5 py-0.5 rounded border border-black">
+                        <span className="text-[9px] font-bold uppercase bg-[#00F0FF] text-black px-1.5 py-0.5 rounded border border-black">
                           {schedule.category}
                         </span>
                         {hasConflict && (
-                          <span className="text-[9px] font-black uppercase bg-[#FF4B91] text-white px-1.5 py-0.5 rounded border border-black flex items-center gap-1">
+                          <span className="text-[9px] font-bold uppercase bg-[#FF4B91] text-white px-1.5 py-0.5 rounded border border-black flex items-center gap-1">
                             <AlertTriangle className="w-2.5 h-2.5" />
                             Bentrok {conflicts[0].prayerName}
                           </span>
@@ -583,7 +578,7 @@ export default function Dashboard() {
           ) : (
             <div className="text-center py-4 px-4 bg-[#FFFDF8] rounded-xl border-2 border-dashed border-black">
               <p className="text-gray-500 font-bold text-xs mb-1.5">Belum ada aktivitas.</p>
-              <Link to="/jadwal" className="memphis-btn memphis-btn-green px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
+              <Link to="/jadwal" className="memphis-btn memphis-btn-green px-3 py-1 text-[11px] uppercase font-bold">+ Tambah</Link>
             </div>
           )}
         </section>
@@ -591,11 +586,11 @@ export default function Dashboard() {
         {/* Tugas Terdekat */}
         <section className="memphis-card p-4 sm:p-5 space-y-3">
           <div className="flex justify-between items-center border-b-2 border-black pb-2">
-            <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight flex items-center gap-2">
+            <h3 className="font-bold text-xs sm:text-sm tracking-tight flex items-center gap-2">
               <AlertCircle className="w-4 h-4 text-[#FF4B91] stroke-[2.5]" />
               Tugas Mendekat
             </h3>
-            <Link to="/tugas" className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black">
+            <Link to="/tugas" className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-bold">
               Semua
             </Link>
           </div>
@@ -603,12 +598,12 @@ export default function Dashboard() {
           {tasks.length > 0 ? (
             <div className="space-y-2">
               {tasks.map(task => (
-                <div key={task.id} className="flex gap-2.5 items-center p-2.5 rounded-xl bg-[#FFFDF8] border-2 border-black shadow-[2px_2px_0px_#121212]">
+                <div key={task.id} className="flex gap-2.5 items-center p-2.5 rounded-xl bg-[#FFFDF8] border-[1.5px] border-black shadow-[2px_2px_0px_#121212]">
                   <Circle className="w-4 h-4 text-gray-400 shrink-0" />
                   <div className="min-w-0 flex-1">
-                    <div className="font-black text-xs truncate">{task.title}</div>
+                    <div className="font-bold text-xs truncate">{task.title}</div>
                     <div className="flex gap-2 items-center mt-0.5">
-                      <span className="text-[9px] font-black uppercase bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded border border-black font-bold">
+                      <span className="text-[9px] font-bold uppercase bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded border border-black font-bold">
                         {format(new Date(task.deadline), 'dd MMM', { locale: id })}
                       </span>
                     </div>
@@ -619,7 +614,7 @@ export default function Dashboard() {
           ) : (
              <div className="text-center py-4 px-4 bg-[#FFFDF8] rounded-xl border-2 border-dashed border-black">
                <p className="text-gray-500 font-bold text-xs mb-1.5">Semua tugas aman terkendali.</p>
-               <Link to="/tugas" className="memphis-btn memphis-btn-green px-3 py-1 text-[11px] uppercase font-black">+ Tambah</Link>
+               <Link to="/tugas" className="memphis-btn memphis-btn-green px-3 py-1 text-[11px] uppercase font-bold">+ Tambah</Link>
              </div>
           )}
         </section>

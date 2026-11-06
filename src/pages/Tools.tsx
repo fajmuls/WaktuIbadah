@@ -358,7 +358,7 @@ export default function Tools() {
 
             {/* Result Box */}
             <div className="bg-gradient-to-br from-primary/5 to-teal-500/5 p-6 rounded-2xl border border-primary/20 text-center space-y-2">
-              <span className="text-xs font-bold text-primary uppercase tracking-wider">Hasil Konversi Hijriyah</span>
+              <span className="text-xs font-bold text-primary">Hasil Konversi Hijriyah</span>
               
               {isConverting ? (
                 <div className="py-4 text-sm text-text-muted animate-pulse">Menghitung kalender...</div>

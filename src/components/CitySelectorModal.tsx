@@ -62,17 +62,17 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/70 backdrop-blur-xs animate-in fade-in duration-200">
       <div 
-        className="bg-white w-full max-w-lg rounded-2xl sm:rounded-3xl border-[3px] border-[#121212] shadow-[5px_5px_0px_#121212] flex flex-col max-h-[88vh] overflow-hidden animate-in zoom-in-95 duration-150"
+        className="bg-white w-full max-w-lg rounded-2xl sm:rounded-3xl border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] flex flex-col max-h-[88vh] overflow-hidden animate-in zoom-in-95 duration-150"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-b-[2.5px] border-[#121212] flex items-center justify-between">
+        <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-b-[1.5px] border-[#121212] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white border-2 border-black flex items-center justify-center font-black shadow-[2px_2px_0px_#121212] shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white border-[1.5px] border-black flex items-center justify-center font-bold shadow-[2px_2px_0px_#121212] shrink-0">
               <Compass className="w-5 h-5 text-emerald-700" />
             </div>
             <div>
-              <h2 className="text-sm sm:text-base font-black text-[#121212] uppercase tracking-tight">
+              <h2 className="text-sm sm:text-base font-bold text-[#121212] tracking-tight">
                 Pilih Kota & Zona Waktu
               </h2>
               <p className="text-[11px] font-bold text-gray-800">
@@ -82,7 +82,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
           </div>
           <button 
             onClick={onClose}
-            className="w-8 h-8 rounded-xl bg-white border-2 border-black flex items-center justify-center hover:bg-gray-100 shadow-[1.5px_1.5px_0px_#121212] font-black"
+            className="w-8 h-8 rounded-xl bg-white border-[1.5px] border-black flex items-center justify-center hover:bg-gray-100 shadow-[1.5px_1.5px_0px_#121212] font-bold"
           >
             <X className="w-4 h-4" />
           </button>
@@ -103,7 +103,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
             <button
               type="submit"
               disabled={isSearching || !query.trim()}
-              className="absolute right-1.5 top-1/2 -translate-y-1/2 memphis-btn memphis-btn-green px-3 py-1 text-xs font-black uppercase tracking-wider disabled:opacity-50"
+              className="absolute right-1.5 top-1/2 -translate-y-1/2 memphis-btn memphis-btn-green px-3 py-1 text-xs font-bold disabled:opacity-50"
             >
               {isSearching ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : 'Cari'}
             </button>
@@ -133,7 +133,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
           {/* If search query entered and submitted */}
           {hasSearched && (
             <div>
-              <h3 className="text-xs font-black text-black uppercase tracking-wider mb-2">
+              <h3 className="text-xs font-bold text-black mb-2">
                 Hasil Pencarian Kemenag ({searchResults.length})
               </h3>
               {isSearching ? (
@@ -153,7 +153,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
                       <button
                         key={city.id}
                         onClick={() => handleSelect(city)}
-                        className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-black transition-all flex items-center justify-between border-2 border-black ${
+                        className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-between border-[1.5px] border-black ${
                           isSelected
                             ? 'bg-emerald-500 text-white shadow-[2px_2px_0px_#121212]'
                             : 'bg-white hover:bg-emerald-50 text-black shadow-[1.5px_1.5px_0px_#121212]'
@@ -174,7 +174,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
 
           {/* Preset Major Indonesian Cities with Timezone Indicators */}
           <div>
-            <h3 className="text-xs font-black text-black uppercase tracking-wider mb-2 flex items-center justify-between">
+            <h3 className="text-xs font-bold text-black mb-2 flex items-center justify-between">
               <span>Kota Rujukan ({filteredPresetCities.length})</span>
               <span className="text-[10px] text-gray-500 font-bold">Resmi Kemenag RI</span>
             </h3>
@@ -188,7 +188,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
                   <button
                     key={city.id}
                     onClick={() => handleSelect({ id: cityId, lokasi: `KOTA ${city.name.toUpperCase()}` })}
-                    className={`text-left p-2.5 rounded-xl text-xs font-black transition-all flex items-center justify-between border-2 border-black ${
+                    className={`text-left p-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-between border-[1.5px] border-black ${
                       isSelected
                         ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-[2px_2px_0px_#121212]'
                         : 'bg-[#FFFDF8] hover:bg-emerald-50 text-black shadow-[1.5px_1.5px_0px_#121212]'
@@ -197,7 +197,7 @@ export const CitySelectorModal: React.FC<CitySelectorModalProps> = ({
                     <div className="min-w-0 pr-2">
                       <div className="flex items-center gap-1.5">
                         <span className="truncate">{city.name}</span>
-                        <span className={`text-[8px] px-1 rounded border border-black font-black ${
+                        <span className={`text-[8px] px-1 rounded border border-black font-bold ${
                           city.timezone === 'WIB' ? 'bg-[#00F0FF] text-black' :
                           city.timezone === 'WITA' ? 'bg-[#FF4B91] text-white' :
                           'bg-[#FFE600] text-black'

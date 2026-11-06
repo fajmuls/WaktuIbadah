@@ -31,7 +31,7 @@ import Kalender from './pages/Kalender';
 import Qibla from './pages/Qibla';
 
 // Modals
-import { BackgroundSyncModal } from './components/BackgroundSyncModal';
+import { NotificationSetupModal } from './components/NotificationSetupModal';
 import { WebsiteReviewModal } from './components/WebsiteReviewModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
 
@@ -44,9 +44,9 @@ const SplashScreen = () => (
   >
     {/* Geometric Memphis background accents */}
     <div className="absolute inset-0 memphis-pattern-dots opacity-20 pointer-events-none" />
-    <div className="absolute top-8 left-8 w-12 h-12 rounded-full border-2 border-black bg-[#00F0FF] shadow-[2px_2px_0px_#121212]" />
-    <div className="absolute bottom-10 right-10 w-10 h-10 border-2 border-black bg-[#FF4B91] rotate-12 shadow-[2px_2px_0px_#121212]" />
-    <div className="absolute top-16 right-12 w-8 h-8 rounded-lg border-2 border-black bg-[#10B981] shadow-[2px_2px_0px_#121212]" />
+    <div className="absolute top-8 left-8 w-12 h-12 rounded-full border-[1.5px] border-black bg-[#00F0FF] shadow-[2px_2px_0px_#121212]" />
+    <div className="absolute bottom-10 right-10 w-10 h-10 border-[1.5px] border-black bg-[#FF4B91] rotate-12 shadow-[2px_2px_0px_#121212]" />
+    <div className="absolute top-16 right-12 w-8 h-8 rounded-lg border-[1.5px] border-black bg-[#10B981] shadow-[2px_2px_0px_#121212]" />
 
     {/* Memphis bordered bouncing container with jumping animation */}
     <motion.div
@@ -81,12 +81,12 @@ const SplashScreen = () => (
       transition={{ duration: 0.7, delay: 0.3 }}
       className="mt-6 text-center"
     >
-      <div className="inline-block bg-[#121212] text-white px-4 py-1.5 rounded-xl border-2 border-[#121212] shadow-[3px_3px_0px_#10B981] mb-2">
-        <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider">
+      <div className="inline-block bg-[#121212] text-white px-4 py-1.5 rounded-xl border-[1.5px] border-[#121212] shadow-[3px_3px_0px_#10B981] mb-2">
+        <h1 className="text-xl sm:text-2xl font-bold">
           WaktuIbadah
         </h1>
       </div>
-      <p className="text-xs font-bold text-gray-700 uppercase tracking-widest">
+      <p className="text-xs font-bold text-gray-700">
         Pengingat Salat & Jadwal Terpadu
       </p>
     </motion.div>
@@ -263,7 +263,7 @@ export default function App() {
     document.addEventListener('visibilitychange', handleVisibilityWake);
     window.addEventListener('focus', handleVisibilityWake);
 
-    // Izin notifikasi TIDAK diminta di sini (butuh sentuhan pengguna). Lihat NotificationGatekeeperModal.
+    // Izin notifikasi TIDAK diminta di sini (butuh sentuhan pengguna). Lihat NotificationSetupModal.
 
     // Pesan dari Service Worker (push diterima saat aplikasi terbuka, dsb.)
     const onSwMessage = (ev: MessageEvent) => {
@@ -352,13 +352,13 @@ export default function App() {
 
           {/* Live In-App Azan Notification Banner (Functional even without PWA installed & Mobile Autoplay Policy Ready) */}
           {activeAzanAlert && (
-            <div className="fixed top-3 left-3 right-3 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md z-50 memphis-card p-3 sm:p-4 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 shadow-[4px_4px_0px_#121212] flex items-center justify-between gap-3 animate-bounce">
+            <div className="fixed top-3 left-3 right-3 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md z-50 memphis-card p-3 sm:p-4 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 shadow-[2px_2px_0px_#121212] flex items-center justify-between gap-3 animate-bounce">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-[#121212] text-[#6EE7B7] flex items-center justify-center font-black text-xl border-2 border-black shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-[#121212] text-[#6EE7B7] flex items-center justify-center font-bold text-xl border-[1.5px] border-black shrink-0">
                   🕌
                 </div>
                 <div className="min-w-0">
-                  <h4 className="text-xs sm:text-sm font-black uppercase text-[#121212] truncate">
+                  <h4 className="text-xs sm:text-sm font-bold text-[#121212] truncate">
                     Waktu Salat {activeAzanAlert.prayer} Tiba!
                   </h4>
                   <p className="text-[10px] sm:text-[11px] font-bold text-[#121212]/80 truncate">
@@ -371,7 +371,7 @@ export default function App() {
                   onClick={() => {
                     playPrayerAzan(activeAzanAlert.prayer);
                   }}
-                  className="memphis-btn bg-white hover:bg-emerald-50 text-black px-2.5 py-1 text-[10px] font-black uppercase tracking-wider"
+                  className="memphis-btn bg-white hover:bg-emerald-50 text-black px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider"
                   title="Bunyikan Suara Azan"
                 >
                   Bunyikan
@@ -381,7 +381,7 @@ export default function App() {
                     stopAlarmSound();
                     setActiveAzanAlert(null);
                   }}
-                  className="memphis-btn bg-black text-white hover:bg-gray-800 px-2 py-1 text-[10px] font-black uppercase tracking-wider"
+                  className="memphis-btn bg-black text-white hover:bg-gray-800 px-2 py-1 text-[10px] font-bold uppercase tracking-wider"
                 >
                   Hening
                 </button>
@@ -390,7 +390,7 @@ export default function App() {
           )}
 
           {/* Polite Battery-Efficient Background Sync Prompt Modal */}
-          <BackgroundSyncModal />
+          <NotificationSetupModal />
 
           {/* Ajakan memasang PWA (wajib di iPhone agar notifikasi bisa jalan) */}
           <InstallPwaBanner />

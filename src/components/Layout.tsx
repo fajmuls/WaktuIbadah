@@ -66,10 +66,10 @@ export const Layout = () => {
   return (
     <div className="min-h-screen bg-[#FFFDF8] text-[#121212] flex overflow-x-hidden w-full max-w-full">
       {/* Desktop Sidebar (Memphis Retro Style) */}
-      <aside className="hidden md:flex flex-col w-64 bg-white border-r-[3px] border-[#121212] p-5 fixed h-full z-10 shadow-[4px_0px_0px_#121212]">
+      <aside className="hidden md:flex flex-col w-64 bg-white border-r-[1.5px] border-[#121212] p-5 fixed h-full z-10 shadow-[4px_0px_0px_#121212]">
         {/* Brand Header with Official Icon */}
-        <div className="flex items-center gap-3 mb-6 p-2.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-2 border-[#121212] rounded-xl shadow-[3px_3px_0px_#121212]">
-          <div className="w-10 h-10 bg-white border-2 border-[#121212] rounded-xl flex items-center justify-center p-0.5 shadow-[2px_2px_0px_#121212] shrink-0 overflow-hidden">
+        <div className="flex items-center gap-3 mb-6 p-2.5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212]">
+          <div className="w-10 h-10 bg-white border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center p-0.5 shadow-[2px_2px_0px_#121212] shrink-0 overflow-hidden">
             <img 
               src="/icon-waktuibadah.png" 
               alt="Icon WaktuIbadah" 
@@ -80,8 +80,8 @@ export const Layout = () => {
             />
           </div>
           <div>
-            <h1 className="text-base font-black tracking-tight uppercase text-[#121212]">WaktuIbadah</h1>
-            <span className="text-[9px] font-black uppercase tracking-wider bg-[#121212] text-[#6EE7B7] px-1.5 py-0.5 rounded">
+            <h1 className="text-base font-bold tracking-tight text-[#121212]">WaktuIbadah</h1>
+            <span className="text-[9px] font-bold uppercase tracking-wider bg-[#121212] text-[#6EE7B7] px-1.5 py-0.5 rounded">
               Islamic Planner
             </span>
           </div>
@@ -96,9 +96,9 @@ export const Layout = () => {
               data-nav="true"
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-xs uppercase tracking-wider transition-all duration-100",
+                  "flex items-center gap-3 px-3 py-2 rounded-xl font-bold text-xs transition-all duration-100",
                   isActive 
-                    ? "bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-[#121212] border-2 border-[#121212] shadow-[3px_3px_0px_#121212] translate-x-1 font-black" 
+                    ? "bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-[#121212] border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] translate-x-1 font-bold" 
                     : "text-gray-700 hover:bg-emerald-500/10 hover:text-black hover:border-2 hover:border-[#121212]"
                 )
               }
@@ -113,7 +113,7 @@ export const Layout = () => {
         {location.pathname !== '/jadwal' && (
           <button 
             onClick={() => setQuickAddOpen(true)}
-            className="mt-3 memphis-btn memphis-btn-green py-2.5 w-full gap-2 text-xs uppercase tracking-wider"
+            className="mt-3 memphis-btn memphis-btn-green py-2.5 w-full gap-2 text-xs"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             Tambah Agenda
@@ -123,14 +123,14 @@ export const Layout = () => {
         {/* Cloud Sync Status Indicator */}
         <div 
           onClick={() => navigate('/settings')}
-          className="mt-3 p-2.5 bg-[#FFFDF8] border-2 border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-emerald-500/10 transition-all"
+          className="mt-3 p-2.5 bg-[#FFFDF8] border-[1.5px] border-[#121212] rounded-xl shadow-[2px_2px_0px_#121212] flex items-center justify-between text-xs cursor-pointer hover:bg-emerald-500/10 transition-all"
           title="Klik untuk membuka Pengaturan Sinkronisasi Multi-Device"
         >
           <div className="flex items-center gap-2 truncate">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse border border-black"></div>
             <span className="font-bold text-[#121212] truncate text-[11px]">{user?.name || 'Mahasiswa'}</span>
           </div>
-          <span className="text-[9px] bg-black text-white px-2 py-0.5 rounded font-black uppercase tracking-wider shrink-0">
+          <span className="text-[9px] bg-black text-white px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0">
             Cloud
           </span>
         </div>

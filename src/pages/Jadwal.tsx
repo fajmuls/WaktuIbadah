@@ -164,10 +164,11 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
           {!showForm && (
             <button 
               onClick={() => setShowForm(true)}
+              aria-label="Tambah jadwal"
               className="border-[1.5px] border-black bg-emerald-400 text-black px-3 py-1.5 text-xs font-bold rounded-lg shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
             >
               <Plus className="w-4 h-4 stroke-[2.5]" /> 
-              <span>Tambah Jadwal</span>
+              <span className="hidden sm:inline">Tambah Jadwal</span>
             </button>
           )}
         </div>
@@ -332,7 +333,7 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
 
           {/* Timeline in Memphis Card */}
           <div className="bg-white border-[1.5px] border-black rounded-xl p-3.5 sm:p-4 shadow-[2px_2px_0px_#121212] min-h-[280px]">
-            <h3 className="font-bold text-xs sm:text-sm uppercase tracking-tight mb-3 flex items-center gap-1.5 border-b border-black pb-2">
+            <h3 className="font-bold text-xs sm:text-sm tracking-tight mb-3 flex items-center gap-1.5 border-b border-black pb-2">
               <CalendarIcon className="w-3.5 h-3.5 stroke-[2.5]" />
               {format(new Date(selectedDate), 'EEEE, d MMMM yyyy', { locale: id })}
             </h3>

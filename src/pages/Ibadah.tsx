@@ -163,6 +163,7 @@ export default function Ibadah() {
             onClick={() => setIsDoaModalOpen(true)}
             className="px-2.5 py-1.5 bg-emerald-400 text-black border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1px_1px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
             title="Buka Wirid & Doa Setelah Salat"
+            aria-label="Doa setelah salat"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span className="hidden sm:inline">Doa Salat</span>
@@ -171,7 +172,7 @@ export default function Ibadah() {
             type="date"
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="border-[1.5px] border-black rounded-lg px-2 py-1 text-xs font-bold bg-white"
+            className="border-[1.5px] border-black rounded-lg px-1.5 py-1 text-xs font-bold bg-white w-[8.5rem] max-w-[40vw]"
           />
         </div>
       </div>
@@ -273,7 +274,7 @@ export default function Ibadah() {
                   </div>
                   
                   <div className="min-w-0">
-                    <h4 className="text-xs font-bold uppercase tracking-tight text-black truncate">
+                    <h4 className="text-xs font-bold tracking-tight text-black truncate">
                       {prayer}
                     </h4>
                     <span className="text-[12px] text-gray-600 font-medium">
@@ -300,7 +301,7 @@ export default function Ibadah() {
         <div className="flex items-center justify-between border-b border-black pb-2">
           <div className="flex items-center gap-2 min-w-0">
             <Sparkles className="w-4 h-4 text-emerald-700 shrink-0" />
-            <h3 className="text-xs sm:text-sm font-bold uppercase tracking-tight text-black truncate">
+            <h3 className="text-xs sm:text-sm font-bold tracking-tight text-black truncate">
               Salat Sunnah Pilihan
             </h3>
           </div>
@@ -337,7 +338,7 @@ export default function Ibadah() {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
                       <Icon className="w-3.5 h-3.5 text-black shrink-0" />
-                      <h4 className="text-xs font-bold uppercase tracking-tight text-black truncate">
+                      <h4 className="text-xs font-bold tracking-tight text-black truncate">
                         {sunnah.name}
                       </h4>
                       <span className="bg-[#00F0FF] text-black text-[9px] font-bold px-1.5 py-0.2 rounded border border-black shrink-0">
@@ -365,14 +366,14 @@ export default function Ibadah() {
       </div>
 
       {/* Tilawah Al-Qur'an Tracker (Memphis Card) */}
-      <div className="memphis-card p-3 sm:p-4 space-y-2.5 shadow-[3px_3px_0px_#121212]">
+      <div className="memphis-card p-3 sm:p-4 space-y-2.5 shadow-[2px_2px_0px_#121212]">
         <div className="flex items-center justify-between border-b-2 border-black pb-2">
           <div className="flex items-center gap-2">
             <div className="w-8 h-8 rounded-lg bg-black text-[#6EE7B7] border border-black flex items-center justify-center font-bold">
               <BookOpen className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-xs sm:text-sm font-black uppercase tracking-tight text-black">
+              <h3 className="text-xs sm:text-sm font-bold tracking-tight text-black">
                 Tilawah Al-Qur'an
               </h3>
               <p className="text-[10px] sm:text-[11px] font-bold text-gray-500">
@@ -397,7 +398,7 @@ export default function Ibadah() {
             </p>
             <button
               onClick={() => setIsLogModalOpen(true)}
-              className="text-xs font-black text-emerald-700 hover:underline"
+              className="text-xs font-bold text-emerald-700 hover:underline"
             >
               + Catat Ayat yang Telah Dibaca
             </button>
@@ -407,11 +408,11 @@ export default function Ibadah() {
             {quranLogs.map((q) => (
               <div
                 key={q.id}
-                className="p-2.5 bg-[#FFFDF8] rounded-xl border-2 border-black flex items-center justify-between shadow-[1.5px_1.5px_0px_#121212]"
+                className="p-2.5 bg-[#FFFDF8] rounded-xl border-[1.5px] border-black flex items-center justify-between shadow-[1.5px_1.5px_0px_#121212]"
               >
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className="font-black text-xs text-black">
+                    <span className="font-bold text-xs text-black">
                       Surah {q.surahName}
                     </span>
                     <span className="memphis-badge bg-gradient-to-r from-emerald-400 to-teal-400 text-black text-[8px]">
@@ -426,7 +427,7 @@ export default function Ibadah() {
                 </div>
 
                 <div className="text-right shrink-0 ml-3">
-                  <span className="text-xs font-black text-emerald-700">
+                  <span className="text-xs font-bold text-emerald-700">
                     +{q.totalAyahs} Ayat
                   </span>
                   <button
@@ -434,7 +435,7 @@ export default function Ibadah() {
                       storage.deleteQuranLog(q.id);
                       setQuranLogs(storage.getQuranLogsByDate(selectedDate));
                     }}
-                    className="block text-[10px] font-black text-red-500 hover:underline mt-0.5"
+                    className="block text-[10px] font-bold text-red-500 hover:underline mt-0.5"
                   >
                     Hapus
                   </button>

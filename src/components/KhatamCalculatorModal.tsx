@@ -324,7 +324,7 @@ export function KhatamCalculatorModal({ isOpen, onClose, onOpenLogModal }: Khata
 
             {/* Daily Requirement Card */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-2xl border border-gray-200 dark:border-gray-700 space-y-3">
-              <h5 className="text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+              <h5 className="text-xs font-bold text-gray-700 dark:text-gray-300">
                 Target Harian yang Diperlukan Mulai Hari Ini:
               </h5>
 

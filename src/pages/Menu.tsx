@@ -23,13 +23,13 @@ export default function Menu() {
     <div className="space-y-3.5 sm:space-y-4 animate-in fade-in duration-300 max-w-2xl mx-auto pb-20 w-full max-w-full overflow-x-hidden">
       
       {/* Profile Header (Memphis Green Gradient Card) */}
-      <div className="p-3.5 sm:p-5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-2 border-black rounded-2xl shadow-[3px_3px_0px_#121212] flex items-center justify-between gap-2.5">
+      <div className="p-3.5 sm:p-5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-[1.5px] border-black rounded-2xl shadow-[2px_2px_0px_#121212] flex items-center justify-between gap-2.5">
         <div className="flex items-center gap-3 min-w-0">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-[#6EE7B7] rounded-xl border-2 border-black flex items-center justify-center font-black text-lg sm:text-xl shadow-[2px_2px_0px_#121212] shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-black text-[#6EE7B7] rounded-xl border-[1.5px] border-black flex items-center justify-center font-bold text-lg sm:text-xl shadow-[2px_2px_0px_#121212] shrink-0">
             {user?.name?.charAt(0).toUpperCase() || 'M'}
           </div>
           <div className="min-w-0">
-            <h1 className="text-base sm:text-lg font-black uppercase tracking-tight text-black truncate">
+            <h1 className="text-base sm:text-lg font-bold tracking-tight text-black truncate">
               {user?.name || 'Mahasiswa Muslim'}
             </h1>
             <p className="text-[10px] sm:text-xs font-bold text-black/80 truncate">
@@ -40,7 +40,7 @@ export default function Menu() {
 
         <Link
           to="/settings"
-          className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-black uppercase tracking-wider shrink-0"
+          className="memphis-btn memphis-btn-white px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider shrink-0"
         >
           Pengaturan
         </Link>
@@ -58,7 +58,7 @@ export default function Menu() {
               <item.icon className="w-4 h-4 sm:w-5 sm:h-5 stroke-[2.5]" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight text-black truncate">{item.label}</h3>
+              <h3 className="font-bold text-xs sm:text-sm tracking-tight text-black truncate">{item.label}</h3>
               <p className="text-[10px] sm:text-xs font-semibold text-gray-500 truncate">{item.desc}</p>
             </div>
             <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg border border-black flex items-center justify-center bg-gradient-to-br from-emerald-400 to-teal-400 text-black shadow-[1.5px_1.5px_0px_#121212] shrink-0 ml-2">

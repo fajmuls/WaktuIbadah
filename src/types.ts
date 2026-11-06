@@ -256,6 +256,29 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.6.0',
+    releaseDate: '6 November 2026',
+    title: 'Notifikasi Push Server untuk Semua Pengguna, Pengaturan 5 Tab, & Pembaca Al-Qur\'an Ringkas',
+    highlights: [
+      'Notifikasi Web Push dari server: azan, pengingat salat, jadwal kuliah, dan tenggat tugas muncul walau aplikasi ditutup.',
+      'Setiap kali aplikasi dibuka dan notifikasi belum aktif, pengguna diajak mengaktifkan dengan satu ketukan, lalu memilih Suara + getar, Getar saja, atau Senyap.',
+      'Pengaturan dirapikan menjadi 5 tab: Akun, Notifikasi, Ibadah, Tampilan, dan Data.',
+      'Header daftar Al-Qur\'an dan pembaca dibuat ringkas: tab 4 kolom sama lebar, menu Aa untuk mode baca, ukuran huruf, layar penuh, offline, dan tilawah.',
+      'Teks Latin dan terjemahan hanya diatur di Pengaturan (tidak ada tombol di halaman baca).'
+    ],
+    soundPackUpdates: [
+      'Pilihan cara notifikasi berbunyi: Suara + getar, Getar saja, atau Senyap'
+    ],
+    uiOverhaul: [
+      'Border, bayangan, dan huruf tebal diseragamkan lebih tipis dan ringkas di seluruh aplikasi',
+      'Perbaikan bayangan kartu yang terpotong di sisi kanan sehingga tata letak seimbang kiri-kanan'
+    ],
+    recommendations: [
+      'Saran: amankan profil dan PIN dengan Firebase Auth atau API server',
+      'Saran: tambahkan widget waktu salat berikutnya'
+    ]
+  },
+  {
     version: '2.5.0',
     releaseDate: '5 November 2026',
     title: 'Perombakan UI Al-Qur\'an Minimalis Clean, Justify Alignment Mushaf, Perbaikan Bug Un-Favorite Ayat, & Dokumentasi Vercel Deployment',

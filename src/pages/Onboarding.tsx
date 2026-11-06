@@ -151,7 +151,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         {step === 1 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
                 Nama Mahasiswa
               </label>
               <div className="relative">
@@ -190,7 +190,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             {/* 4-Digit PIN Security Input */}
             <div>
               <div className="flex items-center justify-between mb-1.5">
-                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
                   PIN Keamanan 4 Digit {cloudProfile?.hasPin ? '(Wajib)' : '(Opsional)'}
                 </label>
                 <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-semibold flex items-center gap-1">
@@ -231,7 +231,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         {step === 2 && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">
                 Target Utama Penggunaan Aplikasi
               </label>
               <textarea 

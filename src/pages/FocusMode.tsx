@@ -79,12 +79,12 @@ export default function FocusMode() {
     <div className="space-y-6 animate-in fade-in duration-300 max-w-md mx-auto pb-20">
       
       {/* Header */}
-      <div className="p-4 bg-[#00F0FF] border-[2.5px] border-black rounded-2xl shadow-[4px_4px_0px_#121212] text-center">
-        <h1 className="text-xl font-black uppercase tracking-tight text-black">Focus Pomodoro</h1>
+      <div className="p-4 bg-[#00F0FF] border-[1.5px] border-black rounded-2xl shadow-[2px_2px_0px_#121212] text-center">
+        <h1 className="text-xl font-bold tracking-tight text-black">Focus Pomodoro</h1>
         <p className="text-xs font-bold text-black/80 mt-0.5">Jauhkan distraksi, seimbangkan waktu ibadah & produktivitas</p>
       </div>
 
-      <div className="memphis-card p-6 flex flex-col items-center justify-center space-y-5">
+      <div className="memphis-card p-4 flex flex-col items-center justify-center space-y-5">
         
         {/* Circular Progress (Memphis Styling) */}
         <div className="relative w-56 h-56 flex items-center justify-center">
@@ -102,10 +102,10 @@ export default function FocusMode() {
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <span className="text-4xl font-black text-[#121212] font-mono tracking-tight">
+            <span className="text-4xl font-bold text-[#121212] font-mono tracking-tight">
               {formatTime(timeLeft)}
             </span>
-            <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 mt-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 mt-1">
               {isActive ? 'Sedang Fokus' : 'Siap Mulai'}
             </span>
           </div>
@@ -114,7 +114,7 @@ export default function FocusMode() {
         {/* Task Selection */}
         {tasks.length > 0 && (
           <div className="w-full">
-            <label className="block text-xs font-black uppercase tracking-wider mb-1">
+            <label className="block text-xs font-bold mb-1">
               Fokus Mengerjakan Tugas:
             </label>
             <select 
@@ -136,7 +136,7 @@ export default function FocusMode() {
             <button
               key={mins}
               onClick={() => setPreset(mins)}
-              className={`memphis-btn px-3 py-1 text-xs font-black uppercase ${
+              className={`memphis-btn px-3 py-1 text-xs font-bold ${
                 duration === mins * 60 ? 'memphis-btn-yellow' : 'memphis-btn-white'
               }`}
             >
@@ -149,7 +149,7 @@ export default function FocusMode() {
         <div className="flex items-center gap-3 w-full pt-2">
           <button
             onClick={toggleTimer}
-            className={`memphis-btn flex-1 py-3 text-xs font-black uppercase tracking-wider gap-2 ${
+            className={`memphis-btn flex-1 py-3 text-xs font-bold gap-2 ${
               isActive ? 'memphis-btn-pink' : 'memphis-btn-primary'
             }`}
           >
@@ -172,7 +172,7 @@ export default function FocusMode() {
             const playing = toggleAmbientLoop(0.4);
             setAmbientActive(playing);
           }}
-          className={`memphis-btn w-full py-2.5 text-xs font-black uppercase tracking-wider gap-2 ${
+          className={`memphis-btn w-full py-2.5 text-xs font-bold gap-2 ${
             ambientActive ? 'memphis-btn-yellow' : 'memphis-btn-white'
           }`}
         >

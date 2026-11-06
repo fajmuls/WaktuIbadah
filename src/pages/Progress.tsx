@@ -133,9 +133,9 @@ export default function Progress() {
   return (
     <div className="space-y-4 pb-20 animate-in fade-in duration-300">
       {/* Memphis Page Header */}
-      <div className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <div className="p-3.5 sm:p-4 bg-white border-[1.5px] border-[#121212] rounded-2xl shadow-[2px_2px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
-          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#121212]">
             Evaluasi & Progres Ibadah
           </h1>
           <p className="text-gray-600 text-xs font-bold mt-0.5">
@@ -145,10 +145,10 @@ export default function Progress() {
 
         {/* View Filter Pill and Export Button */}
         <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 self-start sm:self-auto">
-          <div className="flex p-1 rounded-xl border-2 border-black bg-white shadow-[2px_2px_0px_#121212] overflow-x-auto max-w-full">
+          <div className="flex p-1 rounded-xl border-[1.5px] border-black bg-white shadow-[2px_2px_0px_#121212] overflow-x-auto max-w-full">
             <button
               onClick={() => setFilterMode('kalender')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all flex items-center gap-1 whitespace-nowrap ${
                 filterMode === 'kalender'
                   ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
                   : 'text-gray-600 hover:text-black'
@@ -159,7 +159,7 @@ export default function Progress() {
             </button>
             <button
               onClick={() => setFilterMode('mingguan')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 filterMode === 'mingguan'
                   ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
                   : 'text-gray-600 hover:text-black'
@@ -169,7 +169,7 @@ export default function Progress() {
             </button>
             <button
               onClick={() => setFilterMode('bulanan')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 filterMode === 'bulanan'
                   ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
                   : 'text-gray-600 hover:text-black'
@@ -179,7 +179,7 @@ export default function Progress() {
             </button>
             <button
               onClick={() => setFilterMode('harian')}
-              className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
+              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all whitespace-nowrap ${
                 filterMode === 'harian'
                   ? 'bg-gradient-to-r from-emerald-400 to-teal-400 text-black shadow-xs'
                   : 'text-gray-600 hover:text-black'
@@ -192,7 +192,7 @@ export default function Progress() {
           {/* Export PAI Button */}
           <button
             onClick={() => setIsExportModalOpen(true)}
-            className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5 shrink-0"
+            className="memphis-btn memphis-btn-green px-3 py-1.5 text-xs font-bold gap-1.5 shrink-0"
             title="Ekspor rekap salat & tilawah untuk tugas mata kuliah PAI"
           >
             <Printer className="w-3.5 h-3.5" />
@@ -209,14 +209,14 @@ export default function Progress() {
         const totalAyatRead = relevantLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
         const pct = Math.min(100, Math.round((totalAyatRead / 6236) * 100));
         return (
-          <div className="memphis-card p-3 sm:p-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 flex items-center justify-between gap-3 shadow-[3px_3px_0px_#121212]">
+          <div className="memphis-card p-3 sm:p-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 flex items-center justify-between gap-3 shadow-[2px_2px_0px_#121212]">
             <div className="flex items-center gap-2.5">
               <div className="w-8 h-8 rounded-xl bg-black text-[#6EE7B7] border border-black flex items-center justify-center shrink-0">
                 <BookOpen className="w-4 h-4 stroke-[2.5]" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xs font-black text-black uppercase tracking-tight">
+                  <span className="text-xs font-bold text-black tracking-tight">
                     {khatam.title}
                   </span>
                   <span className="memphis-badge bg-black text-white text-[9px]">
@@ -239,7 +239,7 @@ export default function Progress() {
             <Heart className="w-4 h-4 stroke-[2.5]" />
           </div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Konsistensi Salat</p>
-          <p className="text-base sm:text-lg font-black text-black mt-0.5">{stats.consistency}%</p>
+          <p className="text-base sm:text-lg font-bold text-black mt-0.5">{stats.consistency}%</p>
         </div>
 
         <div className="memphis-card p-3 sm:p-3.5">
@@ -247,7 +247,7 @@ export default function Progress() {
             <BookOpen className="w-4 h-4 stroke-[2.5]" />
           </div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tilawah Al-Qur'an</p>
-          <p className="text-base sm:text-lg font-black text-black mt-0.5">
+          <p className="text-base sm:text-lg font-bold text-black mt-0.5">
             {stats.totalAyat} <span className="text-xs font-bold text-gray-400">Ayat</span>
           </p>
         </div>
@@ -257,7 +257,7 @@ export default function Progress() {
             <CheckCircle2 className="w-4 h-4 stroke-[2.5]" />
           </div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Tugas Selesai</p>
-          <p className="text-base sm:text-lg font-black text-black mt-0.5">
+          <p className="text-base sm:text-lg font-bold text-black mt-0.5">
             {stats.completedTasks} <span className="text-xs font-bold text-gray-400">/ {stats.totalTasks}</span>
           </p>
         </div>
@@ -267,7 +267,7 @@ export default function Progress() {
             <Clock className="w-4 h-4 stroke-[2.5]" />
           </div>
           <p className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Sesi Fokus</p>
-          <p className="text-base sm:text-lg font-black text-black mt-0.5">{stats.focusSessions} <span className="text-xs font-bold text-gray-400">kali</span></p>
+          <p className="text-base sm:text-lg font-bold text-black mt-0.5">{stats.focusSessions} <span className="text-xs font-bold text-gray-400">kali</span></p>
         </div>
       </div>
 
@@ -279,7 +279,7 @@ export default function Progress() {
               <Sparkles className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight text-black">
+              <h3 className="font-bold text-xs sm:text-sm tracking-tight text-black">
                 Tren Penyelesaian Ibadah 7 Hari Terakhir
               </h3>
               <p className="text-[11px] font-bold text-gray-500">
@@ -428,7 +428,7 @@ export default function Progress() {
                 </button>
                 <button
                   onClick={() => setCurrentCalendarMonth(addMonths(currentCalendarMonth, 1))}
-                  className="w-8 h-8 rounded-lg border-2 border-black bg-white flex items-center justify-center shadow-[1.5px_1.5px_0px_#121212] hover:bg-gray-100"
+                  className="w-8 h-8 rounded-lg border-[1.5px] border-black bg-white flex items-center justify-center shadow-[1.5px_1.5px_0px_#121212] hover:bg-gray-100"
                 >
                   <ChevronRight className="w-4 h-4 text-black stroke-[3]" />
                 </button>
@@ -438,7 +438,7 @@ export default function Progress() {
             {/* Weekdays Label */}
             <div className="grid grid-cols-7 gap-1 text-center mb-1">
               {['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Ahad'].map((day) => (
-                <div key={day} className="text-[10px] sm:text-[11px] font-black uppercase text-gray-500 py-1">
+                <div key={day} className="text-[10px] sm:text-[11px] font-bold uppercase text-gray-500 py-1">
                   {day}
                 </div>
               ))}
@@ -462,16 +462,16 @@ export default function Progress() {
                   <button
                     key={dateStr}
                     onClick={() => setSelectedCalendarDate(dateStr)}
-                    className={`min-h-[52px] sm:min-h-[64px] p-1 rounded-xl text-left border-2 border-black flex flex-col justify-between transition-all relative ${
+                    className={`min-h-[52px] sm:min-h-[64px] p-1 rounded-xl text-left border-[1.5px] border-black flex flex-col justify-between transition-all relative ${
                       isSelected
-                        ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-black shadow-[3px_3px_0px_#121212] -translate-y-0.5'
+                        ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-bold shadow-[2px_2px_0px_#121212] -translate-y-0.5'
                         : isCurrentMonth
                           ? 'bg-white shadow-[1.5px_1.5px_0px_#121212] hover:bg-gray-50'
                           : 'bg-gray-100 opacity-40 shadow-none'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className={`text-[11px] sm:text-xs font-black ${
+                      <span className={`text-[11px] sm:text-xs font-bold ${
                         dayToday 
                           ? 'w-4 h-4 sm:w-5 sm:h-5 rounded-md bg-black text-white flex items-center justify-center text-[10px]' 
                           : 'text-black'
@@ -481,7 +481,7 @@ export default function Progress() {
 
                       {/* Prayer Badge indicator */}
                       {prayersDone > 0 && (
-                        <span className={`text-[8px] sm:text-[9px] font-black px-1 rounded border border-black ${
+                        <span className={`text-[8px] sm:text-[9px] font-bold px-1 rounded border border-black ${
                           prayersDone === 5 
                             ? 'bg-[#10B981] text-white' 
                             : 'bg-[#00F0FF] text-black'
@@ -494,7 +494,7 @@ export default function Progress() {
                     {/* Quran Badge indicator if any */}
                     <div className="mt-0.5">
                       {ayahsRead > 0 && (
-                        <div className="flex items-center gap-0.5 text-[8px] sm:text-[9px] font-black text-black bg-[#6EE7B7] border border-black px-1 py-0.2 rounded truncate">
+                        <div className="flex items-center gap-0.5 text-[8px] sm:text-[9px] font-bold text-black bg-[#6EE7B7] border border-black px-1 py-0.2 rounded truncate">
                           <BookOpen className="w-2.5 h-2.5 shrink-0" />
                           <span>{ayahsRead} ay</span>
                         </div>
@@ -510,10 +510,10 @@ export default function Progress() {
           <div className="memphis-card p-3.5 sm:p-5 space-y-3.5">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b-2 border-black pb-2.5">
               <div>
-                <span className="text-[10px] font-black text-emerald-700 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">
                   Rincian Tanggal Terpilih
                 </span>
-                <h3 className="text-xs sm:text-sm font-black uppercase text-black">
+                <h3 className="text-xs sm:text-sm font-bold text-black">
                   {format(new Date(selectedCalendarDate), 'EEEE, d MMMM yyyy', { locale: id })}
                 </h3>
               </div>
@@ -530,7 +530,7 @@ export default function Progress() {
 
             {/* 1. Status 5 Waktu Salat */}
             <div>
-              <h4 className="text-[10px] font-black text-gray-500 uppercase tracking-wider mb-2">
+              <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
                 Status Salat 5 Waktu
               </h4>
               <div className="grid grid-cols-5 gap-1.5 sm:gap-2 text-center">
@@ -539,7 +539,7 @@ export default function Progress() {
                   return (
                     <div
                       key={p}
-                      className={`p-2 rounded-xl border-2 border-black transition-all ${
+                      className={`p-2 rounded-xl border-[1.5px] border-black transition-all ${
                         done
                           ? 'bg-[#10B981] text-white shadow-[2px_2px_0px_#121212]'
                           : 'bg-[#FFFDF8] text-gray-500 shadow-[1.5px_1.5px_0px_#121212]'
@@ -550,7 +550,7 @@ export default function Progress() {
                       }`}>
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                       </div>
-                      <span className="text-[11px] font-black block">{p}</span>
+                      <span className="text-[11px] font-bold block">{p}</span>
                       <span className="text-[9px] font-bold">{done ? 'Selesai' : 'Belum'}</span>
                     </div>
                   );
@@ -560,7 +560,7 @@ export default function Progress() {
 
             {/* 2. Rincian Bacaan Al-Qur'an */}
             <div>
-              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+              <h4 className="text-xs font-bold text-gray-400 mb-2">
                 Rincian Tilawah Al-Qur'an
               </h4>
 

@@ -51,14 +51,14 @@ export const InstallPwaBanner: React.FC = () => {
     <div
       role="dialog"
       aria-label="Pasang aplikasi WaktuIbadah"
-      className="fixed bottom-24 left-3 right-3 sm:left-auto sm:right-5 sm:max-w-sm z-40 memphis-card bg-white p-3.5 shadow-[4px_4px_0px_#121212] space-y-2.5"
+      className="fixed bottom-24 left-3 right-3 sm:left-auto sm:right-5 sm:max-w-sm z-40 memphis-card bg-white p-3.5 shadow-[2px_2px_0px_#121212] space-y-2.5"
     >
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 shrink-0 rounded-xl bg-emerald-400 border-2 border-black flex items-center justify-center">
+        <div className="w-10 h-10 shrink-0 rounded-xl bg-emerald-400 border-[1.5px] border-black flex items-center justify-center">
           <BellRing className="w-5 h-5 text-black" />
         </div>
         <div className="min-w-0 flex-1">
-          <h3 className="text-xs font-black uppercase tracking-wide text-[#121212]">Pasang agar azan & pengingat sampai</h3>
+          <h3 className="text-xs font-bold text-[#121212]">Pasang agar azan & pengingat sampai</h3>
           <p className="text-[11px] font-bold text-gray-700 leading-snug mt-0.5">
             Dengan aplikasi terpasang, notifikasi salat muncul tepat waktu walau aplikasi ditutup.
           </p>
@@ -71,7 +71,7 @@ export const InstallPwaBanner: React.FC = () => {
       {canPrompt ? (
         <button
           onClick={handleInstall}
-          className="memphis-btn memphis-btn-green w-full py-2.5 text-xs font-black uppercase tracking-wider gap-2"
+          className="memphis-btn memphis-btn-green w-full py-2.5 text-xs font-bold gap-2"
         >
           <Download className="w-4 h-4" />
           <span>Pasang Aplikasi</span>
@@ -92,7 +92,7 @@ export const InstallPwaBanner: React.FC = () => {
         </p>
       )}
 
-      <button onClick={handleLater} className="w-full text-[10px] font-black uppercase tracking-wider text-gray-500 hover:text-black py-1">
+      <button onClick={handleLater} className="w-full text-[10px] font-bold uppercase tracking-wider text-gray-500 hover:text-black py-1">
         Nanti saja
       </button>
     </div>

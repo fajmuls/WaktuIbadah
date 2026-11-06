@@ -79,12 +79,12 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
           animate={{ scale: 1, opacity: 1, y: 0 }}
           exit={{ scale: 0.95, opacity: 0 }}
           transition={{ type: "spring", damping: 25, stiffness: 350 }}
-          className="w-full max-w-2xl bg-[#FFFDF8] border-[3px] border-[#121212] rounded-2xl sm:rounded-3xl shadow-[5px_5px_0px_#121212] overflow-hidden flex flex-col max-h-[92vh]"
+          className="w-full max-w-2xl bg-[#FFFDF8] border-[1.5px] border-[#121212] rounded-2xl sm:rounded-3xl shadow-[2px_2px_0px_#121212] overflow-hidden flex flex-col max-h-[92vh]"
         >
           {/* Header Banner */}
-          <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-b-[2.5px] border-[#121212] flex items-center justify-between text-[#121212] relative overflow-hidden">
+          <div className="p-4 sm:p-5 bg-gradient-to-r from-emerald-500 via-teal-400 to-green-500 border-b-[1.5px] border-[#121212] flex items-center justify-between text-[#121212] relative overflow-hidden">
             <div className="flex items-center gap-3 z-10">
-              <div className="w-11 h-11 bg-white border-2 border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] shrink-0">
+              <div className="w-11 h-11 bg-white border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] shrink-0">
                 <Sparkles className="w-6 h-6 text-emerald-700" />
               </div>
               <div>
@@ -92,11 +92,11 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
                   <span className="memphis-badge bg-black text-[#6EE7B7] text-[9px] px-2 py-0.5">
                     Alhamdulillah
                   </span>
-                  <span className="text-[10px] font-black uppercase tracking-wider text-[#121212]/80">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-[#121212]/80">
                     5 Waktu Selesai
                   </span>
                 </div>
-                <h2 className="text-base sm:text-lg font-black uppercase tracking-tight text-[#121212] mt-0.5">
+                <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#121212] mt-0.5">
                   Wirid & Doa Setelah Salat
                 </h2>
               </div>
@@ -104,7 +104,7 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
 
             <button
               onClick={onClose}
-              className="w-9 h-9 bg-white border-2 border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] hover:bg-gray-100 font-black text-sm z-10 shrink-0"
+              className="w-9 h-9 bg-white border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] hover:bg-gray-100 font-bold text-sm z-10 shrink-0"
               aria-label="Tutup modal"
             >
               <X className="w-4 h-4" />
@@ -119,7 +119,7 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={handleCopyAll}
-                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[10px] font-black uppercase tracking-wider gap-1.5"
+                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider gap-1.5"
               >
                 {copiedId === 'all' ? (
                   <>
@@ -154,11 +154,11 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
                   {/* Top Bar item */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="w-6 h-6 rounded-lg bg-black text-white text-[11px] font-black flex items-center justify-center shrink-0">
+                      <span className="w-6 h-6 rounded-lg bg-black text-white text-[11px] font-bold flex items-center justify-center shrink-0">
                         {index + 1}
                       </span>
                       <div>
-                        <h3 className="font-black text-xs sm:text-sm text-[#121212]">
+                        <h3 className="font-bold text-xs sm:text-sm text-[#121212]">
                           {item.title}
                         </h3>
                         {item.subTitle && (
@@ -216,7 +216,7 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
                   {hasTarget && (
                     <div className="mt-3 pt-2.5 border-t border-black/10 flex items-center justify-between flex-wrap gap-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-black uppercase text-gray-600">
+                        <span className="text-[11px] font-bold uppercase text-gray-600">
                           Target: {item.targetCount}x
                         </span>
                         {isTargetReached && (
@@ -235,7 +235,7 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
                         </button>
                         <button
                           onClick={() => handleIncrementCount(item.id, item.targetCount)}
-                          className={`memphis-btn px-4 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5 ${
+                          className={`memphis-btn px-4 py-1.5 text-xs font-bold gap-1.5 ${
                             isTargetReached 
                               ? 'bg-emerald-600 text-white' 
                               : 'memphis-btn-green text-white'
@@ -252,20 +252,20 @@ export const DoaSetelahSalatModal: React.FC<DoaSetelahSalatModalProps> = ({
           </div>
 
           {/* Footer Bar with Persistent Toggle Option */}
-          <div className="p-3.5 sm:p-4 bg-white border-t-[2.5px] border-[#121212] flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="p-3.5 sm:p-4 bg-white border-t-[1.5px] border-[#121212] flex flex-col sm:flex-row items-center justify-between gap-3">
             <label className="flex items-center gap-2.5 cursor-pointer text-xs font-bold text-gray-800 select-none">
               <input
                 type="checkbox"
                 checked={autoShow}
                 onChange={handleToggleAutoShow}
-                className="w-4 h-4 accent-emerald-600 rounded border-2 border-black"
+                className="w-4 h-4 accent-emerald-600 rounded border-[1.5px] border-black"
               />
               <span>Tampilkan otomatis modal ini saat 5 salat selesai</span>
             </label>
 
             <button
               onClick={onClose}
-              className="memphis-btn memphis-btn-green w-full sm:w-auto px-6 py-2 text-xs font-black uppercase tracking-wider"
+              className="memphis-btn memphis-btn-green w-full sm:w-auto px-6 py-2 text-xs font-bold"
             >
               Tutup & Lanjutkan
             </button>

@@ -240,7 +240,7 @@ export default function AdminDashboard() {
       <div className="flex items-center justify-between print:hidden flex-wrap gap-2">
         <button
           onClick={() => navigate('/')}
-          className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs uppercase tracking-wider gap-1.5"
+          className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs gap-1.5"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Kembali</span>
@@ -249,7 +249,7 @@ export default function AdminDashboard() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => setShowPatchNotesModal(true)}
-            className="memphis-btn memphis-btn-yellow px-3 py-1.5 text-xs uppercase tracking-wider gap-1.5"
+            className="memphis-btn memphis-btn-yellow px-3 py-1.5 text-xs gap-1.5"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>Versi v{CURRENT_VERSION}</span>
@@ -259,14 +259,14 @@ export default function AdminDashboard() {
             <>
               <button
                 onClick={handlePrintReport}
-                className="memphis-btn memphis-btn-cyan px-3.5 py-1.5 text-xs uppercase tracking-wider gap-1.5"
+                className="memphis-btn memphis-btn-cyan px-3.5 py-1.5 text-xs gap-1.5"
               >
                 <Printer className="w-4 h-4" />
                 <span>Cetak Laporan</span>
               </button>
               <button
                 onClick={handleLogout}
-                className="memphis-btn bg-[#FF4B91] text-white hover:bg-[#FF4B91]/90 px-3 py-1.5 text-xs uppercase tracking-wider gap-1.5"
+                className="memphis-btn bg-[#FF4B91] text-white hover:bg-[#FF4B91]/90 px-3 py-1.5 text-xs gap-1.5"
               >
                 <LogOut className="w-3.5 h-3.5" />
                 <span>Kunci</span>
@@ -279,7 +279,7 @@ export default function AdminDashboard() {
       {/* ==================== LOGIN SCREEN ==================== */}
       {!isAuthenticated ? (
         <div className="memphis-card bg-white p-8 sm:p-12 text-center max-w-md mx-auto space-y-6">
-          <div className="w-16 h-16 rounded-2xl bg-[#FFE600] border-[2.5px] border-[#121212] shadow-[3px_3px_0px_#121212] text-[#121212] flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-2xl bg-[#FFE600] border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] text-[#121212] flex items-center justify-center mx-auto">
             <Lock className="w-8 h-8 stroke-[2.5]" />
           </div>
 
@@ -287,7 +287,7 @@ export default function AdminDashboard() {
             <span className="memphis-badge bg-black text-[#FFE600] mb-2">
               Panel Verifikasi Admin
             </span>
-            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#121212]">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#121212]">
               Admin Dashboard
             </h1>
             <p className="text-xs font-bold text-gray-500 mt-1">
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
 
           <form onSubmit={handleLogin} className="space-y-4 text-left">
             <div>
-              <label className="block text-xs font-black uppercase tracking-wider mb-1.5">
+              <label className="block text-xs font-bold mb-1.5">
                 Token Admin
               </label>
               <div className="relative">
@@ -315,7 +315,7 @@ export default function AdminDashboard() {
             </div>
 
             {authError && (
-              <div className="p-3 bg-[#FF4B91] text-white border-2 border-[#121212] rounded-xl text-xs font-bold flex items-center gap-2">
+              <div className="p-3 bg-[#FF4B91] text-white border-[1.5px] border-[#121212] rounded-xl text-xs font-bold flex items-center gap-2">
                 <AlertCircle className="w-4 h-4 shrink-0" />
                 <span>{authError}</span>
               </div>
@@ -323,7 +323,7 @@ export default function AdminDashboard() {
 
             <button
               type="submit"
-              className="memphis-btn memphis-btn-primary w-full py-3 text-xs font-black uppercase tracking-wider"
+              className="memphis-btn memphis-btn-primary w-full py-3 text-xs font-bold"
             >
               Buka Admin Dashboard
             </button>
@@ -334,7 +334,7 @@ export default function AdminDashboard() {
         <div className="space-y-6">
           
           {/* Admin Hero Banner (Memphis Style) */}
-          <div className="p-6 bg-[#FFE600] border-[2.5px] border-[#121212] rounded-2xl shadow-[4px_4px_0px_#121212] space-y-2">
+          <div className="p-6 bg-[#FFE600] border-[1.5px] border-[#121212] rounded-2xl shadow-[2px_2px_0px_#121212] space-y-2">
             <div className="flex flex-wrap items-center gap-2">
               <span className="memphis-badge bg-black text-[#FFE600]">
                 Akses Terverifikasi
@@ -347,13 +347,13 @@ export default function AdminDashboard() {
                 type="button"
                 onClick={handleRefreshCloud}
                 disabled={isCloudSyncing}
-                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[10px] uppercase font-black tracking-wider"
+                className="memphis-btn memphis-btn-white px-2.5 py-1 text-[10px] uppercase font-bold tracking-wider"
               >
                 <RefreshCcw className={`w-3 h-3 mr-1 ${isCloudSyncing ? 'animate-spin' : ''}`} />
                 <span>{isCloudSyncing ? 'Sinkron...' : 'Refresh Cloud'}</span>
               </button>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-[#121212]">
+            <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#121212]">
               Laporan Evaluasi Website WaktuIbadah
             </h1>
             <p className="text-xs font-bold text-gray-700 max-w-2xl">
@@ -372,42 +372,42 @@ export default function AdminDashboard() {
           {/* Stats Summary (Memphis Cards) */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
             <div className="memphis-card p-4 flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#00F0FF] border-2 border-black flex items-center justify-center font-black shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-[#00F0FF] border-[1.5px] border-black flex items-center justify-center font-bold shrink-0">
                 <Users className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
                   Total Responden
                 </span>
-                <span className="text-2xl font-black text-[#121212]">
+                <span className="text-2xl font-bold text-[#121212]">
                   {stats.total} <span className="text-xs font-bold text-gray-400">Mahasiswa</span>
                 </span>
               </div>
             </div>
 
             <div className="memphis-card p-4 flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#FFE600] border-2 border-black flex items-center justify-center font-black shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-[#FFE600] border-[1.5px] border-black flex items-center justify-center font-bold shrink-0">
                 <Star className="w-5 h-5 fill-current" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
                   Rata-rata Rating
                 </span>
-                <span className="text-2xl font-black text-[#121212]">
+                <span className="text-2xl font-bold text-[#121212]">
                   {stats.avg} <span className="text-xs font-bold text-gray-400">/ 5.0</span>
                 </span>
               </div>
             </div>
 
             <div className="memphis-card p-4 flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-[#10B981] text-white border-2 border-black flex items-center justify-center font-black shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-[#10B981] text-white border-[1.5px] border-black flex items-center justify-center font-bold shrink-0">
                 <CheckCircle2 className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] font-black uppercase tracking-wider text-gray-500 block">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 block">
                   Tingkat Kepuasan
                 </span>
-                <span className="text-2xl font-black text-[#121212]">
+                <span className="text-2xl font-bold text-[#121212]">
                   {stats.satisfiedPct}%
                 </span>
               </div>
@@ -418,7 +418,7 @@ export default function AdminDashboard() {
           <div className="memphis-card p-4 flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 stroke-[2.5]" />
-              <span className="text-xs font-black uppercase tracking-wider">Filter Responden:</span>
+              <span className="text-xs font-bold">Filter Responden:</span>
             </div>
             <select
               value={selectedUserFilter}
@@ -433,10 +433,10 @@ export default function AdminDashboard() {
           </div>
 
           {/* Chart Section (Memphis Card) */}
-          <section className="memphis-card p-5 space-y-4">
-            <div className="flex items-center gap-2 border-b-[2.5px] border-black pb-3">
+          <section className="memphis-card p-4 space-y-4">
+            <div className="flex items-center gap-2 border-b-[1.5px] border-black pb-3">
               <BarChart3 className="w-5 h-5 stroke-[2.5]" />
-              <h2 className="font-black text-sm uppercase tracking-tight">Distribusi Rating Skala 1 - 5 Bintang</h2>
+              <h2 className="font-bold text-sm tracking-tight">Distribusi Rating Skala 1 - 5 Bintang</h2>
             </div>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
@@ -464,11 +464,11 @@ export default function AdminDashboard() {
           </section>
 
           {/* Reviews List */}
-          <section className="memphis-card p-5 space-y-4">
-            <div className="flex items-center justify-between border-b-[2.5px] border-black pb-3">
+          <section className="memphis-card p-4 space-y-4">
+            <div className="flex items-center justify-between border-b-[1.5px] border-black pb-3">
               <div className="flex items-center gap-2">
                 <MessageSquareQuote className="w-5 h-5 stroke-[2.5]" />
-                <h2 className="font-black text-sm uppercase tracking-tight">
+                <h2 className="font-bold text-sm tracking-tight">
                   Daftar Feedback & Review Responden ({filteredReviews.length})
                 </h2>
               </div>
@@ -479,9 +479,9 @@ export default function AdminDashboard() {
                 <p className="text-xs font-bold text-gray-500 py-6 text-center">Belum ada review yang masuk.</p>
               ) : (
                 filteredReviews.map((rev) => (
-                  <div key={rev.id} className="p-3.5 bg-[#FFFDF8] border-2 border-black rounded-xl shadow-[2px_2px_0px_#121212] space-y-1.5">
+                  <div key={rev.id} className="p-3.5 bg-[#FFFDF8] border-[1.5px] border-black rounded-xl shadow-[2px_2px_0px_#121212] space-y-1.5">
                     <div className="flex items-center justify-between flex-wrap gap-2">
-                      <span className="font-black text-xs uppercase">{rev.userName}</span>
+                      <span className="font-bold text-xs">{rev.userName}</span>
                       <div className="flex items-center gap-1">
                         {[1, 2, 3, 4, 5].map((star) => (
                           <Star 
@@ -489,7 +489,7 @@ export default function AdminDashboard() {
                             className={`w-3.5 h-3.5 ${star <= rev.rating ? 'fill-[#FFE600] text-black stroke-[2]' : 'text-gray-300'}`} 
                           />
                         ))}
-                        <span className="text-[10px] font-black uppercase ml-1.5 bg-black text-white px-1.5 py-0.5 rounded">
+                        <span className="text-[10px] font-bold uppercase ml-1.5 bg-black text-white px-1.5 py-0.5 rounded">
                           {rev.ratingLabel}
                         </span>
                       </div>
@@ -505,15 +505,15 @@ export default function AdminDashboard() {
           </section>
 
           {/* Admin Review Config Form */}
-          <section className="memphis-card p-5 space-y-4">
-            <div className="flex items-center gap-2 border-b-[2.5px] border-black pb-3">
+          <section className="memphis-card p-4 space-y-4">
+            <div className="flex items-center gap-2 border-b-[1.5px] border-black pb-3">
               <ShieldCheck className="w-5 h-5 stroke-[2.5]" />
-              <h2 className="font-black text-sm uppercase tracking-tight">Konfigurasi Form Evaluasi Proyek PAI</h2>
+              <h2 className="font-bold text-sm tracking-tight">Konfigurasi Form Evaluasi Proyek PAI</h2>
             </div>
 
             <form onSubmit={handleSaveConfig} className="space-y-4">
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold mb-1">
                   Tautan Google Form (Opsional)
                 </label>
                 <input
@@ -527,7 +527,7 @@ export default function AdminDashboard() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold mb-1">
                     Judul Banner Review
                   </label>
                   <input
@@ -538,7 +538,7 @@ export default function AdminDashboard() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                  <label className="block text-xs font-bold mb-1">
                     Deskripsi Singkat
                   </label>
                   <input
@@ -551,7 +551,7 @@ export default function AdminDashboard() {
               </div>
 
               {saveSuccess && (
-                <div className="p-3 bg-[#10B981] text-white border-2 border-black rounded-xl text-xs font-bold flex items-center gap-2">
+                <div className="p-3 bg-[#10B981] text-white border-[1.5px] border-black rounded-xl text-xs font-bold flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>Pengaturan evaluasi berhasil disimpan ke Firestore!</span>
                 </div>
@@ -559,7 +559,7 @@ export default function AdminDashboard() {
 
               <button
                 type="submit"
-                className="memphis-btn memphis-btn-primary py-2.5 px-5 text-xs font-black uppercase tracking-wider gap-2"
+                className="memphis-btn memphis-btn-primary py-2.5 px-5 text-xs font-bold gap-2"
               >
                 <Save className="w-4 h-4" />
                 Simpan Konfigurasi
@@ -573,14 +573,14 @@ export default function AdminDashboard() {
       {/* Patch Notes Modal */}
       {showPatchNotesModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="memphis-card bg-white w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-[2.5px] border-black pb-3">
+          <div className="memphis-card bg-white w-full max-w-lg p-4 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-[1.5px] border-black pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#FFE600] border-2 border-black rounded-xl flex items-center justify-center font-black">
+                <div className="w-10 h-10 bg-[#FFE600] border-[1.5px] border-black rounded-xl flex items-center justify-center font-bold">
                   <Sparkles className="w-5 h-5 text-black" />
                 </div>
                 <div>
-                  <h3 className="font-black text-base uppercase tracking-tight">
+                  <h3 className="font-bold text-base tracking-tight">
                     Catatan Rilis v{APP_PATCH_NOTES[0].version}
                   </h3>
                   <p className="text-xs font-bold text-gray-500">{APP_PATCH_NOTES[0].releaseDate}</p>
@@ -588,14 +588,14 @@ export default function AdminDashboard() {
               </div>
               <button
                 onClick={() => setShowPatchNotesModal(false)}
-                className="w-8 h-8 rounded-lg border-2 border-black flex items-center justify-center font-black hover:bg-gray-100"
+                className="w-8 h-8 rounded-lg border-[1.5px] border-black flex items-center justify-center font-bold hover:bg-gray-100"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             <div className="space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-black">
+              <h4 className="text-xs font-bold text-black">
                 Sorotan Pembaruan:
               </h4>
               <ul className="space-y-1.5 text-xs font-semibold text-gray-700 pl-2">
@@ -608,14 +608,14 @@ export default function AdminDashboard() {
               </ul>
             </div>
 
-            <div className="p-3 bg-[#FFE600]/30 border-2 border-black rounded-xl space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-black">
+            <div className="p-3 bg-[#FFE600]/30 border-[1.5px] border-black rounded-xl space-y-2">
+              <h4 className="text-xs font-bold text-black">
                 Saran Pembaruan & Temuan Berguna Berikutnya:
               </h4>
               <ul className="space-y-1 text-xs font-semibold text-gray-800 pl-2">
                 {APP_PATCH_NOTES[0].recommendations.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-black font-black">★</span>
+                    <span className="text-black font-bold">★</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -624,7 +624,7 @@ export default function AdminDashboard() {
 
             <button
               onClick={() => setShowPatchNotesModal(false)}
-              className="memphis-btn memphis-btn-primary w-full py-2.5 text-xs font-black uppercase tracking-wider"
+              className="memphis-btn memphis-btn-primary w-full py-2.5 text-xs font-bold"
             >
               Tutup Catatan
             </button>

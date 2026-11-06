@@ -55,11 +55,11 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
     <section className="memphis-card bg-white p-4 sm:p-5 space-y-4" aria-label="Pengguna terdaftar">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-[#10B981] border-2 border-black flex items-center justify-center shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-[#10B981] border-[1.5px] border-black flex items-center justify-center shrink-0">
             <Users className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-sm font-black uppercase tracking-tight">Pengguna Terdaftar</h2>
+            <h2 className="text-sm font-bold tracking-tight">Pengguna Terdaftar</h2>
             <p className="text-[11px] font-bold text-gray-500">
               {data ? `${data.totals.users} pengguna • ${data.totals.withNotifications} dengan notifikasi aktif` : 'Memuat...'}
             </p>
@@ -68,14 +68,14 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
         <button
           onClick={onRefresh}
           disabled={loading}
-          className="memphis-btn memphis-btn-white px-3 py-1.5 text-[10px] uppercase font-black tracking-wider gap-1 disabled:opacity-60"
+          className="memphis-btn memphis-btn-white px-3 py-1.5 text-[10px] uppercase font-bold tracking-wider gap-1 disabled:opacity-60"
         >
           <RefreshCcw className={`w-3 h-3 ${loading ? 'animate-spin' : ''}`} />
           {loading ? 'Memuat...' : 'Muat Ulang'}
         </button>
       </div>
 
-      {error && <div className="p-3 bg-[#FF4B91] text-white border-2 border-black rounded-xl text-xs font-bold">{error}</div>}
+      {error && <div className="p-3 bg-[#FF4B91] text-white border-[1.5px] border-black rounded-xl text-xs font-bold">{error}</div>}
 
       {data && (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
@@ -85,8 +85,8 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
             ['Android / iOS / PC', `${data.totals.platforms.android || 0} / ${data.totals.platforms.ios || 0} / ${data.totals.platforms.desktop || 0}`],
             ['Ulasan', data.totals.reviews],
           ].map(([label, value]) => (
-            <div key={String(label)} className="border-2 border-black rounded-xl p-2 bg-[#FFFDF8]">
-              <div className="text-base font-black">{value}</div>
+            <div key={String(label)} className="border-[1.5px] border-black rounded-xl p-2 bg-[#FFFDF8]">
+              <div className="text-base font-bold">{value}</div>
               <div className="text-[10px] font-bold uppercase text-gray-500">{label}</div>
             </div>
           ))}
@@ -110,15 +110,15 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
         {rows.map((u) => {
           const open = expanded === u.id;
           return (
-            <div key={u.id} className="border-2 border-black rounded-xl bg-white overflow-hidden">
+            <div key={u.id} className="border-[1.5px] border-black rounded-xl bg-white overflow-hidden">
               <button
                 onClick={() => setExpanded(open ? null : u.id)}
                 className="w-full text-left p-3 flex flex-wrap items-center gap-x-3 gap-y-1"
                 aria-expanded={open}
               >
-                <span className="font-black text-sm truncate max-w-[10rem]">{u.name}</span>
+                <span className="font-bold text-sm truncate max-w-[10rem]">{u.name}</span>
                 <span className="text-[10px] font-bold text-gray-500">{u.city || 'Kota belum dipilih'}</span>
-                <span className="ml-auto flex items-center gap-2 text-[10px] font-black uppercase">
+                <span className="ml-auto flex items-center gap-2 text-[10px] font-bold uppercase">
                   <span className={`px-1.5 py-0.5 rounded border border-black flex items-center gap-1 ${u.notification.devices ? 'bg-emerald-300' : 'bg-gray-200'}`}>
                     <BellRing className="w-3 h-3" /> {u.notification.devices ? `${u.notification.devices} perangkat` : 'Tanpa notifikasi'}
                   </span>
@@ -145,7 +145,7 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
                     value={`${u.notification.totalSent}${u.notification.platforms.length ? ` (${u.notification.platforms.join(', ')})` : ''}`}
                     icon={<Smartphone className="w-3 h-3" />}
                   />
-                  <div className="col-span-2 sm:col-span-3 border-2 border-black rounded-lg p-2 bg-[#FFFDF8]">
+                  <div className="col-span-2 sm:col-span-3 border-[1.5px] border-black rounded-lg p-2 bg-[#FFFDF8]">
                     <div className="text-[10px] uppercase text-gray-500">Ulasan</div>
                     {u.review ? (
                       <div className="space-y-0.5">
@@ -170,7 +170,7 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
 };
 
 const Info: React.FC<{ label: string; value: string; icon?: React.ReactNode }> = ({ label, value, icon }) => (
-  <div className="border-2 border-black rounded-lg p-2 bg-[#FFFDF8]">
+  <div className="border-[1.5px] border-black rounded-lg p-2 bg-[#FFFDF8]">
     <div className="text-[10px] uppercase text-gray-500 flex items-center gap-1">{icon}{label}</div>
     <div>{value}</div>
   </div>

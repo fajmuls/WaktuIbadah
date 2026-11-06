@@ -33,23 +33,23 @@
 /* Memphis Style Utility Classes with Solid Borders & Retro Offsets */
 .memphis-card {
   background-color: #ffffff;
-  border: 2px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
-  border-radius: 0.875rem;
+  border: 1.5px solid #121212;
+  box-shadow: 2px 2px 0px #121212;
+  border-radius: 0.75rem;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
 
 @media (min-width: 640px) {
   .memphis-card {
-    border-width: 2.5px;
-    box-shadow: 4px 4px 0px #121212;
-    border-radius: 1rem;
+    border-width: 1.5px;
+    box-shadow: 3px 3px 0px #121212;
+    border-radius: 0.875rem;
   }
 }
 
 .memphis-card-sm {
   background-color: #ffffff;
-  border: 2px solid #121212;
+  border: 1.5px solid #121212;
   box-shadow: 2px 2px 0px #121212;
   border-radius: 0.75rem;
 }
@@ -105,25 +105,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-weight: 800;
-  border: 2px solid #121212;
-  box-shadow: 2.5px 2.5px 0px #121212;
-  border-radius: 0.75rem;
+  font-weight: 700;
+  border: 1.5px solid #121212;
+  box-shadow: 2px 2px 0px #121212;
+  border-radius: 0.625rem;
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
 }
 
 @media (min-width: 640px) {
   .memphis-btn {
-    border-width: 2.5px;
-    box-shadow: 3px 3px 0px #121212;
-    border-radius: 0.875rem;
+    border-width: 1.5px;
+    box-shadow: 2px 2px 0px #121212;
+    border-radius: 0.75rem;
   }
 }
 
 .memphis-btn:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 3.5px 3.5px 0px #121212;
+  box-shadow: 2.5px 2.5px 0px #121212;
 }
 
 .memphis-btn:active {

@@ -20,8 +20,68 @@ import {
   connectCloudProfile, checkCloudProfile 
 } from '../lib/cloud-sync';
 import { CitySelectorModal } from '../components/CitySelectorModal';
+import { saveMode, NotifMode } from '../components/NotificationSetupModal';
+
+
+const SETTINGS_TABS = [
+  { id: 'akun', label: 'Akun' },
+  { id: 'notifikasi', label: 'Notifikasi' },
+  { id: 'ibadah', label: 'Ibadah' },
+  { id: 'tampilan', label: 'Tampilan' },
+  { id: 'data', label: 'Data' },
+] as const;
+type SettingsTab = (typeof SETTINGS_TABS)[number]['id'];
+
+/** Ukuran huruf & mode baca Al-Qur'an (dipakai juga oleh halaman Al-Qur'an). */
+function QuranReadingPrefs() {
+  const [size, setSize] = useState<number>(() => Number(localStorage.getItem('wi_quran_font_size')) || 26);
+  const [mode, setMode] = useState<'card' | 'mushaf'>(() => (localStorage.getItem('wi_quran_reading_mode') as 'card' | 'mushaf') || 'card');
+
+  const changeSize = (v: number) => {
+    const next = Math.min(34, Math.max(22, v));
+    setSize(next);
+    localStorage.setItem('wi_quran_font_size', String(next));
+  };
+  const changeMode = (m: 'card' | 'mushaf') => {
+    setMode(m);
+    localStorage.setItem('wi_quran_reading_mode', m);
+  };
+
+  return (
+    <div className="memphis-card p-4 space-y-3">
+      <div>
+        <h3 className="font-bold text-sm">Bacaan Al-Qur'an</h3>
+        <p className="text-xs text-gray-500">Ukuran huruf Arab dan cara membaca</p>
+      </div>
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between text-xs font-bold">
+          <span>Ukuran huruf Arab</span>
+          <span className="text-gray-500">{size}px</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <button type="button" aria-label="Kecilkan huruf" onClick={() => changeSize(size - 2)} className="w-9 h-9 rounded-lg border-[1.5px] border-black bg-white font-bold text-xs">A-</button>
+          <input type="range" min={22} max={34} step={2} value={size} onChange={(e) => changeSize(Number(e.target.value))} className="flex-1 accent-emerald-600" aria-label="Ukuran huruf Arab" />
+          <button type="button" aria-label="Besarkan huruf" onClick={() => changeSize(size + 2)} className="w-9 h-9 rounded-lg border-[1.5px] border-black bg-white font-bold text-sm">A+</button>
+        </div>
+        <p className="text-center font-serif leading-loose text-gray-900" dir="rtl" style={{ fontSize: `${size}px` }}>بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</p>
+      </div>
+      <div className="space-y-1.5">
+        <span className="block text-xs font-bold">Mode baca</span>
+        <div className="grid grid-cols-2 gap-1.5" role="radiogroup" aria-label="Mode baca">
+          {([['card', 'Per ayat'], ['mushaf', 'Mushaf sambung']] as const).map(([id, label]) => (
+            <button key={id} type="button" role="radio" aria-checked={mode === id} onClick={() => changeMode(id)}
+              className={`h-9 rounded-lg text-[11px] font-bold border-[1.5px] border-black ${mode === id ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700'}`}>
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function Settings() {
+  const [tab, setTab] = useState<SettingsTab>('akun');
   const [user, setUser] = useState<User | null>(null);
   const [version, setVersion] = useState<AppVersion | null>(null);
   const [nameInput, setNameInput] = useState('');
@@ -95,6 +155,19 @@ export default function Settings() {
       await disablePush();
       refreshPush();
     }
+  };
+
+  const notifMode: NotifMode = reminderSettings.silentNotifications
+    ? 'silent'
+    : reminderSettings.reminderType === 'vibrate_only'
+      ? 'vibrate_only'
+      : 'sound_and_vibrate';
+
+  const handleSetNotifMode = (mode: NotifMode) => {
+    playToggleSound();
+    saveMode(mode);
+    setReminderSettings(storage.getReminderSettings());
+    syncPushSoon(800); // kirim pilihan terbaru ke server notifikasi
   };
 
   const handleEnablePush = async () => {
@@ -333,7 +406,7 @@ export default function Settings() {
             </span>
           </div>
           <p className="text-[11px] font-medium text-[#121212]/80 mt-0.5">
-            Manajemen multi-device, style Memphis Classic, & audio pack
+            Akun, notifikasi, tampilan, dan data
           </p>
         </div>
 
@@ -359,6 +432,27 @@ export default function Settings() {
         </div>
       )}
 
+      {/* Navigasi bagian pengaturan */}
+      <div className="sticky top-14 md:top-0 z-20 -mx-1 px-1 py-1.5 bg-[#FFFDF8]/95 backdrop-blur-md">
+        <div className="grid grid-cols-5 gap-1 p-1 rounded-xl border-[1.5px] border-black bg-white" role="tablist" aria-label="Bagian pengaturan">
+          {SETTINGS_TABS.map((t) => (
+            <button
+              key={t.id}
+              role="tab"
+              aria-selected={tab === t.id}
+              onClick={() => { playToggleSound(); setTab(t.id); }}
+              className={`h-8 rounded-lg text-[11px] font-bold transition-colors truncate ${
+                tab === t.id ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-black'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {tab === 'akun' && (
+      <div className="space-y-4">
       {/* Profil & Multi-Device Sync Card */}
       <div className="bg-white border-[1.5px] border-black rounded-xl p-3.5 sm:p-4 space-y-4 shadow-[2px_2px_0px_#121212]">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#121212] pb-3 gap-2.5">
@@ -411,7 +505,7 @@ export default function Settings() {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
               <Cloud className="w-4 h-4 text-emerald-600 stroke-[2.5]" />
-              <span className="font-bold text-xs uppercase tracking-wide">Sinkronisasi Cloud</span>
+              <span className="font-bold text-xs">Sinkronisasi Cloud</span>
             </div>
             <span className="text-[10px] font-medium text-gray-500">
               {user.lastCloudSync ? `Terakhir: ${new Date(user.lastCloudSync).toLocaleTimeString('id-ID')}` : 'Belum sync'}
@@ -444,15 +538,233 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Preferensi Doa & Kota Salat */}
-      <div className="memphis-card p-5 space-y-4">
-        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+      </div>
+      )}
+      {tab === 'notifikasi' && (
+      <div className="space-y-4">
+      {/* PWA & Background Notifications Setup */}
+      <div className="memphis-card p-4 space-y-4">
+        <div className="flex items-center justify-between border-b-[1.5px] border-[#121212] pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#00F0FF] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+            <div className="w-10 h-10 bg-[#FF4B91] text-white border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-bold">
+              <Bell className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm tracking-tight">Notifikasi PWA Latar Belakang</h3>
+              <p className="text-xs font-bold text-gray-500">Service Worker & Push Alerts saat Chrome/browser ditutup</p>
+            </div>
+          </div>
+
+          <label className="relative inline-flex items-center cursor-pointer">
+            <input 
+              type="checkbox" 
+              checked={user.reminderEnabled}
+              onChange={handleToggleMasterReminder}
+              className="sr-only peer"
+            />
+            <div className="w-12 h-6 bg-gray-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-black after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-2 after:border-black after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#10B981] border-[1.5px] border-black"></div>
+          </label>
+        </div>
+
+        {/* Status */}
+        <div className="flex flex-wrap items-center gap-2 text-[11px] font-bold uppercase">
+          <span className={`px-2 py-1 rounded border-[1.5px] border-black ${pushStatus?.subscribed ? 'bg-emerald-400' : 'bg-[#FFE600]'}`}>
+            {pushStatus?.subscribed ? 'Notifikasi server: aktif' : 'Notifikasi server: belum aktif'}
+          </span>
+          <span className="px-2 py-1 rounded border-[1.5px] border-black bg-white">
+            Izin: {pushStatus?.permission === 'granted' ? 'diizinkan' : pushStatus?.permission === 'denied' ? 'diblokir' : 'belum'}
+          </span>
+          <span className="px-2 py-1 rounded border-[1.5px] border-black bg-white">
+            {pushStatus?.standalone ? 'Terpasang sebagai aplikasi' : 'Berjalan di browser'}
+          </span>
+        </div>
+
+        <p className="text-xs font-semibold text-gray-600">
+          Pengingat salat, jadwal kuliah, dan tenggat tugas dikirim dari server tepat waktu, jadi tetap muncul walaupun aplikasi ditutup.
+          {pushStatus?.support === 'ios-needs-install' && ' Di iPhone/iPad: pasang dulu lewat Bagikan > Tambah ke Layar Utama, lalu buka dari ikonnya.'}
+          {pushStatus?.support === 'unsupported' && ' Browser ini tidak mendukung notifikasi push.'}
+          {pushStatus?.support === 'not-configured' && ' Server notifikasi belum dikonfigurasi (kunci VAPID kosong).'}
+        </p>
+
+        {pushMsg && (
+          <div className={`p-2.5 rounded-xl border-[1.5px] border-black text-xs font-bold ${pushMsg.type === 'success' ? 'bg-emerald-100 text-emerald-900' : 'bg-[#FF4B91] text-white'}`}>
+            {pushMsg.text}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+          {pushStatus?.subscribed ? (
+            <button
+              onClick={handleServerTest}
+              disabled={pushBusy}
+              className="memphis-btn memphis-btn-yellow py-2.5 px-4 text-xs font-bold gap-2 disabled:opacity-60"
+            >
+              <Bell className="w-4 h-4 stroke-[2.5]" />
+              {pushBusy ? 'Mengirim...' : 'Uji Notifikasi dari Server'}
+            </button>
+          ) : (
+            <button
+              onClick={handleEnablePush}
+              disabled={pushBusy || pushStatus?.support === 'unsupported' || pushStatus?.support === 'not-configured'}
+              className="memphis-btn memphis-btn-green py-2.5 px-4 text-xs font-bold gap-2 disabled:opacity-60"
+            >
+              <Bell className="w-4 h-4 stroke-[2.5]" />
+              {pushBusy ? 'Memproses...' : 'Aktifkan Notifikasi'}
+            </button>
+          )}
+
+          <button
+            onClick={handleTestAlarm}
+            className="memphis-btn memphis-btn-cyan py-2.5 px-4 text-xs font-bold gap-2"
+          >
+            <Vibrate className="w-4 h-4 stroke-[2.5]" />
+            {stopAlarmFn ? 'Hentikan Alarm HP' : 'Uji Pola Getar & Nada (di aplikasi)'}
+          </button>
+        </div>
+
+        {/* Pengaturan suara & pengingat */}
+        <div className="space-y-3 border-t-2 border-dashed border-black/30 pt-3">
+          <div className="space-y-1.5">
+            <span className="block text-xs font-bold">Cara notifikasi berbunyi</span>
+            <div className="grid grid-cols-3 gap-1.5" role="radiogroup" aria-label="Cara notifikasi berbunyi">
+              {([
+                ['sound_and_vibrate', 'Suara + getar'],
+                ['vibrate_only', 'Getar saja'],
+                ['silent', 'Senyap'],
+              ] as const).map(([id, label]) => (
+                <button
+                  key={id}
+                  type="button"
+                  role="radio"
+                  aria-checked={notifMode === id}
+                  onClick={() => handleSetNotifMode(id)}
+                  className={`h-9 rounded-lg text-[11px] font-bold border-[1.5px] border-black transition-colors ${
+                    notifMode === id ? 'bg-emerald-600 text-white' : 'bg-white text-gray-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-gray-500 leading-snug">
+              {notifMode === 'sound_and_vibrate' && 'Berbunyi dan bergetar saat azan dan pengingat.'}
+              {notifMode === 'vibrate_only' && 'Bergetar tanpa nada. Bila HP masih berbunyi, ubah HP ke mode getar.'}
+              {notifMode === 'silent' && 'Hanya muncul di layar, tanpa suara dan getar.'}
+            </p>
+          </div>
+
+          <label className="flex items-center justify-between gap-3">
+            <span className="text-xs font-bold">Ingatkan sebelum waktu salat</span>
+            <select
+              value={reminderSettings.preReminderMinutes ?? 10}
+              onChange={(e) => updateReminderSetting('preReminderMinutes', Number(e.target.value))}
+              className="border-[1.5px] border-black rounded-lg bg-white px-2 py-1 text-xs font-bold"
+            >
+              <option value={0}>Mati</option>
+              <option value={5}>5 menit</option>
+              <option value={10}>10 menit</option>
+              <option value={15}>15 menit</option>
+              <option value={30}>30 menit</option>
+            </select>
+          </label>
+        </div>
+      </div>
+
+      {/* Audio Pack & Sound Effects Testing Rack (New Feature Requested by User) */}
+      <div className="memphis-card p-4 space-y-4">
+        <div className="flex items-center justify-between border-b-[1.5px] border-[#121212] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#FFE600] border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-bold">
+              <Volume2 className="w-5 h-5 stroke-[2.5]" />
+            </div>
+            <div>
+              <h3 className="font-bold text-sm tracking-tight">Audio Pack & Sound Effects Asli</h3>
+              <p className="text-xs font-bold text-gray-500">26 Audio Lokal dari Pack WaktuIbadah diaktifkan</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleToggleAmbient}
+              className={`memphis-btn px-3 py-1.5 text-xs font-bold gap-1.5 ${
+                isAmbientOn ? 'memphis-btn-pink' : 'memphis-btn-white'
+              }`}
+            >
+              <Music className="w-3.5 h-3.5" />
+              {isAmbientOn ? 'Musik Ambient: ON' : 'Putar Musik Ambient'}
+            </button>
+          </div>
+        </div>
+
+        <p className="text-xs font-semibold text-gray-600">
+          Uji langsung kualitas audio lokal yang terpasang pada tombol aplikasi, adzan, dzikir, dan pengingat:
+        </p>
+
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <button
+            onClick={() => playButtonTapSound()}
+            className="memphis-btn memphis-btn-yellow py-2 text-xs font-bold"
+          >
+            Button Tap
+          </button>
+          <button
+            onClick={() => playToggleSound()}
+            className="memphis-btn memphis-btn-cyan py-2 text-xs font-bold"
+          >
+            UI Toggle
+          </button>
+          <button
+            onClick={() => playSaveSuccessSound()}
+            className="memphis-btn memphis-btn-primary py-2 text-xs font-bold"
+          >
+            Save Success
+          </button>
+          <button
+            onClick={() => playDhikrTapSound()}
+            className="memphis-btn memphis-btn-pink py-2 text-xs font-bold"
+          >
+            Tasbih Dzikir
+          </button>
+          <button
+            onClick={() => playTaskStateSound('completed')}
+            className="memphis-btn memphis-btn-white py-2 text-xs font-bold"
+          >
+            Tugas Selesai
+          </button>
+          <button
+            onClick={() => playTaskStateSound('urgent')}
+            className="memphis-btn memphis-btn-orange py-2 text-xs font-bold"
+          >
+            Deadline Urgent
+          </button>
+          <button
+            onClick={() => handleTestPrayerAzan('Subuh')}
+            className="memphis-btn memphis-btn-white py-2 text-xs font-bold col-span-1"
+          >
+            {stopAlarmFn ? 'Stop Adzan' : 'Adzan Subuh'}
+          </button>
+          <button
+            onClick={() => handleTestPrayerAzan('Zuhur')}
+            className="memphis-btn memphis-btn-yellow py-2 text-xs font-bold col-span-1"
+          >
+            {stopAlarmFn ? 'Stop Adzan' : 'Adzan Fardhu'}
+          </button>
+        </div>
+      </div>
+
+      </div>
+      )}
+      {tab === 'ibadah' && (
+      <div className="space-y-4">
+      {/* Preferensi Doa & Kota Salat */}
+      <div className="memphis-card p-4 space-y-4">
+        <div className="flex items-center justify-between border-b-[1.5px] border-[#121212] pb-3">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-[#00F0FF] border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-bold">
               <Sparkles className="w-5 h-5 text-black" />
             </div>
             <div>
-              <h3 className="font-black text-sm uppercase tracking-tight">Preferensi Doa & Kota Jadwal Salat</h3>
+              <h3 className="font-bold text-sm tracking-tight">Preferensi Doa & Kota Jadwal Salat</h3>
               <p className="text-xs font-bold text-gray-500">Konfigurasi pop-up doa setelah salat dan zona waktu</p>
             </div>
           </div>
@@ -460,9 +772,9 @@ export default function Settings() {
 
         <div className="space-y-3">
           {/* Toggle Auto Doa Modal */}
-          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-2 border-black">
+          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-[1.5px] border-black">
             <div className="pr-2">
-              <span className="font-black text-xs text-black block">Pop-up Doa Setelah Salat Otomatis</span>
+              <span className="font-bold text-xs text-black block">Pop-up Doa Setelah Salat Otomatis</span>
               <span className="text-[11px] font-semibold text-gray-500">
                 Otomatis menampilkan modal wirid ketika 5 waktu salat hari ini selesai dicentang
               </span>
@@ -474,7 +786,7 @@ export default function Settings() {
                 setAutoDoaModal(nextVal);
                 storage.setAutoDoaModal(nextVal);
               }}
-              className={`memphis-btn px-3 py-1.5 text-xs font-black uppercase shrink-0 ${
+              className={`memphis-btn px-3 py-1.5 text-xs font-bold shrink-0 ${
                 autoDoaModal ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-600'
               }`}
             >
@@ -483,16 +795,16 @@ export default function Settings() {
           </div>
 
           {/* Kota & Zona Waktu */}
-          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-2 border-black">
+          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-[1.5px] border-black">
             <div className="pr-2">
-              <span className="font-black text-xs text-black block">Kota & Zona Waktu Salat</span>
+              <span className="font-bold text-xs text-black block">Kota & Zona Waktu Salat</span>
               <span className="text-[11px] font-semibold text-gray-500">
                 Kota saat ini: <strong className="text-emerald-700">{selectedCity}</strong>
               </span>
             </div>
             <button
               onClick={() => setIsCityModalOpen(true)}
-              className="memphis-btn memphis-btn-cyan px-3 py-1.5 text-xs font-black uppercase shrink-0"
+              className="memphis-btn memphis-btn-cyan px-3 py-1.5 text-xs font-bold shrink-0"
             >
               Ganti Kota
             </button>
@@ -500,15 +812,19 @@ export default function Settings() {
         </div>
       </div>
 
+      </div>
+      )}
+      {tab === 'tampilan' && (
+      <div className="space-y-4">
       {/* Pengaturan Tema Tampilan (Light/Dark Mode & Al-Qur'an White Background) */}
-      <div className="memphis-card p-5 space-y-4">
-        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+      <div className="memphis-card p-4 space-y-4">
+        <div className="flex items-center justify-between border-b-[1.5px] border-[#121212] pb-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#FFE600] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
+            <div className="w-10 h-10 bg-[#FFE600] border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-bold">
               <Moon className="w-5 h-5 text-black" />
             </div>
             <div>
-              <h3 className="font-black text-sm uppercase tracking-tight">Tema & Tampilan Aplikasi</h3>
+              <h3 className="font-bold text-sm tracking-tight">Tema & Tampilan Aplikasi</h3>
               <p className="text-xs font-bold text-gray-500">Mode Terang/Gelap manual & latar Al-Qur'an</p>
             </div>
           </div>
@@ -516,8 +832,8 @@ export default function Settings() {
 
         <div className="space-y-3">
           {/* Mode Tema Aplikasi */}
-          <div className="p-3 bg-[#FFFDF8] rounded-xl border-2 border-black space-y-2">
-            <span className="font-black text-xs text-black block">Mode Tema Antarmuka</span>
+          <div className="p-3 bg-[#FFFDF8] rounded-xl border-[1.5px] border-black space-y-2">
+            <span className="font-bold text-xs text-black block">Mode Tema Antarmuka</span>
             <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
@@ -527,7 +843,7 @@ export default function Settings() {
                   storage.setThemeMode('light');
                   document.documentElement.classList.remove('dark');
                 }}
-                className={`memphis-btn py-2 text-xs font-black uppercase ${
+                className={`memphis-btn py-2 text-xs font-bold ${
                   themeMode === 'light' ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-700'
                 }`}
               >
@@ -541,7 +857,7 @@ export default function Settings() {
                   storage.setThemeMode('dark');
                   document.documentElement.classList.add('dark');
                 }}
-                className={`memphis-btn py-2 text-xs font-black uppercase ${
+                className={`memphis-btn py-2 text-xs font-bold ${
                   themeMode === 'dark' ? 'memphis-btn-pink text-white' : 'memphis-btn-white text-gray-700'
                 }`}
               >
@@ -559,7 +875,7 @@ export default function Settings() {
                     document.documentElement.classList.remove('dark');
                   }
                 }}
-                className={`memphis-btn py-2 text-xs font-black uppercase ${
+                className={`memphis-btn py-2 text-xs font-bold ${
                   themeMode === 'system' ? 'memphis-btn-cyan text-black' : 'memphis-btn-white text-gray-700'
                 }`}
               >
@@ -643,6 +959,12 @@ export default function Settings() {
         </div>
       </div>
 
+      <QuranReadingPrefs />
+
+      </div>
+      )}
+      {tab === 'data' && (
+      <div className="space-y-4">
       {/* Backup & Restore Data JSON Offline */}
       <div className="memphis-card p-[14px] space-y-3">
         <div className="flex items-center justify-between border-b-2 border-black pb-2.5">
@@ -683,211 +1005,15 @@ export default function Settings() {
         </div>
       </div>
 
-      {/* Audio Pack & Sound Effects Testing Rack (New Feature Requested by User) */}
-      <div className="memphis-card p-5 space-y-4">
-        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#FFE600] border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
-              <Volume2 className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div>
-              <h3 className="font-black text-sm uppercase tracking-tight">Audio Pack & Sound Effects Asli</h3>
-              <p className="text-xs font-bold text-gray-500">26 Audio Lokal dari Pack WaktuIbadah diaktifkan</p>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleToggleAmbient}
-              className={`memphis-btn px-3 py-1.5 text-xs font-black uppercase tracking-wider gap-1.5 ${
-                isAmbientOn ? 'memphis-btn-pink' : 'memphis-btn-white'
-              }`}
-            >
-              <Music className="w-3.5 h-3.5" />
-              {isAmbientOn ? 'Musik Ambient: ON' : 'Putar Musik Ambient'}
-            </button>
-          </div>
-        </div>
-
-        <p className="text-xs font-semibold text-gray-600">
-          Uji langsung kualitas audio lokal yang terpasang pada tombol aplikasi, adzan, dzikir, dan pengingat:
-        </p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-          <button
-            onClick={() => playButtonTapSound()}
-            className="memphis-btn memphis-btn-yellow py-2 text-xs font-black uppercase"
-          >
-            Button Tap
-          </button>
-          <button
-            onClick={() => playToggleSound()}
-            className="memphis-btn memphis-btn-cyan py-2 text-xs font-black uppercase"
-          >
-            UI Toggle
-          </button>
-          <button
-            onClick={() => playSaveSuccessSound()}
-            className="memphis-btn memphis-btn-primary py-2 text-xs font-black uppercase"
-          >
-            Save Success
-          </button>
-          <button
-            onClick={() => playDhikrTapSound()}
-            className="memphis-btn memphis-btn-pink py-2 text-xs font-black uppercase"
-          >
-            Tasbih Dzikir
-          </button>
-          <button
-            onClick={() => playTaskStateSound('completed')}
-            className="memphis-btn memphis-btn-white py-2 text-xs font-black uppercase"
-          >
-            Tugas Selesai
-          </button>
-          <button
-            onClick={() => playTaskStateSound('urgent')}
-            className="memphis-btn memphis-btn-orange py-2 text-xs font-black uppercase"
-          >
-            Deadline Urgent
-          </button>
-          <button
-            onClick={() => handleTestPrayerAzan('Subuh')}
-            className="memphis-btn memphis-btn-white py-2 text-xs font-black uppercase col-span-1"
-          >
-            {stopAlarmFn ? 'Stop Adzan' : 'Adzan Subuh'}
-          </button>
-          <button
-            onClick={() => handleTestPrayerAzan('Zuhur')}
-            className="memphis-btn memphis-btn-yellow py-2 text-xs font-black uppercase col-span-1"
-          >
-            {stopAlarmFn ? 'Stop Adzan' : 'Adzan Fardhu'}
-          </button>
-        </div>
-      </div>
-
-      {/* PWA & Background Notifications Setup */}
-      <div className="memphis-card p-5 space-y-4">
-        <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-[#FF4B91] text-white border-2 border-[#121212] shadow-[2px_2px_0px_#121212] rounded-xl flex items-center justify-center font-black">
-              <Bell className="w-5 h-5 stroke-[2.5]" />
-            </div>
-            <div>
-              <h3 className="font-black text-sm uppercase tracking-tight">Notifikasi PWA Latar Belakang</h3>
-              <p className="text-xs font-bold text-gray-500">Service Worker & Push Alerts saat Chrome/browser ditutup</p>
-            </div>
-          </div>
-
-          <label className="relative inline-flex items-center cursor-pointer">
-            <input 
-              type="checkbox" 
-              checked={user.reminderEnabled}
-              onChange={handleToggleMasterReminder}
-              className="sr-only peer"
-            />
-            <div className="w-12 h-6 bg-gray-300 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-black after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-2 after:border-black after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#10B981] border-2 border-black"></div>
-          </label>
-        </div>
-
-        {/* Status */}
-        <div className="flex flex-wrap items-center gap-2 text-[11px] font-black uppercase">
-          <span className={`px-2 py-1 rounded border-2 border-black ${pushStatus?.subscribed ? 'bg-emerald-400' : 'bg-[#FFE600]'}`}>
-            {pushStatus?.subscribed ? 'Notifikasi server: aktif' : 'Notifikasi server: belum aktif'}
-          </span>
-          <span className="px-2 py-1 rounded border-2 border-black bg-white">
-            Izin: {pushStatus?.permission === 'granted' ? 'diizinkan' : pushStatus?.permission === 'denied' ? 'diblokir' : 'belum'}
-          </span>
-          <span className="px-2 py-1 rounded border-2 border-black bg-white">
-            {pushStatus?.standalone ? 'Terpasang sebagai aplikasi' : 'Berjalan di browser'}
-          </span>
-        </div>
-
-        <p className="text-xs font-semibold text-gray-600">
-          Pengingat salat, jadwal kuliah, dan tenggat tugas dikirim dari server tepat waktu, jadi tetap muncul walaupun aplikasi ditutup.
-          {pushStatus?.support === 'ios-needs-install' && ' Di iPhone/iPad: pasang dulu lewat Bagikan > Tambah ke Layar Utama, lalu buka dari ikonnya.'}
-          {pushStatus?.support === 'unsupported' && ' Browser ini tidak mendukung notifikasi push.'}
-          {pushStatus?.support === 'not-configured' && ' Server notifikasi belum dikonfigurasi (kunci VAPID kosong).'}
-        </p>
-
-        {pushMsg && (
-          <div className={`p-2.5 rounded-xl border-2 border-black text-xs font-bold ${pushMsg.type === 'success' ? 'bg-emerald-100 text-emerald-900' : 'bg-[#FF4B91] text-white'}`}>
-            {pushMsg.text}
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-          {pushStatus?.subscribed ? (
-            <button
-              onClick={handleServerTest}
-              disabled={pushBusy}
-              className="memphis-btn memphis-btn-yellow py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-60"
-            >
-              <Bell className="w-4 h-4 stroke-[2.5]" />
-              {pushBusy ? 'Mengirim...' : 'Uji Notifikasi dari Server'}
-            </button>
-          ) : (
-            <button
-              onClick={handleEnablePush}
-              disabled={pushBusy || pushStatus?.support === 'unsupported' || pushStatus?.support === 'not-configured'}
-              className="memphis-btn memphis-btn-green py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2 disabled:opacity-60"
-            >
-              <Bell className="w-4 h-4 stroke-[2.5]" />
-              {pushBusy ? 'Memproses...' : 'Aktifkan Notifikasi'}
-            </button>
-          )}
-
-          <button
-            onClick={handleTestAlarm}
-            className="memphis-btn memphis-btn-cyan py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
-          >
-            <Vibrate className="w-4 h-4 stroke-[2.5]" />
-            {stopAlarmFn ? 'Hentikan Alarm HP' : 'Uji Pola Getar & Nada (di aplikasi)'}
-          </button>
-        </div>
-
-        {/* Pengaturan suara & pengingat */}
-        <div className="space-y-3 border-t-2 border-dashed border-black/30 pt-3">
-          <label className="flex items-start justify-between gap-3 cursor-pointer">
-            <span className="min-w-0">
-              <span className="block text-xs font-black uppercase">Bisukan suara notifikasi</span>
-              <span className="block text-[11px] font-bold text-gray-500 leading-snug">
-                Notifikasi tetap muncul tetapi tanpa suara dan tanpa getar. Untuk getar saja, atur HP ke mode getar.
-              </span>
-            </span>
-            <input
-              type="checkbox"
-              checked={reminderSettings.silentNotifications === true}
-              onChange={(e) => updateReminderSetting('silentNotifications', e.target.checked)}
-              className="w-5 h-5 accent-emerald-600 shrink-0 mt-0.5"
-            />
-          </label>
-
-          <label className="flex items-center justify-between gap-3">
-            <span className="text-xs font-black uppercase">Ingatkan sebelum waktu salat</span>
-            <select
-              value={reminderSettings.preReminderMinutes ?? 10}
-              onChange={(e) => updateReminderSetting('preReminderMinutes', Number(e.target.value))}
-              className="border-2 border-black rounded-lg bg-white px-2 py-1 text-xs font-bold"
-            >
-              <option value={0}>Mati</option>
-              <option value={5}>5 menit</option>
-              <option value={10}>10 menit</option>
-              <option value={15}>15 menit</option>
-              <option value={30}>30 menit</option>
-            </select>
-          </label>
-        </div>
-      </div>
-
       {/* Version & Admin Dashboard Link */}
-      <div className="memphis-card-yellow p-5 space-y-4">
+      <div className="memphis-card-yellow p-4 space-y-4">
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-black text-[#FFE600] rounded-xl flex items-center justify-center font-black">
+            <div className="w-10 h-10 bg-black text-[#FFE600] rounded-xl flex items-center justify-center font-bold">
               <Info className="w-5 h-5 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="font-black text-sm uppercase tracking-tight text-[#121212]">
+              <h3 className="font-bold text-sm tracking-tight text-[#121212]">
                 Versi Aplikasi: v{CURRENT_VERSION}
               </h3>
               <p className="text-xs font-bold text-[#121212]/80">
@@ -899,13 +1025,13 @@ export default function Settings() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setShowPatchNotesModal(true)}
-              className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-black uppercase tracking-wider"
+              className="memphis-btn memphis-btn-white px-3 py-1.5 text-xs font-bold"
             >
               Lihat Patch Notes
             </button>
             <button
               onClick={() => navigate('/admin')}
-              className="memphis-btn bg-black text-white hover:bg-black/90 px-3 py-1.5 text-xs font-black uppercase tracking-wider"
+              className="memphis-btn bg-black text-white hover:bg-black/90 px-3 py-1.5 text-xs font-bold"
             >
               Admin Dashboard
             </button>
@@ -914,37 +1040,40 @@ export default function Settings() {
       </div>
 
       {/* Danger Zone: Reset Data */}
-      <div className="memphis-card p-5 border-rose-500 space-y-3">
+      <div className="memphis-card p-4 border-rose-500 space-y-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-rose-100 text-rose-700 border-2 border-black rounded-xl flex items-center justify-center font-black">
+          <div className="w-10 h-10 bg-rose-100 text-rose-700 border-[1.5px] border-black rounded-xl flex items-center justify-center font-bold">
             <Trash2 className="w-5 h-5 stroke-[2.5]" />
           </div>
           <div>
-            <h3 className="font-black text-sm uppercase tracking-tight text-rose-700">Zona Hati-Hati</h3>
+            <h3 className="font-bold text-sm tracking-tight text-rose-700">Zona Hati-Hati</h3>
             <p className="text-xs font-bold text-gray-500">Bersihkan cache lokal pada peramban ini</p>
           </div>
         </div>
 
         <button
           onClick={handleClearData}
-          className="memphis-btn bg-rose-600 text-white hover:bg-rose-700 py-2.5 px-4 text-xs font-black uppercase tracking-wider gap-2"
+          className="memphis-btn bg-rose-600 text-white hover:bg-rose-700 py-2.5 px-4 text-xs font-bold gap-2"
         >
           <Trash2 className="w-4 h-4 stroke-[2.5]" />
           Reset & Hapus Seluruh Data Lokal
         </button>
       </div>
 
+      </div>
+      )}
+
       {/* ==================== MODAL ATUR / UBAH PIN ==================== */}
       {showPinModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="memphis-card bg-white w-full max-w-sm p-6 space-y-4">
+          <div className="memphis-card bg-white w-full max-w-sm p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#FFE600] border-2 border-[#121212] flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-xl bg-[#FFE600] border-[1.5px] border-[#121212] flex items-center justify-center font-bold">
                   <KeyRound className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm uppercase tracking-tight">
+                  <h3 className="font-bold text-sm tracking-tight">
                     {user.pin ? 'Ubah PIN Keamanan' : 'Atur PIN 4 Digit'}
                   </h3>
                   <p className="text-[11px] font-bold text-gray-500">Proteksi akun dari nama sama</p>
@@ -952,7 +1081,7 @@ export default function Settings() {
               </div>
               <button 
                 onClick={() => setShowPinModal(false)}
-                className="w-8 h-8 rounded-lg border-2 border-[#121212] flex items-center justify-center font-black hover:bg-gray-100"
+                className="w-8 h-8 rounded-lg border-[1.5px] border-[#121212] flex items-center justify-center font-bold hover:bg-gray-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -960,7 +1089,7 @@ export default function Settings() {
 
             <form onSubmit={handleSavePin} className="space-y-4">
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold mb-1">
                   PIN 4 Digit (Angka)
                 </label>
                 <input
@@ -975,12 +1104,12 @@ export default function Settings() {
                     setPinError('');
                   }}
                   placeholder="Misal: 1234 (kosongkan = nonaktif)"
-                  className="memphis-input w-full px-4 py-3 text-center text-xl font-black tracking-widest"
+                  className="memphis-input w-full px-4 py-3 text-center text-xl font-bold tracking-widest"
                 />
               </div>
 
               {pinError && (
-                <div className="p-2.5 bg-[#FF4B91] text-white border-2 border-[#121212] rounded-xl text-xs font-bold">
+                <div className="p-2.5 bg-[#FF4B91] text-white border-[1.5px] border-[#121212] rounded-xl text-xs font-bold">
                   {pinError}
                 </div>
               )}
@@ -989,13 +1118,13 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={() => setShowPinModal(false)}
-                  className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs uppercase"
+                  className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
-                  className="memphis-btn memphis-btn-primary flex-1 py-2.5 text-xs uppercase"
+                  className="memphis-btn memphis-btn-primary flex-1 py-2.5 text-xs"
                 >
                   Simpan PIN
                 </button>
@@ -1008,20 +1137,20 @@ export default function Settings() {
       {/* ==================== MODAL SAMBUNGKAN AKUN ==================== */}
       {showSwitchModal && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="memphis-card bg-white w-full max-w-sm p-6 space-y-4">
+          <div className="memphis-card bg-white w-full max-w-sm p-4 space-y-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#00F0FF] border-2 border-[#121212] flex items-center justify-center font-black">
+                <div className="w-10 h-10 rounded-xl bg-[#00F0FF] border-[1.5px] border-[#121212] flex items-center justify-center font-bold">
                   <ArrowRightLeft className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="font-black text-sm uppercase tracking-tight">Sambungkan Akun</h3>
+                  <h3 className="font-bold text-sm tracking-tight">Sambungkan Akun</h3>
                   <p className="text-[11px] font-bold text-gray-500">Buka database nama lain</p>
                 </div>
               </div>
               <button 
                 onClick={() => setShowSwitchModal(false)}
-                className="w-8 h-8 rounded-lg border-2 border-[#121212] flex items-center justify-center font-black hover:bg-gray-100"
+                className="w-8 h-8 rounded-lg border-[1.5px] border-[#121212] flex items-center justify-center font-bold hover:bg-gray-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1029,7 +1158,7 @@ export default function Settings() {
 
             <form onSubmit={handleSwitchAccount} className="space-y-3.5">
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold mb-1">
                   Nama Mahasiswa
                 </label>
                 <input
@@ -1047,7 +1176,7 @@ export default function Settings() {
               </div>
 
               <div>
-                <label className="block text-xs font-black uppercase tracking-wider mb-1">
+                <label className="block text-xs font-bold mb-1">
                   PIN 4 Digit (Jika Ada)
                 </label>
                 <input
@@ -1066,7 +1195,7 @@ export default function Settings() {
               </div>
 
               {switchError && (
-                <div className="p-2.5 bg-[#FF4B91] text-white border-2 border-[#121212] rounded-xl text-xs font-bold">
+                <div className="p-2.5 bg-[#FF4B91] text-white border-[1.5px] border-[#121212] rounded-xl text-xs font-bold">
                   {switchError}
                 </div>
               )}
@@ -1075,14 +1204,14 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={() => setShowSwitchModal(false)}
-                  className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs uppercase"
+                  className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSwitching}
-                  className="memphis-btn memphis-btn-primary flex-1 py-2.5 text-xs uppercase disabled:opacity-50"
+                  className="memphis-btn memphis-btn-primary flex-1 py-2.5 text-xs disabled:opacity-50"
                 >
                   {isSwitching ? 'Menyambungkan...' : 'Buka Akun'}
                 </button>
@@ -1095,14 +1224,14 @@ export default function Settings() {
       {/* ==================== MODAL PATCH NOTES / CHANGELOG ==================== */}
       {showPatchNotesModal && (
         <div className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-          <div className="memphis-card bg-white w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between border-b-[2.5px] border-[#121212] pb-3">
+          <div className="memphis-card bg-white w-full max-w-lg p-4 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b-[1.5px] border-[#121212] pb-3">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-[#FFE600] border-2 border-[#121212] rounded-xl flex items-center justify-center font-black">
+                <div className="w-10 h-10 bg-[#FFE600] border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center font-bold">
                   <Sparkles className="w-5 h-5 text-[#121212]" />
                 </div>
                 <div>
-                  <h3 className="font-black text-base uppercase tracking-tight">
+                  <h3 className="font-bold text-base tracking-tight">
                     Catatan Rilis v{APP_PATCH_NOTES[0].version}
                   </h3>
                   <p className="text-xs font-bold text-gray-500">{APP_PATCH_NOTES[0].releaseDate}</p>
@@ -1110,7 +1239,7 @@ export default function Settings() {
               </div>
               <button
                 onClick={() => setShowPatchNotesModal(false)}
-                className="w-8 h-8 rounded-lg border-2 border-[#121212] flex items-center justify-center font-black hover:bg-gray-100"
+                className="w-8 h-8 rounded-lg border-[1.5px] border-[#121212] flex items-center justify-center font-bold hover:bg-gray-100"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -1118,7 +1247,7 @@ export default function Settings() {
 
             {/* Highlights */}
             <div className="space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+              <h4 className="text-xs font-bold text-[#121212] flex items-center gap-1.5">
                 <CheckSquare className="w-4 h-4 text-[#10B981]" /> Sorotan Pembaruan:
               </h4>
               <ul className="space-y-1.5 text-xs font-semibold text-gray-700 pl-2">
@@ -1132,14 +1261,14 @@ export default function Settings() {
             </div>
 
             {/* Audio Pack Details */}
-            <div className="p-3.5 bg-[#00F0FF]/20 border-2 border-[#121212] rounded-xl space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+            <div className="p-3.5 bg-[#00F0FF]/20 border-[1.5px] border-[#121212] rounded-xl space-y-2">
+              <h4 className="text-xs font-bold text-[#121212] flex items-center gap-1.5">
                 <Volume2 className="w-4 h-4" /> Integrasi Audio Pack Lokal:
               </h4>
               <ul className="space-y-1 text-xs font-semibold text-gray-800 pl-2">
                 {APP_PATCH_NOTES[0].soundPackUpdates.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-[#FF4B91] font-black">✓</span>
+                    <span className="text-[#FF4B91] font-bold">✓</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -1147,14 +1276,14 @@ export default function Settings() {
             </div>
 
             {/* Suggestions & Recommendations for Next Update */}
-            <div className="p-3.5 bg-[#FFE600]/30 border-2 border-[#121212] rounded-xl space-y-2">
-              <h4 className="text-xs font-black uppercase tracking-wider text-[#121212] flex items-center gap-1.5">
+            <div className="p-3.5 bg-[#FFE600]/30 border-[1.5px] border-[#121212] rounded-xl space-y-2">
+              <h4 className="text-xs font-bold text-[#121212] flex items-center gap-1.5">
                 <Sparkles className="w-4 h-4 text-[#FF6B35]" /> Saran Pembaruan & Temuan Berguna Berikutnya:
               </h4>
               <ul className="space-y-1 text-xs font-semibold text-gray-800 pl-2">
                 {APP_PATCH_NOTES[0].recommendations.map((item, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-black font-black">★</span>
+                    <span className="text-black font-bold">★</span>
                     <span>{item}</span>
                   </li>
                 ))}
@@ -1163,7 +1292,7 @@ export default function Settings() {
 
             <button
               onClick={() => setShowPatchNotesModal(false)}
-              className="memphis-btn memphis-btn-primary w-full py-2.5 text-xs font-black uppercase tracking-wider"
+              className="memphis-btn memphis-btn-primary w-full py-2.5 text-xs font-bold"
             >
               Tutup Catatan
             </button>

@@ -77,6 +77,7 @@ export default function QuranHadis() {
   });
   const [isReaderSettingsOpen, setIsReaderSettingsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showReaderMenu, setShowReaderMenu] = useState(false);
 
   // Tafsir Bottom Sheet Drawer State
   const [tafsirMap, setTafsirMap] = useState<Record<number, string>>({});
@@ -424,77 +425,76 @@ export default function QuranHadis() {
   ];
 
   return (
-    <div className="space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
-      {/* Memphis Header */}
-      <header className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div>
-          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
-            Al-Qur'an & Hadis
-          </h1>
-          <p className="text-gray-600 text-xs font-bold mt-0.5">
-            Baca firman Allah & hadits dengan penanda nomor ayat, audio murottal, dan penyimpanan offline
-          </p>
+    <div className="space-y-3 pb-20 animate-in fade-in duration-300 w-full max-w-full">
+      {/* Header ringkas */}
+      <header className="memphis-card p-3 space-y-2.5">
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <h1 className="text-base font-bold text-[#121212] leading-tight">Al-Qur'an & Hadis</h1>
+            <p className="text-[11px] text-gray-600 mt-0.5 leading-snug">Baca, dengarkan murottal, dan simpan offline</p>
+          </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => setIsKhatamModalOpen(true)}
+              className="memphis-btn memphis-btn-white h-8 px-2.5 text-[11px] gap-1 whitespace-nowrap"
+            >
+              <Sparkles className="w-3 h-3 text-teal-600" />
+              <span>Khatam</span>
+            </button>
+            <button
+              onClick={() => {
+                murottalPlayer.togglePlay();
+                vibrateSuccess();
+              }}
+              className="memphis-btn memphis-btn-green h-8 px-2.5 text-[11px] gap-1 whitespace-nowrap"
+            >
+              <Headphones className="w-3 h-3" />
+              <span>Murottal</span>
+            </button>
+          </div>
         </div>
 
-        {/* Tab Toggle (Memphis Style) */}
-        <div className="flex p-1 rounded-xl border-2 border-black bg-white shadow-[2px_2px_0px_#121212] self-start sm:self-auto overflow-x-auto max-w-full gap-1">
+        {/* Tab (4 kolom sama lebar, tidak terpotong) */}
+        <div className="grid grid-cols-4 gap-1 p-1 rounded-xl border-[1.5px] border-black bg-[#FFFDF8]" role="tablist" aria-label="Bagian Al-Qur'an">
           <button
+            role="tab"
+            aria-selected={activeTab === 'quran'}
             onClick={() => handleTabChange('quran')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-              activeTab === 'quran'
-                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
-                : 'text-gray-600 hover:text-black'
+            className={`h-8 rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1 min-w-0 px-1 ${
+              activeTab === 'quran' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-black'
             }`}
           >
-            Al-Qur'an
+            <span className="truncate">Al-Qur'an</span>
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'hadis'}
             onClick={() => handleTabChange('hadis')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-              activeTab === 'hadis'
-                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
-                : 'text-gray-600 hover:text-black'
+            className={`h-8 rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1 min-w-0 px-1 ${
+              activeTab === 'hadis' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-black'
             }`}
           >
-            Hadits Arba'in
+            <span className="truncate">Hadits</span>
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'favorit'}
             onClick={() => handleTabChange('favorit')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1 whitespace-nowrap ${
-              activeTab === 'favorit'
-                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
-                : 'text-gray-600 hover:text-black'
+            className={`h-8 rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1 min-w-0 px-1 ${
+              activeTab === 'favorit' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-black'
             }`}
           >
-            <Heart className="w-3 h-3 text-red-500 fill-red-500" />
-            <span>Tersimpan ({favoriteAyahs.length + favoriteHadiths.length})</span>
+            <Heart className="w-3 h-3 text-red-500 fill-red-500 shrink-0" /><span className="truncate">Tersimpan</span>{(favoriteAyahs.length + favoriteHadiths.length) > 0 && <span className="text-[10px] opacity-80">({favoriteAyahs.length + favoriteHadiths.length})</span>}
           </button>
           <button
+            role="tab"
+            aria-selected={activeTab === 'doa'}
             onClick={() => handleTabChange('doa')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-black uppercase tracking-wider transition-all whitespace-nowrap ${
-              activeTab === 'doa'
-                ? 'bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 text-black shadow-xs'
-                : 'text-gray-600 hover:text-black'
+            className={`h-8 rounded-lg text-[11px] font-bold transition-colors flex items-center justify-center gap-1 min-w-0 px-1 ${
+              activeTab === 'doa' ? 'bg-emerald-600 text-white' : 'text-gray-600 hover:text-black'
             }`}
           >
-            Doa
-          </button>
-          <button
-            onClick={() => setIsKhatamModalOpen(true)}
-            className="memphis-btn memphis-btn-white px-2 py-0.5 text-[10px] uppercase font-black gap-1 whitespace-nowrap"
-          >
-            <Sparkles className="w-3 h-3 text-teal-600" />
-            <span>Target Khatam</span>
-          </button>
-          <button
-            onClick={() => {
-              murottalPlayer.togglePlay();
-              vibrateSuccess();
-            }}
-            className="memphis-btn memphis-btn-green px-2 py-0.5 text-[10px] uppercase font-black gap-1 whitespace-nowrap"
-          >
-            <Headphones className="w-3 h-3" />
-            <span>Murottal</span>
+            <span className="truncate">Doa</span>
           </button>
         </div>
       </header>
@@ -510,14 +510,14 @@ export default function QuranHadis() {
             const totalRead = relevantLogs.reduce((acc, q) => acc + (q.totalAyat || 0), 0);
             const pct = Math.min(100, Math.round((totalRead / 6236) * 100));
             return (
-              <div className="memphis-card p-3 sm:p-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-2 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-[3px_3px_0px_#121212]">
+              <div className="memphis-card p-3 sm:p-3.5 bg-gradient-to-r from-emerald-400 via-teal-300 to-green-400 border-[1.5px] border-black flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 shadow-[2px_2px_0px_#121212]">
                 <div className="flex items-center gap-2.5">
                   <div className="w-8 h-8 bg-black text-[#6EE7B7] rounded-xl border border-black flex items-center justify-center shrink-0">
                     <Sparkles className="w-4 h-4" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-black uppercase tracking-tight">
+                      <span className="text-xs font-bold text-black tracking-tight">
                         {target.title}
                       </span>
                       <span className="memphis-badge bg-black text-white text-[9px]">
@@ -531,7 +531,7 @@ export default function QuranHadis() {
                 </div>
                 <button
                   onClick={() => setIsKhatamModalOpen(true)}
-                  className="memphis-btn memphis-btn-white px-3 py-1 text-xs font-black uppercase tracking-wider self-start sm:self-auto"
+                  className="memphis-btn memphis-btn-white px-3 py-1 text-xs font-bold self-start sm:self-auto"
                 >
                   Hitungan Target
                 </button>
@@ -542,14 +542,14 @@ export default function QuranHadis() {
           {/* Last Read & Quick Surah Banner (Compact Mobile Scale) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5 sm:gap-3">
             {/* Last read card */}
-            <div className="memphis-card p-3 sm:p-4 bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white shadow-[3px_3px_0px_#121212] flex items-center justify-between">
+            <div className="memphis-card p-3 sm:p-4 bg-gradient-to-br from-emerald-800 via-teal-800 to-emerald-950 text-white shadow-[2px_2px_0px_#121212] flex items-center justify-between">
               <div>
                 <span className="memphis-badge bg-white text-black text-[9px] mb-1">
                   Terakhir Dibaca
                 </span>
                 {lastReadSurah ? (
                   <div>
-                    <h3 className="text-sm sm:text-base font-black uppercase tracking-tight">
+                    <h3 className="text-sm sm:text-base font-bold tracking-tight">
                       Surah {lastReadSurah.name}
                     </h3>
                     <p className="text-[11px] font-bold text-emerald-200 mt-0.5">
@@ -558,7 +558,7 @@ export default function QuranHadis() {
                   </div>
                 ) : (
                   <div>
-                    <h3 className="text-sm sm:text-base font-black uppercase tracking-tight">Al-Fatihah</h3>
+                    <h3 className="text-sm sm:text-base font-bold tracking-tight">Al-Fatihah</h3>
                     <p className="text-[11px] font-bold text-emerald-200 mt-0.5">Mulai membaca surat pertama</p>
                   </div>
                 )}
@@ -569,16 +569,16 @@ export default function QuranHadis() {
                   const surahObj = surahs.find(s => s.nomor === num);
                   if (surahObj) openSurah(surahObj, lastReadSurah?.lastAyah);
                 }}
-                className="memphis-btn memphis-btn-white px-2.5 py-1 text-xs font-black uppercase tracking-wider shrink-0"
+                className="memphis-btn memphis-btn-white px-2.5 py-1 text-xs font-bold shrink-0"
               >
                 Lanjut
               </button>
             </div>
 
             {/* Quick Surat Pilihan & Offline Shortcuts */}
-            <div className="md:col-span-2 memphis-card p-3 sm:p-4 shadow-[3px_3px_0px_#121212] flex flex-col justify-center">
+            <div className="md:col-span-2 memphis-card p-3 sm:p-4 shadow-[2px_2px_0px_#121212] flex flex-col justify-center">
               <div className="flex items-center justify-between mb-1.5">
-                <span className="text-[10px] sm:text-xs font-black text-gray-500 uppercase tracking-wider">
+                <span className="text-[10px] sm:text-xs font-bold text-gray-500 uppercase tracking-wider">
                   Surat Sering Dibaca (Bisa Offline)
                 </span>
                 <span className="memphis-badge bg-emerald-100 text-emerald-800 text-[9px]">
@@ -595,7 +595,7 @@ export default function QuranHadis() {
                         const s = surahs.find(item => item.nomor === ps.no);
                         if (s) openSurah(s);
                       }}
-                      className={`memphis-btn px-2.5 py-1 text-[11px] uppercase font-black gap-1 ${
+                      className={`memphis-btn px-2.5 py-1 text-[11px] uppercase font-bold gap-1 ${
                         isSaved
                           ? 'memphis-btn-green'
                           : 'memphis-btn-white'
@@ -626,7 +626,7 @@ export default function QuranHadis() {
           {isLoadingSurahs ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
               {Array.from({ length: 9 }).map((_, i) => (
-                <div key={i} className="h-16 bg-gray-100 rounded-xl border-2 border-black animate-pulse" />
+                <div key={i} className="h-16 bg-gray-100 rounded-xl border-[1.5px] border-black animate-pulse" />
               ))}
             </div>
           ) : (
@@ -640,12 +640,12 @@ export default function QuranHadis() {
                     className="memphis-card p-2.5 sm:p-3 shadow-[2px_2px_0px_#121212] hover:translate-x-0.5 transition-all cursor-pointer flex items-center justify-between relative group"
                   >
                     <div className="flex items-center gap-2.5 min-w-0">
-                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-400 border border-black text-black font-black flex items-center justify-center text-xs shrink-0 shadow-[1px_1px_0px_#121212]">
+                      <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-teal-400 border border-black text-black font-bold flex items-center justify-center text-xs shrink-0 shadow-[1px_1px_0px_#121212]">
                         {surah.nomor}
                       </div>
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5">
-                          <h3 className="font-black text-xs sm:text-sm uppercase tracking-tight text-black truncate">
+                          <h3 className="font-bold text-xs sm:text-sm tracking-tight text-black truncate">
                             {surah.namaLatin}
                           </h3>
                           {isOffline && (
@@ -886,7 +886,7 @@ export default function QuranHadis() {
                                 className="px-2.5 py-1 bg-purple-50 dark:bg-purple-950/60 text-purple-700 dark:text-purple-300 rounded-lg text-xs font-semibold hover:bg-purple-100 transition-colors flex items-center gap-1"
                                 title="Buka dan baca ayat ini di surah"
                               >
-                                <Eye className="w-3.5 h-3.5" />
+                                <BookOpen className="w-3.5 h-3.5" />
                                 <span className="hidden sm:inline">Buka Surah</span>
                               </button>
                               <button
@@ -1052,8 +1052,8 @@ export default function QuranHadis() {
             isFullscreen ? 'max-w-none' : 'max-w-2xl'
           }`}>
             
-            {/* Sticky Single-Row Header (Max 56px) */}
-            <div className="h-14 sm:h-16 px-3 sm:px-4 border-b border-emerald-800 bg-emerald-700 text-white flex items-center justify-between shrink-0 sticky top-0 z-20 shadow-xs">
+            {/* Header ringkas: tutup, judul, putar, menu tampilan */}
+            <div className="relative h-14 px-3 border-b border-emerald-800 bg-emerald-700 text-white flex items-center justify-between gap-2 shrink-0 sticky top-0 z-20">
               <div className="flex items-center gap-2 min-w-0">
                 <button
                   onClick={() => {
@@ -1061,118 +1061,115 @@ export default function QuranHadis() {
                     if (audioRef.current) audioRef.current.pause();
                     setPlayingAudio(null);
                     setIsFullscreen(false);
+                    setShowReaderMenu(false);
                   }}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0 active:scale-95 transition-all"
-                  aria-label="Tutup Bacaan"
+                  aria-label="Tutup bacaan"
                 >
                   <X className="w-5 h-5" />
                 </button>
                 <div className="min-w-0">
-                  <div className="flex items-center gap-1.5">
-                    <h3 className="text-sm sm:text-base font-bold truncate">
-                      {selectedSurah.namaLatin}
-                    </h3>
-                    <span className="text-xs text-white/70 font-serif shrink-0">
-                      ({selectedSurah.nama})
-                    </span>
+                  <div className="flex items-baseline gap-1.5">
+                    <h3 className="text-sm font-bold truncate">{selectedSurah.namaLatin}</h3>
+                    <span className="text-xs text-white/70 font-serif shrink-0">{selectedSurah.nama}</span>
                   </div>
                   <p className="text-[11px] text-white/80 truncate">
-                    {selectedSurah.jumlahAyat} ayat • {selectedSurah.tempatTurun} • {readingMode === 'mushaf' ? 'Mode Mushaf Kontinu' : 'Mode Per Ayat'}
+                    {selectedSurah.jumlahAyat} ayat • {selectedSurah.tempatTurun}
                   </p>
                 </div>
               </div>
 
-              {/* Quick Action Icons in Header */}
-              <div className="flex items-center gap-1 shrink-0">
-                {/* Switch Mode Baca (Per Ayat vs Mushaf) */}
-                <button
-                  onClick={() => toggleReadingMode(readingMode === 'card' ? 'mushaf' : 'card')}
-                  className="px-2 py-1 rounded-lg bg-white/15 hover:bg-white/25 text-white font-medium text-xs flex items-center gap-1 transition-all"
-                  title={readingMode === 'card' ? "Tampilan Mushaf Kontinu" : "Tampilan Per Ayat"}
-                >
-                  <Layers className="w-3.5 h-3.5" />
-                  <span className="hidden sm:inline">{readingMode === 'card' ? 'Mushaf' : 'Per Ayat'}</span>
-                </button>
-
-                {/* Fullscreen Reader Toggle */}
-                <button
-                  onClick={() => setIsFullscreen(!isFullscreen)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
-                    isFullscreen ? 'bg-amber-400 text-emerald-950 font-bold' : 'bg-white/15 hover:bg-white/25 text-white'
-                  }`}
-                  title={isFullscreen ? "Keluar Fullscreen" : "Mode Fullscreen Reader"}
-                  aria-label="Toggle Fullscreen"
-                >
-                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </button>
-
-                {/* Font Size Adjusters */}
-                <button
-                  onClick={() => changeFontSize(-2)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs"
-                  title="Kecilkan Ukuran Huruf"
-                  aria-label="Kecilkan Huruf"
-                >
-                  A-
-                </button>
-                <button
-                  onClick={() => changeFontSize(2)}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white font-bold text-xs"
-                  title="Besarkan Ukuran Huruf"
-                  aria-label="Besarkan Huruf"
-                >
-                  A+
-                </button>
-
-                {/* Audio Murottal Full Surah */}
+              <div className="flex items-center gap-1.5 shrink-0">
                 {selectedSurah.audioFull?.['05'] && (
                   <button
                     onClick={() => toggleAudio(selectedSurah.audioFull!['05'])}
-                    className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors"
-                    title={playingAudio === selectedSurah.audioFull['05'] ? 'Jeda Audio' : 'Putar Murottal'}
-                    aria-label="Putar Murottal Surat"
+                    className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors"
+                    aria-label={playingAudio === selectedSurah.audioFull['05'] ? 'Jeda murottal' : 'Putar murottal surat'}
                   >
-                    {playingAudio === selectedSurah.audioFull['05'] ? (
-                      <Pause className="w-4 h-4" />
-                    ) : (
-                      <Volume2 className="w-4 h-4" />
-                    )}
+                    {playingAudio === selectedSurah.audioFull['05'] ? <Pause className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
                   </button>
                 )}
-
-                {/* Offline Cache Button */}
                 <button
-                  onClick={(e) => handleToggleOfflineSurah(selectedSurah, e)}
-                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
-                    storage.isSurahOffline(selectedSurah.nomor)
-                      ? 'bg-amber-400 text-emerald-950 font-bold'
-                      : 'bg-white/15 hover:bg-white/25 text-white'
+                  onClick={() => setShowReaderMenu((v) => !v)}
+                  aria-label="Pengaturan tampilan baca"
+                  aria-expanded={showReaderMenu}
+                  className={`h-9 px-3 flex items-center justify-center rounded-lg text-xs font-bold transition-colors ${
+                    showReaderMenu ? 'bg-white text-emerald-800' : 'bg-white/15 hover:bg-white/25 text-white'
                   }`}
-                  title={storage.isSurahOffline(selectedSurah.nomor) ? "Tersimpan Offline" : "Simpan Offline"}
-                  aria-label="Simpan Surat Offline"
                 >
-                  <Download className="w-4 h-4" />
-                </button>
-
-                {/* Catat Tilawah Button */}
-                <button
-                  onClick={() => {
-                    setLogModalProps({
-                      surahNumber: selectedSurah.nomor,
-                      surahName: selectedSurah.namaLatin,
-                      totalAyah: selectedSurah.jumlahAyat,
-                      startAyah: 1,
-                      endAyah: selectedSurah.jumlahAyat
-                    });
-                    setIsLogModalOpen(true);
-                  }}
-                  className="w-8 h-8 flex items-center justify-center rounded-lg bg-white/15 hover:bg-white/25 text-white transition-colors"
-                  title="Catat Jurnal Tilawah"
-                  aria-label="Catat Tilawah"
-                >
-                  <BookOpen className="w-4 h-4" />
+                  Aa
                 </button>
               </div>
+
+              {showReaderMenu && (
+                <>
+                  <div className="fixed inset-0 z-30" onClick={() => setShowReaderMenu(false)} />
+                  <div className="absolute right-2 top-[calc(100%+6px)] z-40 w-64 rounded-xl bg-white text-gray-900 shadow-xl border border-gray-200 p-3 space-y-3">
+                    <div className="space-y-1.5">
+                      <span className="block text-xs font-bold">Mode baca</span>
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {([['card', 'Per ayat'], ['mushaf', 'Mushaf']] as const).map(([id, label]) => (
+                          <button
+                            key={id}
+                            onClick={() => toggleReadingMode(id)}
+                            aria-pressed={readingMode === id}
+                            className={`h-8 rounded-lg text-xs font-bold border ${
+                              readingMode === id ? 'bg-emerald-600 text-white border-emerald-700' : 'bg-white text-gray-700 border-gray-300'
+                            }`}
+                          >
+                            {label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <span className="block text-xs font-bold">Ukuran huruf Arab</span>
+                      <div className="flex items-center justify-between gap-2">
+                        <button onClick={() => changeFontSize(-2)} aria-label="Kecilkan huruf" className="w-9 h-8 rounded-lg border border-gray-300 text-xs font-bold">A-</button>
+                        <span className="text-xs font-semibold text-gray-600">{quranFontSize}px</span>
+                        <button onClick={() => changeFontSize(2)} aria-label="Besarkan huruf" className="w-9 h-8 rounded-lg border border-gray-300 text-sm font-bold">A+</button>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 pt-1 border-t border-gray-100">
+                      <button
+                        onClick={() => setIsFullscreen((v) => !v)}
+                        className="w-full h-9 px-2 rounded-lg hover:bg-gray-50 text-xs font-semibold flex items-center gap-2"
+                      >
+                        {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                        {isFullscreen ? 'Keluar layar penuh' : 'Layar penuh'}
+                      </button>
+                      <button
+                        onClick={(e) => handleToggleOfflineSurah(selectedSurah, e)}
+                        className="w-full h-9 px-2 rounded-lg hover:bg-gray-50 text-xs font-semibold flex items-center gap-2"
+                      >
+                        <Download className="w-4 h-4" />
+                        {storage.isSurahOffline(selectedSurah.nomor) ? 'Hapus dari offline' : 'Simpan offline'}
+                      </button>
+                      <button
+                        onClick={() => {
+                          setShowReaderMenu(false);
+                          setLogModalProps({
+                            surahNumber: selectedSurah.nomor,
+                            surahName: selectedSurah.namaLatin,
+                            totalAyah: selectedSurah.jumlahAyat,
+                            startAyah: 1,
+                            endAyah: selectedSurah.jumlahAyat
+                          });
+                          setIsLogModalOpen(true);
+                        }}
+                        className="w-full h-9 px-2 rounded-lg hover:bg-gray-50 text-xs font-semibold flex items-center gap-2"
+                      >
+                        <BookOpen className="w-4 h-4" />
+                        Catat tilawah
+                      </button>
+                    </div>
+
+                    <p className="text-[11px] text-gray-500 leading-snug">Teks Latin dan terjemahan diatur di menu Pengaturan.</p>
+                  </div>
+                </>
+              )}
             </div>
 
             {/* Content Container (Ayah List or Continuous Mushaf View) */}
@@ -1250,7 +1247,7 @@ export default function QuranHadis() {
                     {/* Transliteration & Translation Section per Ayah in Mushaf Mode */}
                     {(showLatin || showTranslation) && (
                       <div className="pt-4 border-t border-emerald-100 dark:border-slate-700 space-y-3">
-                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300">
                           Terjemahan & Transliterasi Ayat:
                         </p>
                         {ayahs.map((a) => (
@@ -1501,7 +1498,7 @@ export default function QuranHadis() {
 
               {/* Tafsir Paragraph */}
               <div className="space-y-2">
-                <h4 className="font-bold text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                <h4 className="font-bold text-xs text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
                   <FileText className="w-4 h-4" />
                   <span>Penjelasan Tafsir Ringkas:</span>
                 </h4>

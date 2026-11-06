@@ -72,13 +72,13 @@ export default function DoaZikir() {
   return (
     <div className="space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
       {/* Memphis Header */}
-      <div className="p-3.5 sm:p-5 bg-white border-2 sm:border-[2.5px] border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+      <div className="p-3.5 sm:p-5 bg-white border-2 sm:border-[1.5px] border-[#121212] rounded-2xl shadow-[2px_2px_0px_#121212] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-400 to-green-500 border-2 border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] shrink-0">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-400 to-green-500 border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] shrink-0">
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#121212]" />
           </div>
           <div>
-            <h1 className="text-base sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+            <h1 className="text-base sm:text-xl font-bold tracking-tight text-[#121212]">
               Kumpulan Doa & Zikir
             </h1>
             <p className="text-xs font-bold text-gray-600 mt-0.5">
@@ -112,9 +112,9 @@ export default function DoaZikir() {
         <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full hide-scrollbar">
           <button
             onClick={() => handleTabChange('wirid_salat')}
-            className={`memphis-btn px-3 py-1.5 text-xs uppercase tracking-wider shrink-0 transition-all ${
+            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
               activeTab === 'wirid_salat'
-                ? 'memphis-btn-green text-white font-black'
+                ? 'memphis-btn-green text-white font-bold'
                 : 'memphis-btn-white text-gray-700 font-bold'
             }`}
           >
@@ -122,9 +122,9 @@ export default function DoaZikir() {
           </button>
           <button
             onClick={() => handleTabChange('harian')}
-            className={`memphis-btn px-3 py-1.5 text-xs uppercase tracking-wider shrink-0 transition-all ${
+            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
               activeTab === 'harian'
-                ? 'memphis-btn-green text-white font-black'
+                ? 'memphis-btn-green text-white font-bold'
                 : 'memphis-btn-white text-gray-700 font-bold'
             }`}
           >
@@ -132,9 +132,9 @@ export default function DoaZikir() {
           </button>
           <button
             onClick={() => handleTabChange('belajar')}
-            className={`memphis-btn px-3 py-1.5 text-xs uppercase tracking-wider shrink-0 transition-all ${
+            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
               activeTab === 'belajar'
-                ? 'memphis-btn-green text-white font-black'
+                ? 'memphis-btn-green text-white font-bold'
                 : 'memphis-btn-white text-gray-700 font-bold'
             }`}
           >
@@ -142,9 +142,9 @@ export default function DoaZikir() {
           </button>
           <button
             onClick={() => handleTabChange('all')}
-            className={`memphis-btn px-3 py-1.5 text-xs uppercase tracking-wider shrink-0 transition-all ${
+            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
               activeTab === 'all'
-                ? 'memphis-btn-green text-white font-black'
+                ? 'memphis-btn-green text-white font-bold'
                 : 'memphis-btn-white text-gray-700 font-bold'
             }`}
           >
@@ -156,9 +156,9 @@ export default function DoaZikir() {
       {/* Main List */}
       <div className="space-y-3">
         {filteredItems.length === 0 ? (
-          <div className="p-8 text-center bg-white border-2 border-black rounded-2xl shadow-[3px_3px_0px_#121212]">
+          <div className="p-8 text-center bg-white border-[1.5px] border-black rounded-2xl shadow-[2px_2px_0px_#121212]">
             <BookOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-xs font-black uppercase text-gray-600">
+            <p className="text-xs font-bold text-gray-600">
               Tidak ada doa yang cocok dengan pencarian "{searchQuery}"
             </p>
             <button
@@ -185,12 +185,12 @@ export default function DoaZikir() {
                 {/* Header item */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-2.5">
-                    <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-black text-white text-[11px] sm:text-xs font-black flex items-center justify-center shrink-0 mt-0.5">
+                    <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-black text-white text-[11px] sm:text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                       {index + 1}
                     </span>
                     <div>
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-black text-xs sm:text-sm text-[#121212]">
+                        <h2 className="font-bold text-xs sm:text-sm text-[#121212]">
                           {item.title}
                         </h2>
                         {item.category === 'wirid_salat' && (
@@ -217,7 +217,7 @@ export default function DoaZikir() {
                     <button
                       onClick={() => handleCopy(item)}
                       title="Salin Teks Doa"
-                      className="p-1.5 rounded-lg border-2 border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212]"
+                      className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212]"
                     >
                       {copiedId === item.id ? (
                         <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
@@ -227,7 +227,7 @@ export default function DoaZikir() {
                     </button>
                     <button
                       onClick={() => toggleExpand(item.id)}
-                      className="p-1.5 rounded-lg border-2 border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] text-xs font-black"
+                      className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] text-xs font-bold"
                     >
                       {isExpanded ? 'Sembunyikan' : 'Buka Terjemahan'}
                     </button>
@@ -261,7 +261,7 @@ export default function DoaZikir() {
                 {hasTarget && (
                   <div className="mt-3.5 pt-3 border-t border-black/10 flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-black text-gray-700">
+                      <span className="text-xs font-bold text-gray-700">
                         Target Dzikir: {item.targetCount}x
                       </span>
                       {isTargetReached && (
@@ -280,7 +280,7 @@ export default function DoaZikir() {
                       </button>
                       <button
                         onClick={() => handleIncrement(item.id, item.targetCount)}
-                        className={`memphis-btn px-4 py-1.5 text-xs font-black uppercase tracking-wider ${
+                        className={`memphis-btn px-4 py-1.5 text-xs font-bold ${
                           isTargetReached
                             ? 'bg-emerald-600 text-white'
                             : 'memphis-btn-green text-white'

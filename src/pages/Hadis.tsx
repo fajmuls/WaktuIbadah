@@ -20,12 +20,12 @@ export default function Hadis() {
   return (
     <div className="space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
       {/* Memphis Header */}
-      <header className="p-3.5 sm:p-4 bg-white border-2 border-[#121212] rounded-2xl shadow-[3px_3px_0px_#121212] flex items-center gap-3">
-        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-2 border-black rounded-xl flex items-center justify-center text-black font-black shadow-[2px_2px_0px_#121212] shrink-0">
+      <header className="p-3.5 sm:p-4 bg-white border-[1.5px] border-[#121212] rounded-2xl shadow-[2px_2px_0px_#121212] flex items-center gap-3">
+        <div className="w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 border-[1.5px] border-black rounded-xl flex items-center justify-center text-black font-bold shadow-[2px_2px_0px_#121212] shrink-0">
           <BookOpen className="w-5 h-5 stroke-[2.5]" />
         </div>
         <div>
-          <h1 className="text-lg sm:text-xl font-black uppercase tracking-tight text-[#121212]">
+          <h1 className="text-lg sm:text-xl font-bold tracking-tight text-[#121212]">
             Kumpulan Hadis
           </h1>
           <p className="text-gray-600 text-xs font-bold mt-0.5">
@@ -51,7 +51,7 @@ export default function Hadis() {
           <select 
             value={selectedNarrator}
             onChange={(e) => setSelectedNarrator(e.target.value)}
-            className="pl-7 pr-6 py-2 memphis-input text-xs font-black uppercase appearance-none min-w-[100px] cursor-pointer"
+            className="pl-7 pr-6 py-2 memphis-input text-xs font-bold appearance-none min-w-[100px] cursor-pointer"
           >
             {narrators.map(n => (
               <option key={n} value={n}>{n}</option>
