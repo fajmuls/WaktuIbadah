@@ -256,6 +256,32 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.4.0',
+    releaseDate: '5 November 2026',
+    title: 'Mode Per Halaman Mushaf Kontinu, Bottom Sheet Tafsir Kemenag RI, Mode Fullscreen Reader, & Export/Import Data Backup',
+    highlights: [
+      'Mode Per Halaman Mushaf Kontinu: Pilihan membaca Al-Qur\'an ala Mushaf mengalir sambung dengan nomor ayat melingkar di akhir ayat.',
+      'Bottom Sheet Tafsir Kemenag RI: Ketuk teks ayat Al-Qur\'an mana saja untuk membaca analisis Tafsir Ringkas Kemenag RI per ayat.',
+      'Mode Fullscreen Reader: Opsi menyembunyikan header dan bottom navigation bar untuk kenyamanan membaca tanpa distraksi.',
+      'Sakelar Kontrol Teks Fleksibel: Pengaturan lengkap untuk menampilkan Teks Arab saja, Arab+Latin, Arab+Terjemahan, atau Teks Lengkap.',
+      'Export & Import Backup JSON Data: Tombol unduh dan pulihkan file cadangan .json di halaman Pengaturan untuk migrasi data tanpa cloud.',
+      'IndexedDB Murottal Offline Caching: Audio murottal per ayat yang pernah diputar disimpan secara otomatis untuk pemutaran offline.'
+    ],
+    soundPackUpdates: [
+      'Pemutaran audio murottal otomatis menggunakan cache IndexedDB jika tersedia offline'
+    ],
+    uiOverhaul: [
+      'Tampilan Mushaf Kontinu berlatar hangat khas kertas Al-Qur\'an',
+      'Bottom Sheet Tafsir Kemenag interaktif beranimasi slide-up',
+      'Tombol Fullscreen dedicated di header sticky Al-Qur\'an'
+    ],
+    recommendations: [
+      'Saran UI/UX: Pencarian kata kunci ayat Al-Qur\'an langsung dari baris Mushaf',
+      'Saran QoL: PWA Widget pengingat azan berikutnya di layar HP',
+      'Saran Perbaikan: Pemutaran audio murottal otomatis berlanjut antar surat (Continuous Auto-next Surah)'
+    ]
+  },
+  {
     version: '2.3.1',
     releaseDate: '5 November 2026',
     title: 'Optimasi UI/UX Mobile (360px-412px), Perbaikan Firestore Rules, & Sticky Header Al-Qur\'an Ringkas',

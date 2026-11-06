@@ -6,7 +6,7 @@ import {
   Clock, Vibrate, Volume2, Sparkles, Shield, Moon, CheckCircle2,
   Calendar, BookOpen, AlertTriangle, Lock, Play, Cloud, KeyRound,
   ShieldCheck, RefreshCw, Smartphone, Laptop, ArrowRightLeft, Send,
-  Music, CheckSquare, Layers, HelpCircle, X
+  Music, CheckSquare, Layers, HelpCircle, X, Download, Upload
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -265,6 +265,42 @@ export default function Settings() {
     } finally {
       setIsSwitching(false);
     }
+  };
+
+  const handleExportJSON = () => {
+    playSaveSuccessSound();
+    const data = storage.exportAllData();
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `waktuibadah_backup_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    setSyncMessage({ text: 'File cadangan JSON berhasil diunduh ke perangkat!', type: 'success' });
+    setTimeout(() => setSyncMessage(null), 5000);
+  };
+
+  const handleImportJSON = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        const ok = storage.importAllData(json);
+        if (ok) {
+          playSaveSuccessSound();
+          setSyncMessage({ text: 'Data lokal berhasil dipulihkan dari file JSON! Memuat ulang...', type: 'success' });
+          setTimeout(() => window.location.reload(), 1500);
+        } else {
+          setSyncMessage({ text: 'Format file cadangan JSON tidak valid.', type: 'error' });
+        }
+      } catch (err) {
+        setSyncMessage({ text: 'Gagal membaca file JSON. Pastikan file valid.', type: 'error' });
+      }
+    };
+    reader.readAsText(file);
   };
 
   if (!user) return null;
@@ -542,6 +578,46 @@ export default function Settings() {
               {quranWhiteTheme ? 'Aktif' : 'Ikuti Tema'}
             </button>
           </div>
+        </div>
+      </div>
+
+      {/* Backup & Restore Data JSON Offline */}
+      <div className="memphis-card p-[14px] space-y-3">
+        <div className="flex items-center justify-between border-b-2 border-black pb-2.5">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 bg-[#00F0FF] border-[1.5px] border-black shadow-[1.5px_1.5px_0px_#121212] rounded-xl flex items-center justify-center font-bold">
+              <Download className="w-4 h-4 text-black" />
+            </div>
+            <div>
+              <h3 className="font-bold text-xs sm:text-sm tracking-tight text-gray-900 dark:text-white">
+                Cadangkan & Pulihkan Data (Backup JSON)
+              </h3>
+              <p className="text-[11px] font-medium text-gray-600 dark:text-gray-400">
+                Ekspor data tilawah & jadwal ke file .json untuk dipindahkan antar perangkat tanpa cloud
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2 pt-1 flex-wrap sm:flex-nowrap">
+          <button
+            onClick={handleExportJSON}
+            className="flex-1 h-10 px-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl border-[1.5px] border-black shadow-[2px_2px_0px_#121212] active:translate-y-0.5 transition-all flex items-center justify-center gap-1.5"
+          >
+            <Download className="w-4 h-4" />
+            <span>Unduh Cadangan (.json)</span>
+          </button>
+
+          <label className="flex-1 h-10 px-3 bg-amber-400 hover:bg-amber-500 text-black font-bold text-xs rounded-xl border-[1.5px] border-black shadow-[2px_2px_0px_#121212] active:translate-y-0.5 transition-all flex items-center justify-center gap-1.5 cursor-pointer">
+            <Upload className="w-4 h-4" />
+            <span>Pulihkan Data (.json)</span>
+            <input
+              type="file"
+              accept=".json"
+              onChange={handleImportJSON}
+              className="hidden"
+            />
+          </label>
         </div>
       </div>
 

@@ -4,7 +4,7 @@ import {
   BookOpen, Search, Play, Pause, Volume2, Bookmark, Check, Copy, 
   ChevronRight, X, Sparkles, Heart, Download, CheckCircle2,
   Trash2, ExternalLink, Share2, Compass, Headphones, Moon,
-  Quote, Tag, Eye
+  Quote, Tag, Eye, Maximize2, Minimize2, FileText, Layers
 } from 'lucide-react';
 import { SurahItem, AyatItem, HadithArbain, FavoriteAyah, FavoriteHadith } from '../types';
 import { storage } from '../lib/storage';
@@ -13,7 +13,8 @@ import { murottalPlayer } from '../lib/murottal';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { KhatamCalculatorModal } from '../components/KhatamCalculatorModal';
 import { TadabburBookmarkModal } from '../components/TadabburBookmarkModal';
-import { getSurahAyahs } from '../lib/quran-api';
+import { getSurahAyahs, getSurahTafsir } from '../lib/quran-api';
+import { getCachedAudioUrl } from '../lib/murottal-cache';
 
 // Helper to convert western digits to authentic Arabic numerals (١, ٢, ٣...)
 export const toArabicNumerals = (num: number | string): string => {
@@ -53,10 +54,18 @@ export default function QuranHadis() {
     }
   });
 
-  // Font size & visibility controls (Section G)
+  // Font size, visibility & mode controls
   const [quranFontSize, setQuranFontSize] = useState<number>(() => {
     const saved = localStorage.getItem('wi_quran_font_size');
     return saved ? Number(saved) : 26;
+  });
+  const [readingMode, setReadingMode] = useState<'card' | 'mushaf'>(() => {
+    const saved = localStorage.getItem('wi_quran_reading_mode');
+    return (saved as 'card' | 'mushaf') || 'card';
+  });
+  const [showArabic, setShowArabic] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_show_arabic');
+    return saved !== null ? saved === 'true' : true;
   });
   const [showLatin, setShowLatin] = useState<boolean>(() => {
     const saved = localStorage.getItem('wi_quran_show_latin');
@@ -67,6 +76,23 @@ export default function QuranHadis() {
     return saved !== null ? saved === 'true' : true;
   });
   const [isReaderSettingsOpen, setIsReaderSettingsOpen] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Tafsir Bottom Sheet Drawer State
+  const [tafsirMap, setTafsirMap] = useState<Record<number, string>>({});
+  const [isLoadingTafsir, setIsLoadingTafsir] = useState(false);
+  const [selectedTafsir, setSelectedTafsir] = useState<{ surah: SurahItem; ayah: AyatItem; tafsirText: string } | null>(null);
+
+  const toggleReadingMode = (mode: 'card' | 'mushaf') => {
+    setReadingMode(mode);
+    localStorage.setItem('wi_quran_reading_mode', mode);
+  };
+
+  const toggleShowArabic = () => {
+    const next = !showArabic;
+    setShowArabic(next);
+    localStorage.setItem('wi_quran_show_arabic', String(next));
+  };
 
   const changeFontSize = (delta: number) => {
     const next = Math.min(34, Math.max(22, quranFontSize + delta));
@@ -84,6 +110,18 @@ export default function QuranHadis() {
     const next = !showTranslation;
     setShowTranslation(next);
     localStorage.setItem('wi_quran_show_translation', String(next));
+  };
+
+  const handleOpenTafsir = async (surah: SurahItem, ayah: AyatItem) => {
+    setIsLoadingTafsir(true);
+    let currentTafsirMap = tafsirMap;
+    if (Object.keys(currentTafsirMap).length === 0) {
+      currentTafsirMap = await getSurahTafsir(surah.nomor);
+      setTafsirMap(currentTafsirMap);
+    }
+    const text = currentTafsirMap[ayah.nomorAyat] || 'Penjelasan tafsir ringkas Kemenag RI untuk ayat ini sedang diproses atau tidak tersedia.';
+    setSelectedTafsir({ surah, ayah, tafsirText: text });
+    setIsLoadingTafsir(false);
   };
 
   // Log Modal State
@@ -188,6 +226,7 @@ export default function QuranHadis() {
     setSelectedSurah(surah);
     setIsLoadingAyahs(true);
     setAyahs([]);
+    setTafsirMap({});
 
     try {
       const result = await getSurahAyahs(surah.nomor);
@@ -311,8 +350,8 @@ export default function QuranHadis() {
     vibrateSuccess();
   };
 
-  // Audio Handler
-  const toggleAudio = (audioUrl: string) => {
+  // Audio Handler with IndexedDB caching
+  const toggleAudio = async (audioUrl: string) => {
     if (playingAudio === audioUrl) {
       audioRef.current?.pause();
       setPlayingAudio(null);
@@ -320,7 +359,8 @@ export default function QuranHadis() {
       if (audioRef.current) {
         audioRef.current.pause();
       }
-      const audio = new Audio(audioUrl);
+      const cachedUrl = await getCachedAudioUrl(audioUrl);
+      const audio = new Audio(cachedUrl);
       audioRef.current = audio;
       audio.play().catch(e => console.warn("Audio play blocked", e));
       setPlayingAudio(audioUrl);
@@ -1005,8 +1045,12 @@ export default function QuranHadis() {
 
       {/* ======================= SURAH DETAIL MODAL ======================= */}
       {selectedSurah && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex justify-end animate-in fade-in duration-200">
-          <div className="bg-[#FAF9F5] dark:bg-slate-900 w-full max-w-2xl h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300">
+        <div className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex justify-end animate-in fade-in duration-200 ${
+          isFullscreen ? 'p-0' : ''
+        }`}>
+          <div className={`bg-[#FAF9F5] dark:bg-slate-900 w-full h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300 ${
+            isFullscreen ? 'max-w-none' : 'max-w-2xl'
+          }`}>
             
             {/* Sticky Single-Row Header (Max 64px) */}
             <div className="h-14 sm:h-16 px-3 sm:px-4 border-b-2 border-black bg-emerald-700 text-white flex items-center justify-between shrink-0 sticky top-0 z-20">
@@ -1016,6 +1060,7 @@ export default function QuranHadis() {
                     setSelectedSurah(null);
                     if (audioRef.current) audioRef.current.pause();
                     setPlayingAudio(null);
+                    setIsFullscreen(false);
                   }}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0 active:scale-95 transition-all"
                   aria-label="Tutup Bacaan"
@@ -1032,13 +1077,25 @@ export default function QuranHadis() {
                     </span>
                   </div>
                   <p className="text-[11px] text-white/80 truncate">
-                    {selectedSurah.jumlahAyat} ayat • {selectedSurah.tempatTurun} • {selectedSurah.arti}
+                    {selectedSurah.jumlahAyat} ayat • {selectedSurah.tempatTurun} • {readingMode === 'mushaf' ? 'Mode Mushaf Kontinu' : 'Mode Per Ayat'}
                   </p>
                 </div>
               </div>
 
               {/* Quick Action Icons in Header */}
               <div className="flex items-center gap-1 shrink-0">
+                {/* Fullscreen Reader Toggle */}
+                <button
+                  onClick={() => setIsFullscreen(!isFullscreen)}
+                  className={`w-8 h-8 flex items-center justify-center rounded-lg transition-colors ${
+                    isFullscreen ? 'bg-amber-400 text-emerald-950 font-bold' : 'bg-white/15 hover:bg-white/25 text-white'
+                  }`}
+                  title={isFullscreen ? "Keluar Fullscreen" : "Mode Fullscreen Reader"}
+                  aria-label="Toggle Fullscreen"
+                >
+                  {isFullscreen ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+                </button>
+
                 {/* Font Size Adjusters */}
                 <button
                   onClick={() => changeFontSize(-2)}
@@ -1122,53 +1179,92 @@ export default function QuranHadis() {
 
             {/* Reader Settings Drawer / Quick Controls Sheet */}
             {isReaderSettingsOpen && (
-              <div className="bg-amber-50 dark:bg-slate-800 border-b-2 border-black p-3 px-4 flex flex-wrap items-center justify-between gap-3 text-xs animate-in slide-in-from-top-2 duration-150">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-gray-800 dark:text-gray-200">Ukuran Teks:</span>
+              <div className="bg-amber-50 dark:bg-slate-800 border-b-2 border-black p-3 px-4 space-y-3 text-xs animate-in slide-in-from-top-2 duration-150 shrink-0">
+                {/* Mode Tampilan Baca (Per Ayat vs Per Halaman Mushaf) */}
+                <div className="flex items-center justify-between gap-2 border-b border-gray-300 dark:border-gray-700 pb-2">
+                  <span className="font-bold text-gray-800 dark:text-gray-200">Gaya Tampilan:</span>
                   <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-black rounded-lg p-0.5">
-                    {[22, 26, 30, 34].map(size => (
-                      <button
-                        key={size}
-                        onClick={() => {
-                          setQuranFontSize(size);
-                          localStorage.setItem('wi_quran_font_size', String(size));
-                        }}
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold ${
-                          quranFontSize === size
-                            ? 'bg-emerald-600 text-white'
-                            : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100'
-                        }`}
-                      >
-                        {size}px
-                      </button>
-                    ))}
+                    <button
+                      onClick={() => toggleReadingMode('card')}
+                      className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all ${
+                        readingMode === 'card'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                      }`}
+                    >
+                      Per Ayat (Kartu)
+                    </button>
+                    <button
+                      onClick={() => toggleReadingMode('mushaf')}
+                      className={`px-2.5 py-1 rounded text-[11px] font-bold transition-all ${
+                        readingMode === 'mushaf'
+                          ? 'bg-emerald-600 text-white shadow-xs'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                      }`}
+                    >
+                      Per Halaman (Mushaf Kontinu)
+                    </button>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={showLatin}
-                      onChange={toggleShowLatin}
-                      className="w-4 h-4 accent-emerald-600 rounded"
-                    />
-                    <span>Teks Latin</span>
-                  </label>
-                  <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={showTranslation}
-                      onChange={toggleShowTranslation}
-                      className="w-4 h-4 accent-emerald-600 rounded"
-                    />
-                    <span>Terjemahan</span>
-                  </label>
+                {/* Visual Checkboxes: Teks Arab, Latin, Terjemahan & Font Size */}
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-gray-800 dark:text-gray-200">Ukuran Huruf:</span>
+                    <div className="flex items-center gap-1 bg-white dark:bg-slate-900 border border-black rounded-lg p-0.5">
+                      {[22, 26, 30, 34].map(size => (
+                        <button
+                          key={size}
+                          onClick={() => {
+                            setQuranFontSize(size);
+                            localStorage.setItem('wi_quran_font_size', String(size));
+                          }}
+                          className={`px-2 py-0.5 rounded text-[11px] font-bold ${
+                            quranFontSize === size
+                              ? 'bg-emerald-600 text-white'
+                              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                          }`}
+                        >
+                          {size}px
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showArabic}
+                        onChange={toggleShowArabic}
+                        className="w-4 h-4 accent-emerald-600 rounded"
+                      />
+                      <span>Teks Arab</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showLatin}
+                        onChange={toggleShowLatin}
+                        className="w-4 h-4 accent-emerald-600 rounded"
+                      />
+                      <span>Teks Latin</span>
+                    </label>
+                    <label className="flex items-center gap-1.5 font-bold text-gray-800 dark:text-gray-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={showTranslation}
+                        onChange={toggleShowTranslation}
+                        className="w-4 h-4 accent-emerald-600 rounded"
+                      />
+                      <span>Terjemahan</span>
+                    </label>
+                  </div>
                 </div>
               </div>
             )}
 
-            {/* Ayah List */}
+            {/* Content Container (Ayah List or Continuous Mushaf View) */}
             <div className="flex-1 overflow-y-auto p-3 sm:p-5 space-y-3 pb-24">
               {/* Bismillah banner (unless At-Taubah #9 and Al-Fatihah #1) */}
               {selectedSurah.nomor !== 9 && selectedSurah.nomor !== 1 && (
@@ -1198,7 +1294,84 @@ export default function QuranHadis() {
                     <span>Muat Ulang Ayat</span>
                   </button>
                 </div>
+              ) : readingMode === 'mushaf' ? (
+                /* ======================= MODE PER HALAMAN MUSHAF KONTINU ======================= */
+                <div className="space-y-4">
+                  <div className="p-4 sm:p-6 bg-[#FFFDF8] dark:bg-slate-800 border-[1.5px] border-black rounded-2xl shadow-[2px_2px_0px_#121212] space-y-4">
+                    <div className="text-center pb-3 border-b border-emerald-200 dark:border-slate-700 flex items-center justify-between text-xs text-gray-600 dark:text-gray-300">
+                      <span>📖 Mode Mushaf Kontinu</span>
+                      <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                        {selectedSurah.namaLatin} ({selectedSurah.jumlahAyat} Ayat)
+                      </span>
+                      <span className="text-[11px] text-gray-500">Ketuk ayat untuk Tafsir RI</span>
+                    </div>
+
+                    {/* Continuous Arabic Text Paragraph */}
+                    {showArabic && (
+                      <div 
+                        className="text-right font-serif font-bold text-gray-900 dark:text-white leading-[2.6] sm:leading-[3.0] tracking-wide"
+                        style={{ fontSize: `${quranFontSize}px` }}
+                        dir="rtl"
+                      >
+                        {ayahs.map((a) => (
+                          <React.Fragment key={a.nomorAyat}>
+                            <span 
+                              onClick={() => handleOpenTafsir(selectedSurah, a)}
+                              className="hover:bg-emerald-100/70 dark:hover:bg-emerald-950/60 rounded px-1 transition-colors cursor-pointer"
+                              title={`Ketuk untuk membaca Tafsir Kemenag RI Ayat ${a.nomorAyat}`}
+                            >
+                              {a.teksArab}
+                            </span>
+                            {/* Circular Ornament Badge at End of Verse */}
+                            <button
+                              type="button"
+                              onClick={() => handleOpenTafsir(selectedSurah, a)}
+                              className="inline-flex items-center justify-center mx-1.5 w-6 h-6 rounded-full border border-black bg-emerald-300 dark:bg-emerald-600 text-black dark:text-white text-[10.5px] font-serif font-bold select-none align-middle hover:scale-110 active:scale-95 transition-all shadow-[1px_1px_0px_#121212]"
+                              title={`Tafsir Ayat ${a.nomorAyat}`}
+                            >
+                              {toArabicNumerals(a.nomorAyat)}
+                            </button>
+                          </React.Fragment>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Transliteration & Translation Section per Ayah in Mushaf Mode */}
+                    {(showLatin || showTranslation) && (
+                      <div className="pt-4 border-t border-emerald-200 dark:border-slate-700 space-y-3">
+                        <p className="text-xs font-bold text-emerald-800 dark:text-emerald-300 uppercase tracking-wider">
+                          Terjemahan & Transliterasi Ayat:
+                        </p>
+                        {ayahs.map((a) => (
+                          <div 
+                            key={a.nomorAyat} 
+                            onClick={() => handleOpenTafsir(selectedSurah, a)}
+                            className="p-2.5 bg-gray-50 dark:bg-slate-900/60 rounded-xl border border-gray-200 dark:border-slate-700 space-y-1 cursor-pointer hover:border-emerald-500 transition-colors"
+                          >
+                            <div className="flex items-center justify-between text-xs">
+                              <span className="font-bold text-emerald-700 dark:text-emerald-400">
+                                Ayat {a.nomorAyat}
+                              </span>
+                              <span className="text-[10px] text-gray-500 italic">Ketuk untuk Tafsir RI</span>
+                            </div>
+                            {showLatin && a.teksLatin && (
+                              <p className="text-[12px] text-emerald-900 dark:text-emerald-300 italic font-medium">
+                                {a.teksLatin}
+                              </p>
+                            )}
+                            {showTranslation && a.teksIndonesia && (
+                              <p className="text-[13px] text-gray-800 dark:text-gray-200 leading-relaxed">
+                                {a.teksIndonesia}
+                              </p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
               ) : (
+                /* ======================= MODE PER AYAT (KARTU) ======================= */
                 ayahs.map((ayah) => {
                   const ayahId = `${selectedSurah.nomor}:${ayah.nomorAyat}`;
                   const isFav = storage.isAyahFavorite(ayahId);
@@ -1217,10 +1390,20 @@ export default function QuranHadis() {
                     >
                       {/* Ayah Header Action Row */}
                       <div className="flex items-center justify-between gap-2">
-                        {/* Number Badge */}
-                        <span className="w-7 h-7 rounded-lg bg-black text-[#6EE7B7] text-xs font-bold flex items-center justify-center shrink-0">
-                          {ayah.nomorAyat}
-                        </span>
+                        {/* Number Badge & Tafsir Trigger */}
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-7 h-7 rounded-lg bg-black text-[#6EE7B7] text-xs font-bold flex items-center justify-center shrink-0">
+                            {ayah.nomorAyat}
+                          </span>
+                          <button
+                            onClick={() => handleOpenTafsir(selectedSurah, ayah)}
+                            className="px-2 py-1 bg-amber-100 dark:bg-amber-950/60 hover:bg-amber-200 text-amber-950 dark:text-amber-300 border border-black rounded-md text-[11px] font-bold flex items-center gap-1 transition-all active:scale-95"
+                            title="Baca Tafsir Kemenag RI"
+                          >
+                            <FileText className="w-3 h-3" />
+                            <span>Tafsir</span>
+                          </button>
+                        </div>
 
                         {/* 32px Icon-Only Action Buttons on Mobile (<640px) */}
                         <div className="flex items-center gap-1.5">
@@ -1278,20 +1461,24 @@ export default function QuranHadis() {
                       </div>
 
                       {/* Arabic Text (driven by quranFontSize, ~2.1 line-height, right-aligned) */}
-                      <div 
-                        className="text-right font-serif font-bold text-gray-900 dark:text-white leading-[2.1] pr-1" 
-                        style={{ fontSize: `${quranFontSize}px` }}
-                        dir="rtl"
-                      >
-                        <span>{ayah.teksArab}</span>
-                        {/* Inline 20px Ayah Number Badge Indicator */}
-                        <span 
-                          className="inline-flex items-center justify-center mx-1.5 w-5 h-5 rounded-full border border-black bg-emerald-300 dark:bg-emerald-600 text-black dark:text-white text-[10px] font-serif font-bold select-none align-middle"
-                          title={`Ayat ${ayah.nomorAyat}`}
+                      {showArabic && (
+                        <div 
+                          onClick={() => handleOpenTafsir(selectedSurah, ayah)}
+                          className="text-right font-serif font-bold text-gray-900 dark:text-white leading-[2.1] pr-1 cursor-pointer hover:bg-emerald-50/50 rounded transition-colors" 
+                          style={{ fontSize: `${quranFontSize}px` }}
+                          dir="rtl"
+                          title="Ketuk untuk membaca Tafsir Kemenag RI"
                         >
-                          {toArabicNumerals(ayah.nomorAyat)}
-                        </span>
-                      </div>
+                          <span>{ayah.teksArab}</span>
+                          {/* Inline 20px Ayah Number Badge Indicator */}
+                          <span 
+                            className="inline-flex items-center justify-center mx-1.5 w-5 h-5 rounded-full border border-black bg-emerald-300 dark:bg-emerald-600 text-black dark:text-white text-[10px] font-serif font-bold select-none align-middle"
+                            title={`Ayat ${ayah.nomorAyat}`}
+                          >
+                            {toArabicNumerals(ayah.nomorAyat)}
+                          </span>
+                        </div>
+                      )}
 
                       {/* Latin Transliteration (13px italic without heavy box) */}
                       {showLatin && (
@@ -1352,6 +1539,100 @@ export default function QuranHadis() {
                 </button>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ======================= TAFSIR KEMENAG RI BOTTOM SHEET ======================= */}
+      {selectedTafsir && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex items-end justify-center animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-2xl max-h-[85vh] rounded-t-3xl border-t-2 border-x-2 border-black flex flex-col shadow-2xl animate-in slide-in-from-bottom duration-300">
+            
+            {/* Tafsir Drawer Header */}
+            <div className="p-4 border-b border-gray-200 dark:border-slate-800 bg-emerald-700 text-white flex items-center justify-between rounded-t-3xl shrink-0">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-8 h-8 rounded-lg bg-white/20 flex items-center justify-center font-bold text-xs shrink-0">
+                  {selectedTafsir.ayah.nomorAyat}
+                </div>
+                <div className="min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base truncate">
+                    Tafsir Kemenag RI — {selectedTafsir.surah.namaLatin} Ayat {selectedTafsir.ayah.nomorAyat}
+                  </h3>
+                  <p className="text-[11px] text-emerald-100 truncate">
+                    {selectedSurah?.arti} • {selectedSurah?.tempatTurun}
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedTafsir(null)}
+                className="p-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white shrink-0 active:scale-95 transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Tafsir Drawer Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 text-xs sm:text-sm">
+              {/* Ayah Arabic */}
+              <div className="p-3 bg-[#FFFDF8] dark:bg-slate-800 border border-black rounded-xl space-y-2">
+                <div className="text-right font-serif font-bold text-xl sm:text-2xl leading-relaxed text-gray-900 dark:text-white" dir="rtl">
+                  {selectedTafsir.ayah.teksArab}
+                </div>
+                {selectedTafsir.ayah.teksLatin && (
+                  <p className="text-xs text-emerald-800 dark:text-emerald-300 italic">
+                    {selectedTafsir.ayah.teksLatin}
+                  </p>
+                )}
+                {selectedTafsir.ayah.teksIndonesia && (
+                  <p className="text-xs text-gray-700 dark:text-gray-300">
+                    "{selectedTafsir.ayah.teksIndonesia}"
+                  </p>
+                )}
+              </div>
+
+              {/* Tafsir Paragraph */}
+              <div className="space-y-2">
+                <h4 className="font-bold text-xs uppercase tracking-wider text-emerald-700 dark:text-emerald-400 flex items-center gap-1.5">
+                  <FileText className="w-4 h-4" />
+                  <span>Penjelasan Tafsir Ringkas:</span>
+                </h4>
+                {isLoadingTafsir ? (
+                  <div className="space-y-2 animate-pulse py-4">
+                    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-full" />
+                    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-5/6" />
+                    <div className="h-4 bg-gray-200 dark:bg-slate-700 rounded w-4/6" />
+                  </div>
+                ) : (
+                  <div className="p-4 bg-amber-50/70 dark:bg-slate-800/80 rounded-xl border border-amber-300 dark:border-slate-700 text-gray-900 dark:text-gray-100 leading-relaxed space-y-2">
+                    <p className="whitespace-pre-line leading-relaxed font-normal text-xs sm:text-sm">
+                      {selectedTafsir.tafsirText}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Tafsir Drawer Footer */}
+            <div className="p-3 border-t border-gray-200 dark:border-slate-800 bg-gray-50 dark:bg-slate-900 flex items-center justify-between gap-2 shrink-0">
+              <button
+                onClick={() => {
+                  handleMarkAyahRead(selectedTafsir.ayah.nomorAyat);
+                  setSelectedTafsir(null);
+                }}
+                className="px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold border border-black shadow-xs flex items-center gap-1"
+              >
+                <Bookmark className="w-3.5 h-3.5" />
+                <span>Tandai Terakhir Baca</span>
+              </button>
+
+              <button
+                onClick={() => setSelectedTafsir(null)}
+                className="px-4 py-2 bg-gray-200 dark:bg-slate-800 text-gray-800 dark:text-gray-200 rounded-xl text-xs font-bold border border-black hover:bg-gray-300 transition-all"
+              >
+                Tutup
+              </button>
+            </div>
           </div>
         </div>
       )}

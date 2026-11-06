@@ -118,3 +118,33 @@ export async function getSurahAyahs(surahNumber: number): Promise<FetchResult> {
     error: 'Gagal memuat ayat Al-Qur\'an. Periksa koneksi internet Anda atau coba muat ulang.'
   };
 }
+
+// In-memory cache for Tafsir Kemenag RI
+const memoryTafsirCache = new Map<number, Record<number, string>>();
+
+export async function getSurahTafsir(surahNumber: number): Promise<Record<number, string>> {
+  if (memoryTafsirCache.has(surahNumber)) {
+    return memoryTafsirCache.get(surahNumber)!;
+  }
+
+  try {
+    const res = await fetch(`https://equran.id/api/v2/tafsir/${surahNumber}`);
+    if (res.ok) {
+      const json = await res.json();
+      if (json.data?.tafsir && Array.isArray(json.data.tafsir)) {
+        const tafsirMap: Record<number, string> = {};
+        json.data.tafsir.forEach((item: any) => {
+          const ayahNo = Number(item.nomorAyat || item.ayat || 1);
+          tafsirMap[ayahNo] = item.teks || item.tafsir || '';
+        });
+        memoryTafsirCache.set(surahNumber, tafsirMap);
+        return tafsirMap;
+      }
+    }
+  } catch (err) {
+    console.warn(`[TafsirAPI] Error fetching tafsir for surah ${surahNumber}:`, err);
+  }
+
+  return {};
+}
+

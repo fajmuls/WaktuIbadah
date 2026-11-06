@@ -28,7 +28,7 @@ const KEYS = {
   LAST_READ_AYAH: "wi_last_read_ayah",
 };
 
-export const CURRENT_VERSION = "2.3.1";
+export const CURRENT_VERSION = "2.4.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -383,6 +383,44 @@ export const storage = {
     setItem(KEYS.LAST_READ_AYAH, data);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('wi_last_read_updated', { detail: data }));
+    }
+  },
+
+  // Export & Import Backup JSON Data
+  exportAllData: (): Record<string, any> => {
+    const backup: Record<string, any> = {
+      app: 'WaktuIbadah',
+      version: CURRENT_VERSION,
+      exportedAt: new Date().toISOString(),
+      keys: {}
+    };
+    Object.values(KEYS).forEach((key) => {
+      const val = localStorage.getItem(key);
+      if (val !== null) {
+        try {
+          backup.keys[key] = JSON.parse(val);
+        } catch {
+          backup.keys[key] = val;
+        }
+      }
+    });
+    return backup;
+  },
+
+  importAllData: (backupObj: any): boolean => {
+    if (!backupObj || typeof backupObj !== 'object' || !backupObj.keys) {
+      return false;
+    }
+    try {
+      Object.entries(backupObj.keys).forEach(([key, val]) => {
+        if (key.startsWith('wi_')) {
+          localStorage.setItem(key, typeof val === 'string' ? val : JSON.stringify(val));
+        }
+      });
+      return true;
+    } catch (e) {
+      console.error('Failed to import backup data:', e);
+      return false;
     }
   },
 
