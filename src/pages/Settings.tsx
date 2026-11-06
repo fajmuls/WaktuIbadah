@@ -60,6 +60,19 @@ export default function Settings() {
   const [switchError, setSwitchError] = useState('');
   const [isSwitching, setIsSwitching] = useState(false);
 
+  const [showArabic, setShowArabicState] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_show_arabic');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [showLatin, setShowLatinState] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_show_latin');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [showTranslation, setShowTranslationState] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_show_translation');
+    return saved !== null ? saved === 'true' : true;
+  });
+
   useEffect(() => {
     const loadedUser = storage.getUser();
     setUser(loadedUser);
@@ -556,10 +569,10 @@ export default function Settings() {
           </div>
 
           {/* Locked White Theme for Al-Quran Reader */}
-          <div className="flex items-center justify-between p-3 bg-[#FFFDF8] rounded-xl border-2 border-black">
+          <div className="flex items-center justify-between p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700">
             <div className="pr-2">
-              <span className="font-black text-xs text-black block">Tampilan Al-Qur'an Latar Putih Bersih</span>
-              <span className="text-[11px] font-semibold text-gray-500">
+              <span className="font-bold text-xs text-gray-900 dark:text-white block">Tampilan Al-Qur'an Latar Putih Bersih</span>
+              <span className="text-[11px] text-gray-500">
                 Memastikan teks Arab & ayat Al-Qur'an selalu berlatar putih dengan kontras maksimal
               </span>
             </div>
@@ -571,12 +584,61 @@ export default function Settings() {
                 setQuranWhiteThemeState(nextVal);
                 storage.setQuranWhiteTheme(nextVal);
               }}
-              className={`memphis-btn px-3 py-1.5 text-xs font-black uppercase shrink-0 ${
-                quranWhiteTheme ? 'memphis-btn-green text-white' : 'memphis-btn-white text-gray-600'
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold border border-black transition-all ${
+                quranWhiteTheme ? 'bg-emerald-600 text-white' : 'bg-gray-100 text-gray-600'
               }`}
             >
               {quranWhiteTheme ? 'Aktif' : 'Ikuti Tema'}
             </button>
+          </div>
+
+          {/* Quran Text Toggles (Arab, Latin, Translation) */}
+          <div className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 space-y-2.5">
+            <span className="font-bold text-xs text-gray-900 dark:text-white block">Komponen Teks Pembaca Al-Qur'an</span>
+            <div className="grid grid-cols-3 gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  playToggleSound();
+                  const next = !showArabic;
+                  setShowArabicState(next);
+                  localStorage.setItem('wi_quran_show_arabic', String(next));
+                }}
+                className={`py-2 rounded-lg text-xs font-bold border border-black transition-all ${
+                  showArabic ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                Teks Arab {showArabic ? '✓' : '✗'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playToggleSound();
+                  const next = !showLatin;
+                  setShowLatinState(next);
+                  localStorage.setItem('wi_quran_show_latin', String(next));
+                }}
+                className={`py-2 rounded-lg text-xs font-bold border border-black transition-all ${
+                  showLatin ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                Teks Latin {showLatin ? '✓' : '✗'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  playToggleSound();
+                  const next = !showTranslation;
+                  setShowTranslationState(next);
+                  localStorage.setItem('wi_quran_show_translation', String(next));
+                }}
+                className={`py-2 rounded-lg text-xs font-bold border border-black transition-all ${
+                  showTranslation ? 'bg-emerald-600 text-white' : 'bg-gray-100 dark:bg-slate-700 text-gray-700 dark:text-gray-300'
+                }`}
+              >
+                Terjemahan {showTranslation ? '✓' : '✗'}
+              </button>
+            </div>
           </div>
         </div>
       </div>

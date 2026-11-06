@@ -256,6 +256,31 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.5.0',
+    releaseDate: '5 November 2026',
+    title: 'Perombakan UI Al-Qur\'an Minimalis Clean, Justify Alignment Mushaf, Perbaikan Bug Un-Favorite Ayat, & Dokumentasi Vercel Deployment',
+    highlights: [
+      'Perombakan Visual Al-Qur\'an Minimalis: Menghapus outline border tebal dan bayangan hitam tebal di modul Al-Qur\'an, diganti dengan gaya clean, tipis, dan modern.',
+      'Justify Alignment Mode Mushaf Kontinu: Teks Arab Al-Qur\'an pada tampilan per halaman tersusun rata kiri-kanan (text-justify) yang seimbang dan indah.',
+      'Perbaikan Bug Hapus Ayat Favorit: Mengetuk ikon Hati (⭐/❤️) secara langsung menambah/menghapus ayat dari daftar Favorit tanpa masalah tersimpan terus.',
+      'Penyederhanaan Header & Pengaturan Teks: Menghilangkan tombol mata pada header Al-Qur\'an; sakelar Teks Latin, Terjemahan, dan Arab kini dipusatkan di menu Pengaturan.',
+      'Panduan Vercel & Environment Variables: Dokumentasi lengkap Vercel Redis (Upstash), SITE_URL, CRON_SECRET, ADMIN_TOKEN, dan penjadwalan cron-job.org per menit.'
+    ],
+    soundPackUpdates: [
+      'Menghilangkan efek suara otomatis yang bising saat membuka surat Al-Qur\'an'
+    ],
+    uiOverhaul: [
+      'Desain kartu ayat Al-Qur\'an tipis, clean, dan elegan',
+      'Teks Arab menggunakan bobot font seimbang (font-normal) yang nyaman di mata',
+      'Penyederhanaan sticky header Al-Qur\'an tanpa tombol terpotong'
+    ],
+    recommendations: [
+      'Saran UI/UX: Tambahkan fitur penanda Juz (Juz 1-30) dengan tab navigasi cepat',
+      'Saran QoL: Pilihan Qari Murottal tambahan (Misyari Rasyid, Abdul Basit, Sudais)',
+      'Saran Perbaikan: Integrasi PWA Push Notification langsung via Upstash KV Vercel'
+    ]
+  },
+  {
     version: '2.4.0',
     releaseDate: '5 November 2026',
     title: 'Mode Per Halaman Mushaf Kontinu, Bottom Sheet Tafsir Kemenag RI, Mode Fullscreen Reader, & Export/Import Data Backup',
