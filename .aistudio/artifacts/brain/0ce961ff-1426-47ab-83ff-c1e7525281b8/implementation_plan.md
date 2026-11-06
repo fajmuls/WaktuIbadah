@@ -1,124 +1,111 @@
-# Desain Baru Al-Qur'an (Clean Look, Multi-Hanca, Ornamen Bintang Islami & Navigasi Juz)
+# Rencana Pembaruan WaktuIbadah v2.8.0 (Widget Interaktif, Notifikasi Check-in +30 Menit, Azan Otomatis, Memphis Modern Tipis, & QoL Murottal)
 
-Rencana pembaruan komprehensif untuk antarmuka Al-Qur'an agar menyerupai referensi desain yang bersih, rapi, dan mudah dicari, dilengkapi ornamen Islami SVG asli, navigasi Juz 1–30, sistem multi-hanca bernama dengan dukungan unbookmark, dan pengaturan ukuran teks bertahap (A-- hingga A++).
+Pembaruan besar untuk menghadirkan widget minimalis salat & tugas yang bisa disematkan/mengambang, notifikasi cerdas 30 menit setelah waktu salat dengan tombol aksi "Sudah Salat" otomatis, perbaikan pemutaran suara azan dari push/in-app, penyelarasan gaya visual Memphis modern tipis 1.5px pada menu Qur'an dan Doa Zikir, perapian tipografi halaman Menu, ikon SVG kustom pada bottom navigation bar, serta fitur QoL pemutar Murottal auto-scroll dengan penyorot ayat aktif dan pilihan suara Qari.
 
 ---
 
 ## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Berdasarkan jawaban klarifikasi dan instruksi Anda, keputusan desain utama telah dikunci sebagai berikut:
-> 1. **Sistem Penanda Terakhir Baca (Hanca)**: Menggunakan model **Multi-Hanca Bernama** (misal: *Harian*, *Tahfidz*, *Tadabbur*, atau kustom) di mana pengguna dapat membuat set baru, berpindah antar target bacaan, mencatat tanggal, serta melakukan unbookmark/reset kapan saja.
-> 2. **Navigasi Antar Surah di Reader**: Menggunakan **Tab Bar Geser Horizontal** di bagian atas layar pembaca (seperti screenshot referensi: Al-Fatihah, Al-Baqarah, Ali 'Imran, dst.) sehingga berpindah surah dapat dilakukan dengan sekali sentuh.
-> 3. **Tingkatan Ukuran Huruf Arab**: Disediakan **5 level ukuran tanpa angka piksel teknis**: `A--` (sangat ringkas/kecil), `A-` (ringkas), `A` (normal), `A+` (besar), dan `A++` (sangat besar).
-> 4. **Penomoran Versi**: Sesuai aturan versioning Anda, penambahan fitur signifikan dan perombakan arsitektur ini menaikkan versi dari **v2.6.0 ke v2.7.0**, dilengkapi patch notes di Admin Dashboard dan saran perbaikan berkala.
+> Berdasarkan konfirmasi pada sesi tanya jawab dan arahan spesifik Anda, keputusan implementasi telah dikunci sebagai berikut:
+> 1. **Format Widget Salat & Tugas**: Menggabungkan **mode jendela widget minimalis terpisah (`/widget`)** yang ringkas dan resizable untuk layar utama/desktop/PWA homescreen, serta **Floating Mini-Widget** yang dapat dibuka/tutup dan diminimize saat berada di dalam aplikasi.
+> 2. **Alur Notifikasi 30 Menit Pasca-Salat**: Mengirim notifikasi tepat 30 menit setelah waktu salat tiba dengan tombol aksi interaktif `[ Sudah Salat ✅ ]` langsung di push notification dan modal pengingat in-app. Sekali tekan, salat langsung terceklist di `wi_prayers` dan penyimpanan cloud secara otomatis.
+> 3. **Ketebalan Gaya Memphis**: Menerapkan gaya **Memphis Modern Tipis** bergaris tepi presisi 1.5px (`border-[1.5px] border-[#121212]`) dengan bayangan offset halus (`shadow-[2px_2px_0px_#121212]`) dan palet warna lembut, seragam di menu Qur'an, Doa Zikir, dan kartu-kartu aplikasi.
+> 4. **Pembaruan Versi**: Kenaikan versi dari **v2.7.0 ke v2.8.0** (posisi angka kedua bertambah karena penambahan fitur widget, cron azan, dan fitur QoL baru), lengkap dengan patch notes di Admin Dashboard.
 
 ---
 
 ## 1. Overview & Core Concept
 
-- **Apa yang Dibangun**: Pembaruan menyeluruh modul Al-Qur'an yang memadukan keanggunan kaligrafi Arab, ornamen geometri Islam segi-8 (*Rub el Hizb*) berbasis SVG presisi, pemisahan tab modern (**SURAH**, **JUZ**, **BOOKMARK**), tampilan per ayat bernuansa zebra lembut (*cream* dan *white*), serta antarmuka pembaca per halaman mushaf yang jernih (*clean look*).
-- **Target Pengguna**: Pembaca Al-Qur'an harian, penghafal (*tahfidz*), dan pembaca terjemah/tafsir yang membutuhkan antarmuka bebas distraksi, tidak makan tempat, dan mudah digunakan dengan satu tangan pada layar ponsel.
-- **Nilai Utama**: Membaca terasa tenang dan nyaman di mata; tombol aksi tidak lagi menghalangi teks suci; status unduhan audio offline jelas; dan pencarian surah/juz terasa instan.
+- **Apa yang Dibangun**:
+  1. **Widget Minimalis Salat & Tugas**: Mode widget terpisah (`/widget`) dan widget mengambang (*floating overlay*) yang memungkinkan pengguna langsung menceklis 5 waktu salat fardhu dan menyelesaikan tugas harian tanpa perlu menavigasi menu yang panjang.
+  2. **Notifikasi 30 Menit Pasca-Salat**: Sistem pengingat otomatis di server cron (`api/_lib/events.js`) dan timer lokal yang menanyakan apakah pengguna sudah menunaikan salat, dengan tombol aksi sekali ketuk untuk menandai otomatis.
+  3. **Pemutar Azan Push & In-App**: Penanganan klik notifikasi azan dan tindakan "Dengar Azan" yang memutar audio azan fardhu / subuh secara andal, serta pembukaan modal azan ketika waktu salat tiba.
+  4. **Penyelarasan Style Memphis Modern Tipis**: Memadukan keanggunan clean look Al-Qur'an dan Doa Zikir dengan border tipis 1.5px dan aksen khas WaktuIbadah.
+  5. **Ikon SVG Kustom Navigation Bar & Perapian Menu**: Ikon vektor SVG murni pada bilah navigasi bawah (Home, Jadwal, Ibadah, Doa, Qur'an, Menu) dan tipografi `font-semibold` yang seimbang pada menu utama.
+  6. **Fitur QoL Unggulan**: Pemutar Murottal *Auto-Scroll* yang otomatis menyorot dan menggulir ke ayat yang sedang dilantunkan, pilihan multi-qari (Syaikh Misyari Rasyid, Syaikh As-Sudais, Syaikh Al-Ghamidi), dan tema membaca kertas kuno (*Sepia / Parchment*).
 
 ---
 
 ## 2. User Experience & Visual Design
 
-### A. Tiga Tab Utama (Surah, Juz, Bookmark)
-1. **Header Bersih & Pencarian**:
-   - Header atas bergaya hijau zamrud khas aplikasi (`#0d5c46` / `#0f766e`) dengan logo kaligrafi Al-Qur'an melingkar, tombol kembali, ikon urutkan/filter, ikon pencarian, dan menu aksi.
-   - Tab navigasi bergaris bawah cokelat/emas hangat: **SURAH**, **JUZ**, dan **BOOKMARK**.
-2. **Tab Surah**:
-   - Ornamen bintang segi-8 (*Rub el Hizb*) SVG di sisi kiri dengan nomor surah di tengah.
-   - Judul surah (nama latin, tempat turun, dan jumlah ayat) sejajar dengan teks kaligrafi nama surah dalam aksara Arab di sisi kanan.
-   - Ikon unduh murottal atau ikon speaker yang aktif jika audio telah tersimpan offline.
-3. **Tab Juz (1–30)**:
-   - Daftar 30 Juz lengkap dengan ornamen bintang nomor Juz.
-   - Keterangan awal bacaan: *"Mulai di: [Nama Surah] Ayat [Nomor]"* (misal Juz 1: Mulai di Al-Fatihah Ayat 1; Juz 2: Mulai di Al-Baqarah Ayat 142).
-   - Mengetuk item Juz langsung membuka surat dan melompat (*scroll*) tepat ke ayat awal juz tersebut.
-4. **Tab Bookmark & Multi-Hanca**:
-   - Menampilkan daftar set hanca aktif (misal "Tilawah Harian", "Hafalan Juz 'Amma") dengan tanggal terakhir dibaca dan tombol cepat lanjut membaca.
-   - Tombol buat set hanca baru dan opsi hapus/unbookmark.
+### A. Widget Salat & Tugas Minimalis (`/widget` & In-App Floating)
+1. **Mode Jendela Minimalis (`/widget`)**:
+   - Halaman khusus ultra-ringkas berlatar belakang semi-transparan yang cocok untuk jendela mengambang, PiP, atau disematkan di homescreen wallpaper.
+   - Header ringkas: Jam waktu nyata, indikator waktu salat aktif & countdown menuju salat berikutnya.
+   - **Ceklis 5 Waktu Salat**: Tombol ceklis cepat Subuh, Dzuhur, Ashar, Maghrib, Isya dengan efek centang instan dan sinkronisasi real-time.
+   - **Ceklis Tugas**: Daftar tugas hari ini dengan kotak centang sekali klik untuk menyelesaikan agenda kuliah/tugas.
+   - Pengatur ukuran tampilan: Preset ukuran Mini, Sedang, dan Penuh (*resizable*).
+2. **Floating Mini-Widget di Dalam Aplikasi**:
+   - Tombol mengambang elegan di sudut layar yang dapat diminimize menjadi kapsul ringkas atau dibuka menjadi widget cepat tanpa meninggalkan halaman yang sedang dibaca.
 
-### B. Antarmuka Pembaca (Per Ayat & Per Halaman)
-1. **Sub-Header & Tab Surah Geser**:
-   - Di bawah app bar utama, terdapat pita tab geser horizontal (*horizontal scrollable surah chips*) yang menampilkan surah-surah berurutan (misal: `1. Al-Fatihah`, `2. Al-Baqarah`, `3. Ali 'Imran`, ...) memudahkan melompat ke surah berikutnya tanpa harus kembali ke daftar.
-   - Di bawahnya terdapat kotak hiasan kepala surat (*Surah Header Frame*) dengan kaligrafi surat, jenis wahyu (Makkah/Madinah), dan jumlah ayat.
-2. **Tampilan Zebra-Striping Per Ayat**:
-   - Latar belakang bergantian yang lembut: Ayat ganjil berlatar putih bersih (`bg-white dark:bg-slate-900`), ayat genap berlatar krem gading lembut (`bg-[#FAF7EE] dark:bg-slate-800/60`).
-   - Sisi kiri: Ornamen bintang segi-8 dengan nomor ayat western.
-   - Teks Arab: Kaligrafi jelas dengan tanda waqaf dan nomor ayat Arab dalam lingkaran di akhir ayat `(١)`.
-   - Terjemahan: Warna teks toska gelap/emerald yang sejuk dibaca.
-3. **Tombol Aksi Ayat Kompak (4-Baris Samping / Footer Ringkas)**:
-   - Tombol aksi tidak lagi berukuran raksasa atau menumpuk di atas teks.
-   - Dibuat menjadi baris aksi 4 tombol yang terpadu dan minimalis:
-     1. **Putar Audio** (Play/Pause ayat)
-     2. **Tafsir Kemenag** (Membuka lembar penjelasan tafsir ringkas)
-     3. **Favorit** (Simpan/Hapus dari favorit)
-     4. **Hanca / Bookmark** (Tandai sebagai posisi terakhir baca atau unbookmark)
-4. **Menu Pengaturan Pembaca Cepat (Ikon Gerigi di Kanan Atas)**:
-   - Popover ringkas untuk mengatur:
-     - Tampilkan Teks Latin: On / Off
-     - Tampilkan Terjemahan: On / Off
-     - Ukuran Teks Arab: 5 preset tombol (`A--`, `A-`, `A`, `A+`, `A++`) dengan batas ukuran terkecil yang nyaman hingga ukuran besar.
+### B. Pengingat Salat 30 Menit & Integrasi Suara Azan
+1. **Notifikasi 30 Menit**:
+   - Tepat 30 menit setelah azan berkumandang, jika salat tersebut belum diceklis, sistem push server dan timer aplikasi mengirimkan notifikasi:
+     - Judul: *"Sudah Salat [Nama Salat]?"*
+     - Isi: *"Waktu salat [Nama Salat] telah berjalan 30 menit. Ketuk 'Sudah Salat' untuk menandai otomatis."*
+     - Aksi: `[ Sudah Salat ✅ ]` dan `[ Buka Aplikasi ]`.
+   - Mengklik "Sudah Salat" langsung mencatat salat tersebut ke riwayat ibadah tanpa perlu membuka halaman penuh.
+2. **Pemutaran Suara Azan**:
+   - Pada notifikasi push azan, ditambahkan aksi `[ Dengar Azan 🔊 ]`.
+   - Mengetuk notifikasi azan membuka aplikasi dengan parameter `?playAzan=1&prayer=[NamaSalat]` yang langsung memicu pemutaran audio azan lokal (`/audio/azan-fardhu.mp3` atau `/audio/azan-subuh.mp3`).
 
-### C. Pembenahan Sistem Tema Aplikasi
-- Memperbaiki binding tema di `Settings.tsx` dan `Layout.tsx` agar perpindahan tema (Emerald Green, Gold Beige, Midnight Dark, Minimal White) langsung diterapkan ke seluruh halaman termasuk reader Al-Qur'an.
+### C. Memphis Modern Tipis pada Menu Qur'an & Doa Zikir
+- **Qur'an**: Menyelaraskan border menjadi 1.5px hitam solid tipis (`border-[1.5px] border-[#121212]`), bayangan offset 2px (`shadow-[2px_2px_0px_#121212]`), dengan tetap mempertahankan ornamen bintang segi-8 Islami SVG dan zebra striping yang rapi.
+- **Doa & Zikir**: Merombak tampilan `DoaZikir.tsx` agar memiliki keselarasan visual dengan Qur'an: tab yang bersih, kolom pencarian, kartu wirid/doa ber-border 1.5px tipis, tasbih digital interaktif, dan tombol salin cepat.
+- **Menu Utama (`Menu.tsx`)**: Mengurangi bobot huruf yang terlalu tebal (*bold shouting*), mengganti font menjadi `font-semibold` yang rapi dan teratur, mengelompokkan menu ke dalam kategori yang jelas, dan menyertakan ikon SVG tajam.
 
----
+### D. Ikon SVG Kustom Navigation Bar Bawah
+- Mengganti ikon pihak ketiga standar di bilah navigasi bawah (`Layout.tsx`) dengan ikon SVG vektor murni yang dirancang khusus:
+  - **Home**: Ikon kubah lengkung modern / beranda
+  - **Jadwal**: Ikon kalender / agenda bergaris presisi
+  - **Ibadah**: Ikon kompas kiblat / jam salat melingkar
+  - **Doa**: Ikon tadah tangan doa / ornamen berkah
+  - **Qur'an**: Ikon mushaf terbuka dengan pita kaligrafi
+  - **Menu**: Ikon 4-titik grid dashboard modern
 
-## 3. Key Product Decisions & Trade-Offs
-
-- **Multi-Hanca vs Single Last-Read**:
-  - *Pendekatan*: Menyimpan array `ReadingHancaSet[]` di penyimpanan lokal/cloud dengan ID, nama set (misal "Khatam Ramadan", "Hafalan Subuh"), nomor surah, nama surah, nomor ayat, dan tanggal.
-  - *Alasan*: Pengguna sering membaca Al-Qur'an dengan beberapa keperluan sekaligus (membaca harian satu juz, tahfidz beberapa surat pendek, dan tadabbur).
-- **Ornamen Bintang Segi-8 Islami (*Rub el Hizb*)**:
-  - *Pendekatan*: Menggunakan SVG murni dengan dua persegi bersilang dengan sudut rotasi 45 derajat atau poligon 8 sisi bertakik yang tajam dan presisi, bukan ikon lingkaran biasa.
-  - *Alasan*: Menghadirkan nuansa mushaf Al-Qur'an standar Madinah/Kemenag yang otentik dan anggun tanpa menambah beban aset eksternal.
-- **Preset Huruf 5 Level (A-- sampai A++)**:
-  - *Pendekatan*: Menggunakan array ukuran font diskrit (`[18px, 22px, 26px, 30px, 36px]`) alih-alih slider piksel acak.
-  - *Alasan*: Menghilangkan rasa teknis yang berantakan, serta memastikan rendering harakat kaligrafi Arab tidak rusak pada ukuran ekstrim.
+### E. Fitur Quality of Life (QoL) Al-Qur'an
+1. **Murottal Auto-Scroll & Highlighting**:
+   - Saat audio ayat diputar kontinu, ayat yang sedang dibacakan qari akan disorot dengan latar hijau lembut dan digulirkan secara otomatis ke tengah layar pembaca.
+2. **Pilihan Suara Qari**:
+   - Menyediakan pilihan qari ternama di popover pengaturan pembaca:
+     - Syaikh Misyari Rasyid Al-Afasy
+     - Syaikh Abdurrahman As-Sudais
+     - Syaikh Sa'ad Al-Ghamidi
+3. **Tema Membaca Kertas Sepia / Parchment**:
+   - Pilihan latar belakang membaca ketiga selain putih dan gelap: warna kertas mushaf klasik (`#F4EEDD` / `#2D241E`) yang sangat ramah mata di malam hari.
 
 ---
 
-## 4. Technical Architecture & Data Strategy
+## 3. Technical Architecture & Data Strategy
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                    QURAN / HADIS MODULE                     │
+│                    WAKTOUIBADAH v2.8.0                      │
 ├──────────────────────────────┬──────────────────────────────┤
-│          HEADER BAR          │ 3-ZONE TOP NAVIGATION        │
-│                              │ Search, Filter, Reader Tools │
+│      WIDGET ENGINE           │ PUSH & NOTIFICATION CRON     │
+│ • /widget route (resizable)  │ • +30 min post-prayer event  │
+│ • Floating In-App overlay    │ • Direct 'sudah_salat' action│
+│ • 5-Prayer & Task Checkers   │ • Azan audio playback trigger│
 ├──────────────────────────────┴──────────────────────────────┤
-│               3 TABS: SURAH | JUZ | BOOKMARK                │
-├───────────────────┬───────────────────┬─────────────────────┤
-│    Tab 1: SURAH   │    Tab 2: JUZ     │   Tab 3: BOOKMARK   │
-│ • Star Badge SVG  │ • 30 Juz Index    │ • Multi-Hanca List  │
-│ • Surah Calligr.  │ • Start Ayah Info │ • Create/Rename Set │
-│ • Download Audio  │ • Direct Jump Nav │ • Unbookmark / Clear│
-├───────────────────┴───────────────────┴─────────────────────┤
-│                       READER VIEW                           │
+│                 UI & STYLING ARCHITECTURE                   │
+│ • Thin Modern Memphis (1.5px border, 2px shadow)            │
+│ • Unified Quran & DoaZikir visual system                    │
+│ • Bespoke SVG bottom navigation bar                         │
+│ • Refined Menu typography & grouping                        │
 ├─────────────────────────────────────────────────────────────┤
-│ • Horizontal Surah Tab Scroller (1. Al-Fatihah, 2. ...)     │
-│ • Decorative Surah Frame (Surah title + revelation info)   │
-│ • Zebra Rows (Cream / White alternating backgrounds)        │
-│ • Ayah Star Badge & End-of-Ayah Circle Marker               │
-│ • 4-Action Cluster: [Play] [Tafsir] [Favorit] [Bookmark]    │
-│ • Quick Settings Modal: [Latin] [Terjemah] [A-- ... A++]    │
+│                   QURAN QoL EXTENSIONS                      │
+│ • Continuous Murottal Auto-Scroll & Ayah Highlighting       │
+│ • Multi-Qari Audio Engine (Misyari, Sudais, Al-Ghamidi)     │
+│ • Sepia Parchment Eye-Comfort Reading Mode                  │
 └─────────────────────────────────────────────────────────────┘
-                               │
-               ┌───────────────┴───────────────┐
-               ▼                               ▼
-       Local & Cloud Storage           Audio / Offline Cache
-     (Hanca, Font, Favs, Theme)         (Murottal IndexedDB)
 ```
 
-### Pembaruan Versi Aplikasi & Patch Notes (v2.7.0)
-- Menambahkan rilis **v2.7.0** ke `APP_PATCH_NOTES` di `src/types.ts`:
-  - **Highlights**: UI Al-Qur'an baru bergaya bersih dengan ornamen Islami SVG, tab Juz 1–30, multi-hanca bernama dengan unbookmark, zebra-striping per ayat, tab surah geser horizontal, tombol aksi ayat 4-baris kompak, serta popover pengaturan ukuran huruf 5 level.
+### Pembaruan Versi Aplikasi (v2.8.0)
+- Menambahkan rilis **v2.8.0** ke `APP_PATCH_NOTES` di `src/types.ts` dan memperbarui `CURRENT_VERSION` di `src/lib/storage.ts`:
+  - **Highlights**: Mode Widget Salat & Tugas minimalis terpisah dan floating, notifikasi check-in 30 menit pasca-salat dengan aksi otomatis 'Sudah Salat', pemutaran azan push notification & in-app, penyesuaian style Memphis modern tipis 1.5px di Qur'an & Doa Zikir, perapian tipografi Menu dengan ikon SVG, perombakan ikon navigation bar bawah SVG kustom, serta fitur QoL Murottal auto-scroll, pemilih qari, dan tema kertas sepia.
   - **Saran Update Selanjutnya**:
-    1. *Fitur Terdekat*: Pemutar audio per surah kontinu (*auto-scroll* mengikuti ayat yang sedang dilantunkan qari).
-    2. *UI/UX*: Pilihan tema warna kertas kuno (*parchment / sepia*) untuk pembacaan malam hari.
-    3. *QoL*: Pencarian cerdas ayat berdasarkan arti terjemahan bahasa Indonesia, bukan hanya nomor atau nama surah.
-    4. *Perbaikan*: Sinkronisasi status audio unduhan offline secara instan saat koneksi internet terputus.
+    1. *Fitur Terdekat*: Mode Hafalan Qur'an (fitur sembunyikan ayat sebagian untuk melatih hafalan juz).
+    2. *UI/UX*: Animasi transisi lembar halaman mushaf (page-flip effect).
+    3. *QoL*: Ekspor checklist ibadah bulanan ke format gambar estetik untuk dibagikan ke media sosial.
+    4. *Perbaikan*: Penghematan baterai background sync saat status perangkat berada dalam mode hemat daya.

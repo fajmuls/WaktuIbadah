@@ -1,4 +1,4 @@
-import { User, Task, Schedule, PrayerLog, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig, WebsiteReview, ReadingHancaItem } from "../types";
+import { User, Task, Schedule, PrayerLog, PrayerName, FocusSession, Reflection, AppVersion, QuranLog, FavoriteAyah, FavoriteHadith, ReminderSettings, SurahItem, AyatItem, QuranKhatamTarget, AdminReviewConfig, WebsiteReview, ReadingHancaItem } from "../types";
 
 const KEYS = {
   USER: "wi_user",
@@ -29,7 +29,7 @@ const KEYS = {
   READING_HANCAS: "wi_reading_hancas",
 };
 
-export const CURRENT_VERSION = "2.7.0";
+export const CURRENT_VERSION = "2.8.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -86,6 +86,19 @@ export const storage = {
   addTask: (task: Task) => setItem(KEYS.TASKS, [...storage.getTasks(), task]),
   updateTask: (task: Task) => setItem(KEYS.TASKS, storage.getTasks().map(t => t.id === task.id ? task : t)),
   deleteTask: (id: string) => setItem(KEYS.TASKS, storage.getTasks().filter(t => t.id !== id)),
+  toggleTask: (id: string): Task[] => {
+    const tasks = storage.getTasks().map(t => {
+      if (t.id === id) {
+        return {
+          ...t,
+          status: t.status === 'Selesai' ? ('Belum mulai' as const) : ('Selesai' as const)
+        };
+      }
+      return t;
+    });
+    storage.setTasks(tasks);
+    return tasks;
+  },
 
   getSchedules: () => getItem<Schedule[]>(KEYS.SCHEDULES, []),
   setSchedules: (schedules: Schedule[]) => setItem(KEYS.SCHEDULES, schedules),
@@ -118,6 +131,21 @@ export const storage = {
       logs.push(log);
     }
     storage.setPrayerLogs(logs);
+  },
+  togglePrayer: (date: string, prayerKey: string): PrayerLog => {
+    const current = storage.getPrayerLog(date);
+    const validKeys: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
+    const targetKey = validKeys.find(k => k.toLowerCase() === prayerKey.toLowerCase()) || ('Subuh' as PrayerName);
+    
+    const updated: PrayerLog = {
+      ...current,
+      prayers: {
+        ...current.prayers,
+        [targetKey]: !current.prayers[targetKey]
+      }
+    };
+    storage.updatePrayerLog(updated);
+    return updated;
   },
 
   getFocusSessions: () => getItem<FocusSession[]>(KEYS.FOCUS, []),

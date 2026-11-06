@@ -107,6 +107,22 @@ self.addEventListener('push', (event) => {
 
   const title = payload.title || 'WaktuIbadah';
   const isAzan = payload.kind === 'prayer';
+  const isCheckin = payload.kind === 'post_prayer_checkin';
+
+  const notificationActions = isAzan
+    ? [
+        { action: 'dengar_azan', title: 'Dengar Azan 🔊' },
+        { action: 'open', title: 'Buka' },
+      ]
+    : isCheckin
+      ? [
+          { action: 'sudah_salat', title: 'Sudah Salat ✅' },
+          { action: 'open', title: 'Buka' },
+        ]
+      : [
+          { action: 'open', title: 'Buka' },
+          { action: 'dismiss', title: 'Tutup' },
+        ];
 
   const options = {
     body: payload.body || 'Saatnya menunaikan ibadah.',
@@ -114,7 +130,7 @@ self.addEventListener('push', (event) => {
     badge: '/icons/badge-96.png',
     tag: payload.tag || 'waktuibadah',
     renotify: true,
-    requireInteraction: payload.requireInteraction === true || isAzan,
+    requireInteraction: payload.requireInteraction === true || isAzan || isCheckin,
     silent: payload.silent === true,
     timestamp: Date.now(),
     data: {
@@ -122,10 +138,7 @@ self.addEventListener('push', (event) => {
       kind: payload.kind || 'general',
       prayer: payload.prayer || null,
     },
-    actions: [
-      { action: 'open', title: 'Buka' },
-      { action: 'dismiss', title: 'Tutup' },
-    ],
+    actions: notificationActions,
   };
 
   // Getar hanya bila tidak dibisukan (silent:true mematikan suara DAN getar).
@@ -134,7 +147,9 @@ self.addEventListener('push', (event) => {
       ? payload.vibrate
       : isAzan
         ? [800, 300, 800, 300, 1200]
-        : [300, 150, 300];
+        : isCheckin
+          ? [400, 200, 400]
+          : [300, 150, 300];
   }
 
   event.waitUntil(
@@ -142,12 +157,10 @@ self.addEventListener('push', (event) => {
       // Selalu tampilkan notifikasi (wajib di iOS/Safari dan Chrome).
       await self.registration.showNotification(title, options);
 
-      // Jika aplikasi sedang terbuka di layar, minta halaman memutar azan penuh.
+      // Kirim pesan ke seluruh window klien aktif
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       for (const client of windows) {
-        if (client.visibilityState === 'visible') {
-          client.postMessage({ type: 'PUSH_RECEIVED', payload });
-        }
+        client.postMessage({ type: 'PUSH_RECEIVED', payload });
       }
     })()
   );
@@ -161,14 +174,27 @@ self.addEventListener('notificationclick', (event) => {
   if (event.action === 'dismiss') return;
 
   const data = event.notification.data || {};
-  const targetUrl = new URL(data.url || '/', self.location.origin).href;
+  let targetPath = data.url || '/';
+
+  if (event.action === 'dengar_azan' && data.prayer) {
+    targetPath = `/?playAzan=1&prayer=${encodeURIComponent(data.prayer)}`;
+  } else if (event.action === 'sudah_salat' && data.prayer) {
+    targetPath = `/ibadah?confirmPrayer=${encodeURIComponent(data.prayer)}`;
+  }
+
+  const targetUrl = new URL(targetPath, self.location.origin).href;
 
   event.waitUntil(
     (async () => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       for (const client of windows) {
+        client.postMessage({ 
+          type: 'NOTIFICATION_CLICK', 
+          action: event.action, 
+          prayer: data.prayer,
+          data 
+        });
         if (client.url.startsWith(self.location.origin) && 'focus' in client) {
-          client.postMessage({ type: 'NOTIFICATION_CLICK', data });
           if ('navigate' in client && client.url !== targetUrl) {
             try {
               await client.navigate(targetUrl);

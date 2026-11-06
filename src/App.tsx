@@ -5,7 +5,7 @@ import { storage, CURRENT_VERSION } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } from './lib/prayer-times';
 import { format, addDays } from 'date-fns';
-import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm } from './lib/audio';
+import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess } from './lib/audio';
 import { showPWANotification } from './lib/pwa-service';
 import { isPushActive, syncPushNow, syncPushSoon } from './lib/push';
 import { testFirestoreConnection, syncAllFromCloud, syncAllToCloud, subscribeToStudentProfile } from './lib/cloud-sync';
@@ -29,6 +29,7 @@ import Tools from './pages/Tools';
 import AdminDashboard from './pages/AdminDashboard';
 import Kalender from './pages/Kalender';
 import Qibla from './pages/Qibla';
+import WidgetPage from './pages/WidgetPage';
 
 // Modals
 import { NotificationSetupModal } from './components/NotificationSetupModal';
@@ -99,6 +100,7 @@ export default function App() {
   const [hasOnboarded, setHasOnboarded] = useState(false);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
   const [activeAzanAlert, setActiveAzanAlert] = useState<{ prayer: string; time: string } | null>(null);
+  const [postPrayerCheckinAlert, setPostPrayerCheckinAlert] = useState<{ prayer: string; time: string } | null>(null);
   const notifiedTimes = useRef<Set<string>>(new Set());
 
   useEffect(() => {
@@ -120,6 +122,34 @@ export default function App() {
       applyTheme(storage.getThemeMode());
     };
     window.addEventListener('wi_theme_changed', handleThemeChange);
+
+    // Check URL parameters for Azan audio trigger or post-prayer check-in confirm
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const playAzan = urlParams.get('playAzan');
+      const prayerParam = urlParams.get('prayer');
+      const confirmPrayerParam = urlParams.get('confirmPrayer');
+
+      if (playAzan && prayerParam) {
+        playPrayerAzan(prayerParam);
+        setActiveAzanAlert({ prayer: prayerParam, time: format(new Date(), 'HH:mm') });
+      }
+
+      if (confirmPrayerParam) {
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const keyMap: Record<string, string> = {
+          'Subuh': 'subuh', 'Zuhur': 'dzuhur', 'Dzuhur': 'dzuhur',
+          'Asar': 'ashar', 'Ashar': 'ashar',
+          'Magrib': 'maghrib', 'Maghrib': 'maghrib',
+          'Isya': 'isya'
+        };
+        const k = keyMap[confirmPrayerParam] || confirmPrayerParam.toLowerCase();
+        storage.togglePrayer(today, k as any);
+        vibrateSuccess();
+      }
+    } catch (e) {
+      console.warn("Error parsing URL params:", e);
+    }
 
     const user = storage.getUser();
     if (user && user.isOnboarded) {
@@ -228,6 +258,38 @@ export default function App() {
         }
       }
 
+      // 1b. Check 30 Minutes Post-Prayer Check-in ("Sudah Salat [Prayer]?")
+      if (reminderSettings.reminderPrayers !== false) {
+        const prayerCheckins = [
+          { name: 'Subuh', key: 'subuh' as const },
+          { name: 'Zuhur', key: 'dzuhur' as const },
+          { name: 'Asar', key: 'ashar' as const },
+          { name: 'Magrib', key: 'maghrib' as const },
+          { name: 'Isya', key: 'isya' as const },
+        ];
+        const currentMins = now.getHours() * 60 + now.getMinutes();
+
+        for (const p of prayerCheckins) {
+          const prayerTime = times[p.name];
+          if (!prayerTime) continue;
+          const [pH, pM] = prayerTime.split(':').map(Number);
+          const pMinutes = pH * 60 + pM;
+          const diff = currentMins - pMinutes;
+
+          if (diff >= 30 && diff <= 50 && !notifiedTimes.current.has(`checkin-${p.name}-${today}`)) {
+            const todayLog = storage.getPrayerLog(today);
+            if (!todayLog.prayers[p.key]) {
+              notifiedTimes.current.add(`checkin-${p.name}-${today}`);
+              setPostPrayerCheckinAlert({ prayer: p.name, time: prayerTime });
+              notify(`Sudah Salat ${p.name}?`, {
+                body: `Waktu salat ${p.name} telah berjalan 30 menit. Ketuk 'Sudah Salat' untuk menandai otomatis.`,
+                tag: `checkin-${p.name}-${today}`,
+              });
+            }
+          }
+        }
+      }
+
       // 2. Check Imsak Reminder
       if (reminderSettings.reminderImsak && times['Imsak']) {
         if (times['Imsak'] === currentHHMM && !notifiedTimes.current.has(`imsak-${today}`)) {
@@ -289,6 +351,20 @@ export default function App() {
         syncPushNow().catch(() => {});
         return;
       }
+      if (msg.type === 'NOTIFICATION_ACTION' && msg.action === 'sudah_salat' && msg.prayer) {
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const keyMap: Record<string, string> = {
+          'Subuh': 'subuh', 'Zuhur': 'dzuhur', 'Dzuhur': 'dzuhur',
+          'Asar': 'ashar', 'Ashar': 'ashar',
+          'Magrib': 'maghrib', 'Maghrib': 'maghrib',
+          'Isya': 'isya'
+        };
+        const k = keyMap[msg.prayer] || msg.prayer.toLowerCase();
+        storage.togglePrayer(today, k as any);
+        vibrateSuccess();
+        setPostPrayerCheckinAlert(null);
+        return;
+      }
       if (msg.type === 'PUSH_RECEIVED' && msg.payload?.kind === 'prayer' && msg.payload?.prayer) {
         const prayer = String(msg.payload.prayer);
         const day = format(new Date(), 'yyyy-MM-dd');
@@ -335,6 +411,7 @@ export default function App() {
       {!showSplash && (
         <BrowserRouter>
           <Routes>
+            <Route path="/widget" element={<WidgetPage />} />
             {!hasOnboarded ? (
               <Route path="*" element={<Onboarding onComplete={() => setHasOnboarded(true)} />} />
             ) : (
@@ -365,6 +442,50 @@ export default function App() {
               </Route>
             )}
           </Routes>
+
+          {/* Post-Prayer 30-Min Check-in Alert Banner */}
+          {postPrayerCheckinAlert && (
+            <div className="fixed top-3 left-3 right-3 sm:top-5 sm:left-auto sm:right-5 sm:max-w-md z-50 memphis-card p-3 sm:p-4 bg-gradient-to-r from-amber-300 via-amber-200 to-emerald-200 shadow-[2px_2px_0px_#121212] flex items-center justify-between gap-3 animate-in fade-in duration-200">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-[#121212] text-amber-300 flex items-center justify-center font-bold text-xl border-[1.5px] border-black shrink-0">
+                  ⏱️
+                </div>
+                <div className="min-w-0">
+                  <h4 className="text-xs sm:text-sm font-bold text-[#121212] truncate">
+                    Sudah salat {postPrayerCheckinAlert.prayer}?
+                  </h4>
+                  <p className="text-[10px] sm:text-[11px] font-medium text-[#121212]/80 truncate">
+                    30 menit telah berlalu sejak waktu {postPrayerCheckinAlert.prayer}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={() => {
+                    const today = format(new Date(), 'yyyy-MM-dd');
+                    const keyMap: Record<string, string> = {
+                      'Subuh': 'subuh', 'Zuhur': 'dzuhur', 'Dzuhur': 'dzuhur',
+                      'Asar': 'ashar', 'Ashar': 'ashar',
+                      'Magrib': 'maghrib', 'Maghrib': 'maghrib',
+                      'Isya': 'isya'
+                    };
+                    const k = keyMap[postPrayerCheckinAlert.prayer] || postPrayerCheckinAlert.prayer.toLowerCase();
+                    storage.togglePrayer(today, k as any);
+                    setPostPrayerCheckinAlert(null);
+                  }}
+                  className="memphis-btn bg-emerald-600 hover:bg-emerald-700 text-white px-2.5 py-1 text-[11px] font-bold"
+                >
+                  Sudah ✅
+                </button>
+                <button
+                  onClick={() => setPostPrayerCheckinAlert(null)}
+                  className="memphis-btn bg-white text-black hover:bg-gray-100 px-2 py-1 text-[11px] font-medium"
+                >
+                  Nanti
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Live In-App Azan Notification Banner (Functional even without PWA installed & Mobile Autoplay Policy Ready) */}
           {activeAzanAlert && (

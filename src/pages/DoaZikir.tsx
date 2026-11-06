@@ -1,14 +1,19 @@
 import React, { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Sparkles, Search, BookOpen, Clock, Copy, Check, CheckCircle2, 
-  RotateCcw, Heart, Share2, Layers, Bookmark, ArrowRight 
+  RotateCcw, Heart, Share2, Layers, Bookmark, ArrowLeft, X,
+  CheckCheck, Flame
 } from 'lucide-react';
 import { ALL_DOA_ITEMS, WIRID_SESUDAH_SALAT, DOA_HARIAN, DOA_BELAJAR, PrayerItem } from '../data/prayers-data';
-import { playDhikrTapSound, playSaveSuccessSound, playToggleSound } from '../lib/audio';
+import { playDhikrTapSound, playSaveSuccessSound, playButtonTapSound } from '../lib/audio';
+import { IslamicStarBadge } from '../components/IslamicStarBadge';
 
 export default function DoaZikir() {
-  const [activeTab, setActiveTab] = useState<'all' | 'wirid_salat' | 'harian' | 'belajar'>('wirid_salat');
+  const navigate = useNavigate();
+  const [activeTab, setActiveTab] = useState<'wirid_salat' | 'harian' | 'belajar' | 'all'>('wirid_salat');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [counts, setCounts] = useState<{ [id: string]: number }>({});
   const [expandedItems, setExpandedItems] = useState<{ [id: string]: boolean }>({
@@ -34,8 +39,8 @@ export default function DoaZikir() {
     return list;
   }, [activeTab, searchQuery]);
 
-  const handleTabChange = (tab: 'all' | 'wirid_salat' | 'harian' | 'belajar') => {
-    playToggleSound();
+  const handleTabChange = (tab: 'wirid_salat' | 'harian' | 'belajar' | 'all') => {
+    playButtonTapSound();
     setActiveTab(tab);
   };
 
@@ -52,7 +57,7 @@ export default function DoaZikir() {
   };
 
   const handleReset = (id: string) => {
-    playDhikrTapSound();
+    playButtonTapSound();
     setCounts(prev => ({ ...prev, [id]: 0 }));
   };
 
@@ -65,105 +70,146 @@ export default function DoaZikir() {
   };
 
   const toggleExpand = (id: string) => {
-    playToggleSound();
+    playButtonTapSound();
     setExpandedItems(prev => ({ ...prev, [id]: !prev[id] }));
   };
 
   return (
-    <div className="space-y-4 pb-20 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
-      {/* Memphis Header */}
-      <div className="p-3.5 sm:p-5 bg-white border-2 sm:border-[1.5px] border-[#121212] rounded-2xl shadow-[2px_2px_0px_#121212] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-emerald-400 to-green-500 border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center shadow-[2px_2px_0px_#121212] shrink-0">
-            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-[#121212]" />
+    <div className="space-y-3 pb-24 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
+      {/* Top Banner (Matching Quran & Hadith Top Bar Style) */}
+      <div className="bg-[#0f6b52] text-white rounded-2xl border-[1.5px] border-[#121212] shadow-[3px_3px_0px_#121212] p-3 sm:p-4 space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <button
+              onClick={() => navigate('/')}
+              className="w-8 h-8 rounded-full hover:bg-white/15 flex items-center justify-center transition-colors shrink-0 text-white"
+              title="Kembali ke Beranda"
+            >
+              <ArrowLeft className="w-5 h-5" />
+            </button>
+            <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-emerald-200" />
+            </div>
+            <div className="min-w-0">
+              <h1 className="text-sm sm:text-base font-bold truncate text-white">
+                Doa & Zikir Harian
+              </h1>
+              <p className="text-[10px] sm:text-[11px] text-emerald-100/80 truncate">
+                Wirid sesudah salat, doa kuliah, dan kumpulan doa pilihan
+              </p>
+            </div>
           </div>
-          <div>
-            <h1 className="text-base sm:text-xl font-bold tracking-tight text-[#121212]">
-              Kumpulan Doa & Zikir
-            </h1>
-            <p className="text-xs font-bold text-gray-600 mt-0.5">
-              Panduan wirid sesudah salat fardhu, doa harian, dan doa belajar
-            </p>
+
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              onClick={() => setIsSearchVisible(v => !v)}
+              className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors ${
+                isSearchVisible ? 'bg-white text-[#0f6b52]' : 'hover:bg-white/15 text-white'
+              }`}
+              title="Cari Doa atau Zikir"
+            >
+              <Search className="w-4 h-4" />
+            </button>
+            <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-1 rounded-full">
+              {ALL_DOA_ITEMS.length} Doa
+            </span>
           </div>
         </div>
 
-        {/* Quick Stats or Count Info */}
-        <div className="hidden sm:flex items-center gap-2">
-          <span className="memphis-badge bg-gradient-to-r from-emerald-400 to-teal-400 text-black py-1 px-3">
-            {ALL_DOA_ITEMS.length} Doa Terverifikasi
-          </span>
-        </div>
-      </div>
+        {/* Collapsible Search Input */}
+        {isSearchVisible && (
+          <div className="relative animate-in slide-in-from-top-2 duration-200">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="text"
+              placeholder="Cari doa, wirid, arti terjemahan, atau lafal Latin..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              autoFocus
+              className="w-full pl-9 pr-9 py-2 bg-white text-gray-900 rounded-xl text-xs sm:text-sm font-medium outline-none shadow-inner"
+            />
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery('')}
+                className="w-7 h-7 absolute right-1.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 flex items-center justify-center"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        )}
 
-      {/* Search Bar & Category Filter Tabs */}
-      <div className="space-y-2.5">
-        <div className="relative">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Cari doa, wirid, arti, atau lafal Latin..."
-            className="memphis-input w-full pl-10 pr-4 py-2.5 text-xs sm:text-sm font-bold"
-          />
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 max-w-full hide-scrollbar">
+        {/* Horizontal Category Tabs (Underline Memphis style) */}
+        <div className="flex border-b border-white/20 pt-1" role="tablist">
           <button
+            role="tab"
+            aria-selected={activeTab === 'wirid_salat'}
             onClick={() => handleTabChange('wirid_salat')}
-            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
-              activeTab === 'wirid_salat'
-                ? 'memphis-btn-green text-white font-bold'
-                : 'memphis-btn-white text-gray-700 font-bold'
+            className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
+              activeTab === 'wirid_salat' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
             }`}
           >
-            Wirid Salat ({WIRID_SESUDAH_SALAT.length})
+            WIRID SALAT
+            {activeTab === 'wirid_salat' && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+            )}
           </button>
+
           <button
+            role="tab"
+            aria-selected={activeTab === 'harian'}
             onClick={() => handleTabChange('harian')}
-            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
-              activeTab === 'harian'
-                ? 'memphis-btn-green text-white font-bold'
-                : 'memphis-btn-white text-gray-700 font-bold'
+            className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
+              activeTab === 'harian' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
             }`}
           >
-            Doa Harian ({DOA_HARIAN.length})
+            HARIAN
+            {activeTab === 'harian' && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+            )}
           </button>
+
           <button
+            role="tab"
+            aria-selected={activeTab === 'belajar'}
             onClick={() => handleTabChange('belajar')}
-            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
-              activeTab === 'belajar'
-                ? 'memphis-btn-green text-white font-bold'
-                : 'memphis-btn-white text-gray-700 font-bold'
+            className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
+              activeTab === 'belajar' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
             }`}
           >
-            Doa Belajar ({DOA_BELAJAR.length})
+            BELAJAR
+            {activeTab === 'belajar' && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+            )}
           </button>
+
           <button
+            role="tab"
+            aria-selected={activeTab === 'all'}
             onClick={() => handleTabChange('all')}
-            className={`memphis-btn px-3 py-1.5 text-xs shrink-0 transition-all ${
-              activeTab === 'all'
-                ? 'memphis-btn-green text-white font-bold'
-                : 'memphis-btn-white text-gray-700 font-bold'
+            className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
+              activeTab === 'all' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
             }`}
           >
-            Semua ({ALL_DOA_ITEMS.length})
+            SEMUA
+            {activeTab === 'all' && (
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+            )}
           </button>
         </div>
       </div>
 
-      {/* Main List */}
-      <div className="space-y-3">
+      {/* Main List of Doa & Zikir Items */}
+      <div className="space-y-2.5">
         {filteredItems.length === 0 ? (
-          <div className="p-8 text-center bg-white border-[1.5px] border-black rounded-2xl shadow-[2px_2px_0px_#121212]">
-            <BookOpen className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-xs font-bold text-gray-600">
+          <div className="p-8 text-center bg-white dark:bg-slate-900 border-[1.5px] border-[#121212] dark:border-slate-700 rounded-2xl shadow-[2px_2px_0px_#121212] space-y-2">
+            <BookOpen className="w-8 h-8 text-gray-400 mx-auto" />
+            <p className="text-xs font-bold text-gray-700 dark:text-gray-300">
               Tidak ada doa yang cocok dengan pencarian "{searchQuery}"
             </p>
             <button
               onClick={() => { setSearchQuery(''); setActiveTab('wirid_salat'); }}
-              className="mt-3 memphis-btn memphis-btn-white px-3 py-1 text-xs"
+              className="mt-2 px-3 py-1.5 bg-emerald-600 text-white rounded-xl text-xs font-bold shadow-xs"
             >
               Reset Filter
             </button>
@@ -178,94 +224,98 @@ export default function DoaZikir() {
             return (
               <div
                 key={item.id}
-                className={`memphis-card p-3.5 sm:p-5 transition-all ${
-                  isTargetReached ? 'border-emerald-700 bg-emerald-50/40' : 'bg-white'
+                className={`rounded-2xl border-[1.5px] border-[#121212] dark:border-slate-700 shadow-[2px_2px_0px_#121212] p-3.5 sm:p-4.5 transition-all ${
+                  isTargetReached 
+                    ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-600' 
+                    : 'bg-white dark:bg-slate-900'
                 }`}
               >
                 {/* Header item */}
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex items-start gap-2.5">
-                    <span className="w-6 h-6 sm:w-7 sm:h-7 rounded-lg bg-black text-white text-[11px] sm:text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
-                      {index + 1}
-                    </span>
-                    <div>
+                <div className="flex items-start justify-between gap-3 mb-2.5">
+                  <div className="flex items-start gap-3 min-w-0">
+                    <IslamicStarBadge 
+                      number={index + 1} 
+                      className="w-8 h-8 sm:w-9 sm:h-9" 
+                      active={isTargetReached}
+                    />
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="font-bold text-xs sm:text-sm text-[#121212]">
+                        <h2 className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white truncate">
                           {item.title}
                         </h2>
                         {item.category === 'wirid_salat' && (
-                          <span className="memphis-badge bg-gradient-to-r from-emerald-400 to-teal-400 text-black text-[8px] py-0.5 px-1.5">
+                          <span className="text-[9px] font-bold uppercase bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 px-1.5 py-0.5 rounded border border-emerald-400">
                             Wirid Fardhu
                           </span>
                         )}
                         {item.category === 'belajar' && (
-                          <span className="memphis-badge bg-[#00F0FF] text-black text-[8px] py-0.5 px-1.5">
+                          <span className="text-[9px] font-bold uppercase bg-cyan-100 dark:bg-cyan-950 text-cyan-800 dark:text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-400">
                             Kuliah & Ujian
                           </span>
                         )}
                       </div>
                       {item.subTitle && (
-                        <p className="text-[10px] sm:text-xs font-bold text-gray-500 mt-0.5">
+                        <p className="text-[10px] sm:text-[11px] font-medium text-gray-500 dark:text-gray-400 mt-0.5">
                           {item.subTitle}
                         </p>
                       )}
                     </div>
                   </div>
 
-                  {/* Actions */}
+                  {/* Actions: Copy & Toggle */}
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button
                       onClick={() => handleCopy(item)}
                       title="Salin Teks Doa"
-                      className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212]"
+                      className="w-7 h-7 rounded-lg border-[1.5px] border-[#121212] dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 flex items-center justify-center shadow-[1px_1px_0px_#121212] transition-colors"
                     >
                       {copiedId === item.id ? (
                         <Check className="w-3.5 h-3.5 text-emerald-600 stroke-[3]" />
                       ) : (
-                        <Copy className="w-3.5 h-3.5 text-gray-700" />
+                        <Copy className="w-3.5 h-3.5 text-gray-700 dark:text-gray-300" />
                       )}
                     </button>
                     <button
                       onClick={() => toggleExpand(item.id)}
-                      className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] text-xs font-bold"
+                      className="h-7 px-2.5 rounded-lg border-[1.5px] border-[#121212] dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-gray-100 dark:hover:bg-slate-700 text-[11px] font-bold shadow-[1px_1px_0px_#121212] transition-colors text-gray-800 dark:text-gray-200"
                     >
-                      {isExpanded ? 'Sembunyikan' : 'Buka Terjemahan'}
+                      {isExpanded ? 'Ringkas' : 'Terjemahan'}
                     </button>
                   </div>
                 </div>
 
                 {/* Arabic Text Block */}
-                <div className="mt-3 p-3 sm:p-4 bg-[#FFFDF8] rounded-xl border border-black/40">
-                  <p className="text-right font-serif text-lg sm:text-2xl leading-loose sm:leading-loose text-[#121212] select-text">
+                <div className="p-3 sm:p-4 bg-[#FAF7EE] dark:bg-slate-800/70 rounded-xl border border-[#E6DCC8] dark:border-slate-700">
+                  <p className="text-right font-serif text-lg sm:text-2xl leading-loose sm:leading-loose text-gray-900 dark:text-white select-text" dir="rtl">
                     {item.arabic}
                   </p>
                 </div>
 
                 {/* Latin & Translation */}
                 {isExpanded && (
-                  <div className="mt-3 space-y-2 text-xs sm:text-sm">
-                    <div className="p-2.5 bg-emerald-50 rounded-lg border border-emerald-300">
-                      <p className="font-bold text-emerald-900 italic text-[11px] sm:text-xs">
+                  <div className="mt-2.5 space-y-1.5 text-xs sm:text-sm">
+                    {item.latin && (
+                      <p className="text-[12px] sm:text-[13px] text-emerald-800 dark:text-emerald-300 italic font-medium">
                         {item.latin}
                       </p>
-                    </div>
-                    <div className="p-2.5 bg-gray-50 rounded-lg border border-gray-200">
-                      <p className="text-gray-800 text-[11px] sm:text-xs leading-relaxed">
-                        <strong className="text-black">Artinya:</strong> "{item.translation}"
+                    )}
+                    {item.translation && (
+                      <p className="text-[13px] sm:text-[14px] text-teal-900 dark:text-teal-200 leading-relaxed font-normal">
+                        "{item.translation}"
                       </p>
-                    </div>
+                    )}
                   </div>
                 )}
 
-                {/* Interactive Counter for Target-based items */}
+                {/* Interactive Counter for Target-based items (Tasbih) */}
                 {hasTarget && (
-                  <div className="mt-3.5 pt-3 border-t border-black/10 flex items-center justify-between flex-wrap gap-2">
+                  <div className="mt-3 pt-2.5 border-t border-gray-200 dark:border-slate-800 flex items-center justify-between flex-wrap gap-2">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-gray-700">
-                        Target Dzikir: {item.targetCount}x
+                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                        Target Zikir: {item.targetCount}x
                       </span>
                       {isTargetReached && (
-                        <span className="memphis-badge bg-emerald-600 text-white text-[9px] gap-1 py-0.5">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold bg-emerald-600 text-white px-2 py-0.5 rounded-full">
                           <CheckCircle2 className="w-3 h-3 stroke-[3]" /> Target Tercapai
                         </span>
                       )}
@@ -280,10 +330,10 @@ export default function DoaZikir() {
                       </button>
                       <button
                         onClick={() => handleIncrement(item.id, item.targetCount)}
-                        className={`memphis-btn px-4 py-1.5 text-xs font-bold ${
+                        className={`px-4 py-1.5 rounded-xl border-[1.5px] border-[#121212] text-xs font-bold shadow-[2px_2px_0px_#121212] transition-transform active:scale-95 ${
                           isTargetReached
                             ? 'bg-emerald-600 text-white'
-                            : 'memphis-btn-green text-white'
+                            : 'bg-emerald-500 hover:bg-emerald-600 text-white'
                         }`}
                       >
                         Hitung ({count} / {item.targetCount})

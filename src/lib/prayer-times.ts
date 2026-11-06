@@ -442,3 +442,22 @@ export const getPrayerStatus = (times: Record<PrayerName, string> = getPrayerTim
   return { currentPrayer, nextPrayer };
 };
 
+export const getNextPrayer = (times: Record<string, string>, now: Date = new Date()) => {
+  const status = getPrayerStatus(times as any);
+  const next = status.nextPrayer;
+  if (!next) return { name: 'Subuh', time: '04:30', countdown: '' };
+  
+  const [h, m] = (next.time || '04:30').split(':').map(Number);
+  const target = new Date(now);
+  target.setHours(h, m, 0, 0);
+  if (next.isTomorrow) target.setDate(target.getDate() + 1);
+  
+  const diffMs = target.getTime() - now.getTime();
+  if (diffMs <= 0) return { name: next.prayer, time: next.time, countdown: 'sekarang' };
+  const diffMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(diffMinutes / 60);
+  const mins = diffMinutes % 60;
+  const countdown = hours > 0 ? `${hours}j ${mins}m lagi` : `${mins}m lagi`;
+  return { name: next.prayer, time: next.time, countdown };
+};
+

@@ -100,6 +100,37 @@ export default function QuranHadis() {
   const [isReaderSettingsOpen, setIsReaderSettingsOpen] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
+  // New features: Parchment (Sepia) Theme, Qari Selection, and Continuous Auto-Scroll Murottal
+  const [readerTheme, setReaderTheme] = useState<'default' | 'sepia' | 'dark'>(() => {
+    const saved = localStorage.getItem('wi_quran_theme');
+    return (saved as 'default' | 'sepia' | 'dark') || 'default';
+  });
+  const [selectedQari, setSelectedQari] = useState<string>(() => {
+    const saved = localStorage.getItem('wi_quran_qari');
+    return saved || '05';
+  });
+  const [autoScroll, setAutoScroll] = useState<boolean>(() => {
+    const saved = localStorage.getItem('wi_quran_autoscroll');
+    return saved !== null ? saved === 'true' : true;
+  });
+  const [playingAyahNumber, setPlayingAyahNumber] = useState<number | null>(null);
+
+  const handleSetReaderTheme = (theme: 'default' | 'sepia' | 'dark') => {
+    setReaderTheme(theme);
+    localStorage.setItem('wi_quran_theme', theme);
+  };
+
+  const handleSetSelectedQari = (qariId: string) => {
+    setSelectedQari(qariId);
+    localStorage.setItem('wi_quran_qari', qariId);
+  };
+
+  const toggleAutoScroll = () => {
+    const next = !autoScroll;
+    setAutoScroll(next);
+    localStorage.setItem('wi_quran_autoscroll', String(next));
+  };
+
   // Tafsir Bottom Sheet Drawer State
   const [tafsirMap, setTafsirMap] = useState<Record<number, string>>({});
   const [isLoadingTafsir, setIsLoadingTafsir] = useState(false);
@@ -328,6 +359,7 @@ export default function QuranHadis() {
     if (playingAudio === audioUrl) {
       audioRef.current?.pause();
       setPlayingAudio(null);
+      setPlayingAyahNumber(null);
     } else {
       if (audioRef.current) {
         audioRef.current.pause();
@@ -337,7 +369,67 @@ export default function QuranHadis() {
       audioRef.current = audio;
       audio.play().catch(e => console.warn("Audio play blocked", e));
       setPlayingAudio(audioUrl);
-      audio.onended = () => setPlayingAudio(null);
+      audio.onended = () => {
+        setPlayingAudio(null);
+        setPlayingAyahNumber(null);
+      };
+    }
+  };
+
+  // Play Ayah Murottal with chosen Qari, auto-scroll, and continuous sequential playback
+  const playAyahAudio = async (ayahNumber: number, explicitQari?: string) => {
+    const targetAyah = ayahs.find(a => a.nomorAyat === ayahNumber);
+    if (!targetAyah || !targetAyah.audio) return;
+    const qariKey = explicitQari || selectedQari;
+    const audioUrl = targetAyah.audio[qariKey] || targetAyah.audio['05'] || Object.values(targetAyah.audio)[0];
+    if (!audioUrl) return;
+
+    if (playingAudio === audioUrl) {
+      audioRef.current?.pause();
+      setPlayingAudio(null);
+      setPlayingAyahNumber(null);
+      return;
+    }
+
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+
+    setPlayingAyahNumber(ayahNumber);
+    setPlayingAudio(audioUrl);
+
+    // Auto-scroll to currently playing verse
+    if (autoScroll) {
+      setTimeout(() => {
+        const el = document.getElementById(`ayah-${ayahNumber}`);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 100);
+    }
+
+    try {
+      const cachedUrl = await getCachedAudioUrl(audioUrl);
+      const audio = new Audio(cachedUrl);
+      audioRef.current = audio;
+      audio.play().catch(e => console.warn("Ayah audio play blocked", e));
+      audio.onended = () => {
+        // Continuous next verse playback
+        if (autoScroll) {
+          const currentIndex = ayahs.findIndex(a => a.nomorAyat === ayahNumber);
+          if (currentIndex !== -1 && currentIndex + 1 < ayahs.length) {
+            const nextAyah = ayahs[currentIndex + 1];
+            playAyahAudio(nextAyah.nomorAyat, qariKey);
+            return;
+          }
+        }
+        setPlayingAudio(null);
+        setPlayingAyahNumber(null);
+      };
+    } catch (err) {
+      console.error("Audio playback error:", err);
+      setPlayingAudio(null);
+      setPlayingAyahNumber(null);
     }
   };
 
@@ -376,7 +468,7 @@ export default function QuranHadis() {
   return (
     <div className="space-y-3 pb-24 animate-in fade-in duration-300 w-full max-w-full">
       {/* ======================= TOP BAR (MATCHING SCREENSHOT 1 & 3) ======================= */}
-      <div className="bg-[#0f6b52] text-white rounded-2xl shadow-sm border border-[#0d5944] p-3 sm:p-4 space-y-3">
+      <div className="bg-[#0f6b52] text-white rounded-2xl border-[1.5px] border-[#121212] shadow-[3px_3px_0px_#121212] p-3 sm:p-4 space-y-3">
         {/* Top Action Row */}
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
@@ -558,7 +650,7 @@ export default function QuranHadis() {
               </p>
             </div>
           ) : (
-            <div className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+            <div className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900 rounded-2xl border-[1.5px] border-[#121212] dark:border-slate-700 shadow-[2px_2px_0px_#121212] overflow-hidden">
               {filteredSurahs.map((surah) => {
                 const isOffline = !!offlineSurahsMap[surah.nomor.toString()];
                 const isDownloading = downloadingSurahNomor === surah.nomor;
@@ -620,7 +712,7 @@ export default function QuranHadis() {
       {/* ======================= TAB 2: JUZ 1 - 30 (MATCHING SCREENSHOT 3) ======================= */}
       {activeTab === 'juz' && (
         <div className="space-y-1.5">
-          <div className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900 rounded-2xl border border-gray-200/80 dark:border-slate-800 shadow-2xs overflow-hidden">
+          <div className="divide-y divide-gray-100 dark:divide-slate-800 bg-white dark:bg-slate-900 rounded-2xl border-[1.5px] border-[#121212] dark:border-slate-700 shadow-[2px_2px_0px_#121212] overflow-hidden">
             {filteredJuz.map((juz) => (
               <div
                 key={juz.juz}
@@ -656,7 +748,7 @@ export default function QuranHadis() {
       {activeTab === 'bookmark' && (
         <div className="space-y-3.5">
           {/* Header Banner: Multi-Hanca Explainer & Add Button */}
-          <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FCFAF5] dark:bg-slate-800/80 border border-[#E8DFC8] dark:border-slate-700 flex items-center justify-between gap-3">
+          <div className="p-3.5 sm:p-4 rounded-2xl bg-[#FCFAF5] dark:bg-slate-800/80 border-[1.5px] border-[#121212] dark:border-slate-700 shadow-[2px_2px_0px_#121212] flex items-center justify-between gap-3">
             <div>
               <h2 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
                 Penanda Terakhir Baca (Multi-Hanca)
@@ -922,8 +1014,14 @@ export default function QuranHadis() {
         <div className={`fixed inset-0 bg-black/60 backdrop-blur-xs z-50 flex justify-end animate-in fade-in duration-200 ${
           isFullscreen ? 'p-0' : ''
         }`}>
-          <div className={`bg-[#F9F8F5] dark:bg-slate-900 w-full h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300 ${
+          <div className={`w-full h-full flex flex-col shadow-2xl animate-in slide-in-from-right duration-300 ${
             isFullscreen ? 'max-w-none' : 'max-w-2xl'
+          } ${
+            readerTheme === 'sepia' 
+              ? 'bg-[#F4EEDD] text-[#2C2216]' 
+              : readerTheme === 'dark' 
+                ? 'bg-slate-900 text-slate-100' 
+                : 'bg-[#F9F8F5] dark:bg-slate-900 text-[#121212] dark:text-slate-100'
           }`}>
             
             {/* Top Bar: Clean Emerald Header with Back, Title, Audio & Settings Gear (Matches Screenshot 2 & 4) */}
@@ -1002,7 +1100,11 @@ export default function QuranHadis() {
             </div>
 
             {/* Sub-Header Bar: Surah X : Nama on Left, Juz Y on Right (Matches Screenshot 2) */}
-            <div className="px-4 py-2 bg-[#F3EDE2] dark:bg-slate-800 border-b border-[#E6DCC8] dark:border-slate-700 flex items-center justify-between text-xs font-bold text-[#7A5E35] dark:text-[#D4C4A8] shrink-0">
+            <div className={`px-4 py-2 border-b flex items-center justify-between text-xs font-bold shrink-0 ${
+              readerTheme === 'sepia'
+                ? 'bg-[#EADECA] text-[#4A3B2C] border-[#D8C7B0]'
+                : 'bg-[#F3EDE2] dark:bg-slate-800 border-[#E6DCC8] dark:border-slate-700 text-[#7A5E35] dark:text-[#D4C4A8]'
+            }`}>
               <span>Surah {selectedSurah.nomor}: {selectedSurah.namaLatin}</span>
               <span>Juz {getJuzForSurahAyah(selectedSurah.nomor)}</span>
             </div>
@@ -1144,17 +1246,28 @@ export default function QuranHadis() {
                       h => h.surahNumber === selectedSurah.nomor && h.ayahNumber === ayah.nomorAyat
                     );
                     
-                    // Zebra alternating background: White on odd, Soft Warm Cream on even (Matches Screenshot 4)
+                    // Zebra alternating background or active Murottal reciting highlight
                     const isEven = index % 2 === 1;
-                    const rowBgClass = isEven 
-                      ? 'bg-[#FAF7EE] dark:bg-slate-800/60' 
-                      : 'bg-white dark:bg-slate-900';
+                    const isReciting = playingAyahNumber === ayah.nomorAyat;
+                    
+                    let rowBgClass = '';
+                    if (isReciting) {
+                      rowBgClass = readerTheme === 'sepia'
+                        ? 'bg-[#E7DCBA] ring-2 ring-amber-700/80 border-l-[4px] border-l-amber-700'
+                        : 'bg-emerald-50 dark:bg-emerald-950/70 ring-2 ring-emerald-500/80 border-l-[4px] border-l-emerald-600';
+                    } else if (readerTheme === 'sepia') {
+                      rowBgClass = isEven ? 'bg-[#FAF5E8]' : 'bg-[#F4EEDD]';
+                    } else {
+                      rowBgClass = isEven 
+                        ? 'bg-[#FAF7EE] dark:bg-slate-800/60' 
+                        : 'bg-white dark:bg-slate-900';
+                    }
 
                     return (
                       <div
                         key={ayah.nomorAyat}
                         id={`ayah-${ayah.nomorAyat}`}
-                        className={`p-3.5 sm:p-5 transition-colors ${rowBgClass}`}
+                        className={`p-3.5 sm:p-5 transition-all duration-200 ${rowBgClass}`}
                       >
                         {/* Top: Star Badge on Left + Arabic Verse on Right with End Ayah Marker */}
                         <div className="flex items-start justify-between gap-3 mb-2.5">
@@ -1163,7 +1276,7 @@ export default function QuranHadis() {
                             <IslamicStarBadge 
                               number={ayah.nomorAyat} 
                               className="w-8 h-8 sm:w-9 sm:h-9" 
-                              active={isBookmarkedInHanca}
+                              active={isBookmarkedInHanca || isReciting}
                             />
                           </div>
 
@@ -1171,7 +1284,9 @@ export default function QuranHadis() {
                           {showArabic && (
                             <div 
                               onClick={() => handleOpenTafsir(selectedSurah, ayah)}
-                              className="flex-1 text-right font-serif font-normal text-gray-900 dark:text-white leading-[2.4] sm:leading-[2.7] pr-1 cursor-pointer hover:opacity-90 transition-opacity" 
+                              className={`flex-1 text-right font-serif font-normal leading-[2.4] sm:leading-[2.7] pr-1 cursor-pointer hover:opacity-90 transition-opacity ${
+                                readerTheme === 'sepia' ? 'text-[#1F170D]' : 'text-gray-900 dark:text-white'
+                              }`} 
                               style={{ fontSize: `${quranFontSize}px` }}
                               dir="rtl"
                               title="Ketuk ayat untuk membaca Tafsir Kemenag RI"
@@ -1190,32 +1305,36 @@ export default function QuranHadis() {
 
                         {/* Latin Transliteration if enabled */}
                         {showLatin && ayah.teksLatin && (
-                          <p className="text-[12px] sm:text-[13px] text-emerald-800 dark:text-emerald-300 italic font-medium mb-1 pl-10 sm:pl-12">
+                          <p className={`text-[12px] sm:text-[13px] italic font-medium mb-1 pl-10 sm:pl-12 ${
+                            readerTheme === 'sepia' ? 'text-amber-900' : 'text-emerald-800 dark:text-emerald-300'
+                          }`}>
                             {ayah.teksLatin}
                           </p>
                         )}
 
-                        {/* Indonesian Translation in comfortable teal/slate text (Matches Screenshot 4) */}
+                        {/* Indonesian Translation */}
                         {showTranslation && ayah.teksIndonesia && (
-                          <p className="text-[13px] sm:text-[14px] text-teal-800 dark:text-teal-200 leading-relaxed font-normal mb-3 pl-10 sm:pl-12">
+                          <p className={`text-[13px] sm:text-[14px] leading-relaxed font-normal mb-3 pl-10 sm:pl-12 ${
+                            readerTheme === 'sepia' ? 'text-[#3E2F1B]' : 'text-teal-800 dark:text-teal-200'
+                          }`}>
                             {ayah.teksIndonesia}
                           </p>
                         )}
 
                         {/* Compact 4-Action Button Cluster on the Right (Play, Tafsir, Favorit, Bookmark) */}
                         <div className="flex items-center justify-end gap-1.5 pt-1 border-t border-black/5 dark:border-white/5">
-                          {/* 1. Play Audio */}
-                          {ayah.audio?.['05'] && (
+                          {/* 1. Play Audio (Continuous Qari Voice with Auto-Scroll) */}
+                          {ayah.audio && (
                             <button
-                              onClick={() => toggleAudio(ayah.audio!['05'])}
+                              onClick={() => playAyahAudio(ayah.nomorAyat)}
                               className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
-                                playingAudio === ayah.audio['05']
-                                  ? 'bg-emerald-600 text-white'
+                                isReciting
+                                  ? 'bg-emerald-600 text-white shadow-xs scale-105'
                                   : 'text-gray-500 hover:text-emerald-700 hover:bg-black/5 dark:hover:bg-white/5'
                               }`}
-                              title={playingAudio === ayah.audio['05'] ? "Jeda Audio" : "Putar Audio Ayat"}
+                              title={isReciting ? "Jeda Audio" : "Putar Audio Murottal Ayat Ini"}
                             >
-                              {playingAudio === ayah.audio['05'] ? (
+                              {isReciting ? (
                                 <Pause className="w-3.5 h-3.5" />
                               ) : (
                                 <Play className="w-3.5 h-3.5" />
@@ -1280,7 +1399,7 @@ export default function QuranHadis() {
         />
       )}
 
-      {/* ======================= MODAL READER SETTINGS (LATIN, ARTI, PRESET A-- S/D A++) ======================= */}
+      {/* ======================= MODAL READER SETTINGS (LATIN, ARTI, PRESET A-- S/D A++, QARI, SEPIA) ======================= */}
       <QuranReaderSettingsModal
         isOpen={isReaderSettingsOpen}
         onClose={() => setIsReaderSettingsOpen(false)}
@@ -1294,6 +1413,12 @@ export default function QuranHadis() {
         toggleReadingMode={toggleReadingMode}
         isFullscreen={isFullscreen}
         toggleFullscreen={() => setIsFullscreen(v => !v)}
+        readerTheme={readerTheme}
+        setReaderTheme={handleSetReaderTheme}
+        selectedQari={selectedQari}
+        setSelectedQari={handleSetSelectedQari}
+        autoScroll={autoScroll}
+        toggleAutoScroll={toggleAutoScroll}
       />
 
       {/* ======================= BOTTOM SHEET TAFSIR KEMENAG RI ======================= */}

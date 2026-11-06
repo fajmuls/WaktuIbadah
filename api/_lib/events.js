@@ -107,6 +107,17 @@ export function buildDayEvents(sub, ymd, day, extra = {}) {
           url: '/ibadah',
         });
       }
+
+      // Pengingat 30 menit setelah salat (menanyakan sudah salat atau belum)
+      push(`post_checkin:${name}`, min + 30, {
+        kind: 'post_prayer_checkin',
+        prayer: name,
+        title: `Sudah Salat ${name}?`,
+        body: `Waktu salat ${name} telah berjalan 30 menit. Ketuk 'Sudah Salat' untuk menandai otomatis.`,
+        tag: `post-checkin-${name}`,
+        url: `/ibadah?confirmPrayer=${name}`,
+        requireInteraction: true,
+      });
     }
   }
 

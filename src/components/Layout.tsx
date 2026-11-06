@@ -4,6 +4,8 @@ import { Home, Calendar, Clock, BarChart2, Menu, Plus, CheckSquare, Settings, Bo
 import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
 import { MurottalPlayerWidget } from './MurottalPlayerWidget';
+import { FloatingWidget } from './FloatingWidget';
+import { NavHomeIcon, NavJadwalIcon, NavIbadahIcon, NavDoaIcon, NavQuranIcon, NavMenuIcon } from './NavIcons';
 import { playButtonTapSound, playTabSwitchSound } from '../lib/audio';
 import { storage } from '../lib/storage';
 
@@ -55,12 +57,12 @@ export const Layout = () => {
   ];
 
   const mobileNavItems = [
-    { label: 'Home', icon: Home, path: '/' },
-    { label: 'Jadwal', icon: Calendar, path: '/jadwal' },
-    { label: 'Ibadah', icon: Clock, path: '/ibadah' },
-    { label: 'Doa', icon: Sparkles, path: '/doa' },
-    { label: 'Qur\'an', icon: BookOpen, path: '/quran' },
-    { label: 'Menu', icon: Menu, path: '/menu' },
+    { label: 'Home', icon: NavHomeIcon, path: '/' },
+    { label: 'Jadwal', icon: NavJadwalIcon, path: '/jadwal' },
+    { label: 'Ibadah', icon: NavIbadahIcon, path: '/ibadah' },
+    { label: 'Doa', icon: NavDoaIcon, path: '/doa' },
+    { label: 'Qur\'an', icon: NavQuranIcon, path: '/quran' },
+    { label: 'Menu', icon: NavMenuIcon, path: '/menu' },
   ];
 
   return (
@@ -192,12 +194,12 @@ export const Layout = () => {
             {({ isActive }) => (
               <>
                 <div className={cn(
-                  "flex items-center justify-center px-2.5 py-0.5 rounded-full transition-all",
-                  isActive ? "bg-emerald-200 dark:bg-emerald-900/60 border-[1.5px] border-black dark:border-emerald-500 shadow-[1px_1px_0px_#121212]" : ""
+                  "flex items-center justify-center w-8 h-8 rounded-full transition-all",
+                  isActive ? "bg-emerald-100 dark:bg-emerald-900/60 border-[1.5px] border-black dark:border-emerald-500 shadow-[1px_1px_0px_#121212]" : ""
                 )}>
-                  <item.icon className={cn("w-4 h-4", isActive ? "stroke-[2.5] text-emerald-950 dark:text-emerald-200" : "stroke-[2] text-gray-700 dark:text-gray-300")} />
+                  <item.icon className={cn("w-5 h-5", isActive ? "text-emerald-800 dark:text-emerald-200" : "text-gray-700 dark:text-gray-300")} isActive={isActive} />
                 </div>
-                <span className={cn("text-[10.5px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-black dark:text-white" : "text-gray-600 dark:text-gray-400")}>
+                <span className={cn("text-[10px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-black dark:text-white" : "font-medium text-gray-600 dark:text-gray-400")}>
                   {item.label}
                 </span>
               </>
@@ -215,6 +217,9 @@ export const Layout = () => {
 
       {/* Global Murottal Player & Sleep Timer Widget */}
       <MurottalPlayerWidget />
+
+      {/* Floating Check-in Widget for Desktop/Tablet */}
+      <FloatingWidget />
     </div>
   );
 };

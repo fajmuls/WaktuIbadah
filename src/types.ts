@@ -265,6 +265,37 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.8.0',
+    releaseDate: '6 November 2026',
+    title: 'Mode Widget Salat & Tugas Minimalis, Notifikasi Check-in +30 Menit, Pemutaran Azan, Memphis Modern Tipis 1.5px, & QoL Murottal Auto-Scroll',
+    highlights: [
+      'Mode Widget Minimalis Terpisah (/widget) & Floating In-App: Widget interaktif yang bisa di-resize untuk ceklis 5 waktu salat dan tugas harian tanpa perlu membuka menu panjang.',
+      'Notifikasi Check-in 30 Menit Pasca-Salat: Pengingat cerdas 30 menit setelah azan dengan tombol aksi sekali ketuk "Sudah Salat" yang langsung mencatat salat otomatis ke aplikasi.',
+      'Perbaikan Pemutaran Azan Push & In-App: Mengetuk notifikasi azan atau tombol "Dengar Azan" langsung memutar audio azan Subuh/Fardhu secara andal.',
+      'Gaya Memphis Modern Tipis 1.5px: Menyelaraskan border hitam 1.5px elegan dan bayangan tipis pada modul Al-Qur\'an dan Doa Zikir agar serasi dengan ciri khas WaktuIbadah.',
+      'Perombakan Menu Doa & Zikir: Tampilan baru yang lebih simpel, bersih, dan rapi menyerupai Qur\'an dengan penghitung tasbih interaktif.',
+      'Perapian Tipografi Halaman Menu: Menghilangkan kesan brutalist bold yang terlalu tebal, diganti dengan hierarki font-semibold yang nyaman dipandang beserta ikon SVG kategori.',
+      'Bilah Navigasi Bawah SVG Kustom: Ikon-ikon navigasi bawah kini menggunakan grafis vektor SVG asli yang tajam dan presisi.',
+      'Fitur QoL Murottal Auto-Scroll & Highlighting: Layar pembaca Al-Qur\'an secara otomatis menyorot dan menggulir ke ayat yang sedang dilantunkan qari, dilengkapi pemutar kontinu.',
+      'Pilihan Suara Qari Ternama: Pilihan lantunan qari antara Syaikh Misyari Rasyid Al-Afasy, Syaikh Abdurrahman As-Sudais, dan Syaikh Sa\'ad Al-Ghamidi.',
+      'Tema Membaca Kertas Sepia / Parchment: Opsi warna latar membaca ketiga bernuansa kertas mushaf hangat untuk kenyamanan mata di malam hari.'
+    ],
+    soundPackUpdates: [
+      'Pemutaran azan Subuh dan Fardhu terintegrasi langsung dengan aksi notifikasi browser Web Push'
+    ],
+    uiOverhaul: [
+      'Widget salat & tugas minimalis dengan 3 level ukuran (Mini, Sedang, Penuh)',
+      'Bilah navigasi bawah dengan ikon SVG vektor murni yang responsif',
+      'Penyelarasan border tipis 1.5px di seluruh kartu Qur\'an dan Doa Zikir'
+    ],
+    recommendations: [
+      'Saran Fitur Terdekat: Mode Uji Hafalan (fitur blur/sembunyikan ayat untuk latihan tahfidz mandiri)',
+      'Saran UI/UX: Animasi page-flip lembut pada mode mushaf continuous per halaman',
+      'Saran QoL: Generator kartu kutipan ayat Al-Qur\'an estetik untuk dibagikan ke status WhatsApp/Instagram',
+      'Saran Perbaikan: Optimasi penghematan daya background worker saat perangkat dalam mode baterai lemah'
+    ]
+  },
+  {
     version: '2.7.0',
     releaseDate: '6 November 2026',
     title: 'Desain Baru Al-Qur\'an Bersih (Clean Look), Ornamen Bintang Islami SVG, Indeks 30 Juz, Sistem Multi-Hanca, & Baris Aksi 4 Tombol Ringkas',
