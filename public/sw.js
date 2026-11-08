@@ -1,6 +1,6 @@
 /* WaktuIbadah Service Worker
  * - Menerima Web Push dari server (notifikasi tetap muncul walau aplikasi/tab ditutup)
- * - Menangani klik notifikasi
+ * - Menangani klik notifikasi & aksi interaktif di background (Heningkan Azan & Sudah Salat)
  * - Cache ringan agar aplikasi bisa dibuka offline
  *
  * CATATAN: file ini SENGAJA ditulis manual. Jangan tambahkan plugin yang
@@ -8,7 +8,7 @@
  * menimpa file ini dan menghapus handler 'push' di bawah.
  */
 
-const VERSION = 'v2.0.0';
+const VERSION = 'v2.10.0';
 const SHELL_CACHE = `waktuibadah-shell-${VERSION}`;
 const ASSET_CACHE = `waktuibadah-assets-${VERSION}`;
 
@@ -18,6 +18,37 @@ const SHELL_URLS = [
   '/icons/icon-192.png',
   '/icons/badge-96.png',
 ];
+
+// Helper IndexedDB untuk menyimpan aksi interaktif background saat aplikasi tertutup
+function recordPrayerOffline(prayer, dateStr) {
+  return new Promise((resolve) => {
+    try {
+      const openReq = indexedDB.open('waktuibadah_bg', 1);
+      openReq.onupgradeneeded = (e) => {
+        const db = e.target.result;
+        if (!db.objectStoreNames.contains('pending_actions')) {
+          db.createObjectStore('pending_actions', { keyPath: 'id', autoIncrement: true });
+        }
+      };
+      openReq.onsuccess = (e) => {
+        const db = e.target.result;
+        const tx = db.transaction('pending_actions', 'readwrite');
+        const store = tx.objectStore('pending_actions');
+        store.add({
+          action: 'sudah_salat',
+          prayer: prayer,
+          date: dateStr || new Date().toISOString().split('T')[0],
+          timestamp: Date.now()
+        });
+        tx.oncomplete = () => resolve(true);
+        tx.onerror = () => resolve(false);
+      };
+      openReq.onerror = () => resolve(false);
+    } catch (err) {
+      resolve(false);
+    }
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Lifecycle
@@ -108,16 +139,20 @@ self.addEventListener('push', (event) => {
   const title = payload.title || 'WaktuIbadah';
   const isAzan = payload.kind === 'prayer';
   const isCheckin = payload.kind === 'post_prayer_checkin';
+  const isPreAzan = payload.kind === 'pre';
 
+  // Tombol aksi interaktif:
+  // - Azan: Heningkan Azan dan Tutup (Audio azan berbunyi otomatis)
+  // - Checkin: Sudah Salat dan Nanti (Langsung mencatat tanpa membuka aplikasi)
   const notificationActions = isAzan
     ? [
-        { action: 'dengar_azan', title: 'Dengar Azan 🔊' },
-        { action: 'open', title: 'Buka' },
+        { action: 'silence_azan', title: 'Heningkan Azan 🔕' },
+        { action: 'dismiss', title: 'Tutup' },
       ]
     : isCheckin
       ? [
           { action: 'sudah_salat', title: 'Sudah Salat ✅' },
-          { action: 'open', title: 'Buka' },
+          { action: 'dismiss', title: 'Nanti' },
         ]
       : [
           { action: 'open', title: 'Buka' },
@@ -141,23 +176,23 @@ self.addEventListener('push', (event) => {
     actions: notificationActions,
   };
 
-  // Getar hanya bila tidak dibisukan (silent:true mematikan suara DAN getar).
+  // Getar haptic nyata berirama
   if (payload.silent !== true) {
     options.vibrate = Array.isArray(payload.vibrate)
       ? payload.vibrate
       : isAzan
-        ? [800, 300, 800, 300, 1200]
+        ? [200, 100, 200, 100, 300, 100, 500]
         : isCheckin
-          ? [400, 200, 400]
-          : [300, 150, 300];
+          ? [200, 100, 200]
+          : [150, 100, 150];
   }
 
   event.waitUntil(
     (async () => {
-      // Selalu tampilkan notifikasi (wajib di iOS/Safari dan Chrome).
+      // Tampilkan notifikasi push di OS
       await self.registration.showNotification(title, options);
 
-      // Kirim pesan ke seluruh window klien aktif
+      // Kirim pesan ke seluruh window klien aktif agar memutar audio azan lokal bila tab sedang terbuka
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       for (const client of windows) {
         client.postMessage({ type: 'PUSH_RECEIVED', payload });
@@ -167,33 +202,68 @@ self.addEventListener('push', (event) => {
 });
 
 // ---------------------------------------------------------------------------
-// Klik notifikasi
+// Klik notifikasi & Aksi Interaktif
 // ---------------------------------------------------------------------------
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   if (event.action === 'dismiss') return;
 
   const data = event.notification.data || {};
-  let targetPath = data.url || '/';
 
-  if (event.action === 'dengar_azan' && data.prayer) {
-    targetPath = `/?playAzan=1&prayer=${encodeURIComponent(data.prayer)}`;
-  } else if (event.action === 'sudah_salat' && data.prayer) {
-    targetPath = `/ibadah?confirmPrayer=${encodeURIComponent(data.prayer)}`;
+  // 1. Aksi Interaktif: Heningkan Azan (Matikan suara seketika tanpa buka web)
+  if (event.action === 'silence_azan') {
+    event.waitUntil(
+      (async () => {
+        const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        for (const client of windows) {
+          client.postMessage({ type: 'SILENCE_AZAN' });
+        }
+      })()
+    );
+    return;
   }
 
+  // 2. Aksi Interaktif: Sudah Salat (Langsung catat ke database/storage secara background)
+  if (event.action === 'sudah_salat' && data.prayer) {
+    event.waitUntil(
+      (async () => {
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        // A. Catat ke IndexedDB agar aman walau tidak ada tab terbuka
+        await recordPrayerOffline(data.prayer, todayStr);
+
+        // B. Kirim event broadcast ke tab yang sedang aktif
+        const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+        for (const client of windows) {
+          client.postMessage({ 
+            type: 'CONFIRM_PRAYER_SILENT', 
+            prayer: data.prayer,
+            date: todayStr
+          });
+        }
+
+        // C. Tampilkan silent feedback toast di status bar
+        await self.registration.showNotification(`Salat ${data.prayer} Tercatat ✅`, {
+          body: `Alhamdulillah, salat ${data.prayer} Anda telah berhasil dicatat ke aplikasi.`,
+          icon: '/icons/icon-192.png',
+          badge: '/icons/badge-96.png',
+          tag: 'prayer-confirmed-toast',
+          silent: true,
+          vibrate: [100, 50, 100]
+        });
+      })()
+    );
+    return;
+  }
+
+  // 3. Aksi 'open' atau klik langsung pada tubuh notifikasi: fokuskan tab atau buka aplikasi
+  let targetPath = data.url || '/';
   const targetUrl = new URL(targetPath, self.location.origin).href;
 
   event.waitUntil(
     (async () => {
       const windows = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
       for (const client of windows) {
-        client.postMessage({ 
-          type: 'NOTIFICATION_CLICK', 
-          action: event.action, 
-          prayer: data.prayer,
-          data 
-        });
         if (client.url.startsWith(self.location.origin) && 'focus' in client) {
           if ('navigate' in client && client.url !== targetUrl) {
             try {

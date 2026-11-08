@@ -14,7 +14,8 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
     name: '',
     pin: '',
     target: '',
-    reminderEnabled: false,
+    reminderEnabled: true,
+    preReminderMinutes: 10,
     useFocusMode: true,
   });
 
@@ -112,6 +113,18 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
         createdAt: new Date().toISOString(),
       };
       storage.setUser(user);
+
+      // Save reminder settings including pre-reminder and vibration
+      const reminderSettings = storage.getReminderSettings();
+      storage.setReminderSettings({
+        ...reminderSettings,
+        preReminderMinutes: formData.preReminderMinutes,
+        reminderType: formData.reminderEnabled ? 'sound_and_vibrate' : 'vibrate_only',
+        silentNotifications: false,
+      });
+
+      // Mark pre-azan modal as completed so user is not prompted again
+      localStorage.setItem('wi_pre_azan_setup_v210', 'true');
 
       // Connect or create in Firestore Cloud
       try {
@@ -288,7 +301,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
             <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/60 rounded-2xl border border-gray-100 dark:border-gray-700">
               <div>
                 <h3 className="text-sm font-bold text-gray-900 dark:text-white">Pengingat Waktu Salat & Azan</h3>
-                <p className="text-xs text-gray-400">Alarm suara azan lokal dan getaran haptic saat masuk waktu</p>
+                <p className="text-xs text-gray-400">Alarm suara azan otomatis dan getaran haptik saat masuk waktu</p>
               </div>
               <input 
                 type="checkbox" 
@@ -297,6 +310,37 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                 className="w-5 h-5 text-emerald-600 rounded-md focus:ring-emerald-500 accent-emerald-600 cursor-pointer"
               />
             </div>
+
+            {formData.reminderEnabled && (
+              <div className="p-4 bg-emerald-50/60 dark:bg-emerald-950/30 rounded-2xl border border-emerald-200/80 dark:border-emerald-800/60">
+                <label className="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-2">
+                  Jeda Pengingat Sebelum Masuk Waktu
+                </label>
+                <div className="grid grid-cols-3 gap-2">
+                  {[
+                    { val: 10, label: '10 Menit', hint: 'Rekomendasi' },
+                    { val: 30, label: '30 Menit', hint: 'Santai' },
+                    { val: 0, label: 'Tepat Waktu', hint: 'Pas Masuk' },
+                  ].map((item) => (
+                    <button
+                      key={item.val}
+                      type="button"
+                      onClick={() => setFormData({ ...formData, preReminderMinutes: item.val })}
+                      className={`py-2 px-1.5 rounded-xl border text-center transition-all ${
+                        formData.preReminderMinutes === item.val
+                          ? 'bg-emerald-600 border-emerald-700 text-white font-bold shadow-sm'
+                          : 'bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-300'
+                      }`}
+                    >
+                      <span className="text-xs block font-bold">{item.label}</span>
+                      <span className={`text-[10px] block opacity-80 ${formData.preReminderMinutes === item.val ? 'text-white' : 'text-gray-400'}`}>
+                        {item.hint}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             
             <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-900/60 rounded-2xl border border-gray-100 dark:border-gray-700">
               <div>

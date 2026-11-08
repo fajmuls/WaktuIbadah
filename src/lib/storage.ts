@@ -30,7 +30,7 @@ const KEYS = {
   TAJWEED_ENABLED: "wi_tajweed_enabled",
 };
 
-export const CURRENT_VERSION = "2.9.0";
+export const CURRENT_VERSION = "2.10.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -143,6 +143,22 @@ export const storage = {
       prayers: {
         ...current.prayers,
         [targetKey]: !current.prayers[targetKey]
+      }
+    };
+    storage.updatePrayerLog(updated);
+    return updated;
+  },
+
+  confirmPrayer: (date: string, prayerKey: string): PrayerLog => {
+    const current = storage.getPrayerLog(date);
+    const validKeys: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
+    const targetKey = validKeys.find(k => k.toLowerCase() === prayerKey.toLowerCase()) || ('Subuh' as PrayerName);
+    
+    const updated: PrayerLog = {
+      ...current,
+      prayers: {
+        ...current.prayers,
+        [targetKey]: true
       }
     };
     storage.updatePrayerLog(updated);
@@ -552,3 +568,62 @@ export const storage = {
 
   clearAll: () => localStorage.clear(),
 };
+
+/**
+ * Synchronizes background actions recorded by the Service Worker into localStorage.
+ * Runs silently on app startup and window focus.
+ */
+export async function syncPendingOfflineActions(): Promise<number> {
+  if (typeof window === 'undefined' || !('indexedDB' in window)) return 0;
+
+  return new Promise((resolve) => {
+    try {
+      const request = indexedDB.open('waktuibadah_bg', 1);
+      request.onerror = () => resolve(0);
+      request.onsuccess = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains('pending_actions')) {
+          db.close();
+          return resolve(0);
+        }
+
+        const tx = db.transaction('pending_actions', 'readwrite');
+        const store = tx.objectStore('pending_actions');
+        const getAllReq = store.getAll();
+
+        getAllReq.onsuccess = () => {
+          const items = getAllReq.result || [];
+          if (!items.length) {
+            db.close();
+            return resolve(0);
+          }
+
+          let synced = 0;
+          items.forEach((item: { prayer?: string; date?: string }) => {
+            if (item.prayer && item.date) {
+              storage.confirmPrayer(item.date, item.prayer);
+              synced++;
+            }
+          });
+
+          const clearReq = store.clear();
+          clearReq.onsuccess = () => {
+            db.close();
+            resolve(synced);
+          };
+          clearReq.onerror = () => {
+            db.close();
+            resolve(synced);
+          };
+        };
+
+        getAllReq.onerror = () => {
+          db.close();
+          resolve(0);
+        };
+      };
+    } catch {
+      resolve(0);
+    }
+  });
+}

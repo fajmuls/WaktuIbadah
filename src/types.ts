@@ -268,6 +268,32 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.10.0',
+    releaseDate: '7 November 2026',
+    title: 'Azan Otomatis Tanpa Tombol Dengar, Tombol Heningkan Azan, Checklist Senyap Latar Belakang (Tanpa Buka Web), Pengingat Pra-Azan 10/30 Menit, Getaran Haptik Ritmis, & Wallpaper Floating Pop-Out Widget',
+    highlights: [
+      'Azan Otomatis Tanpa Perlu Tekan Tombol: Jika pengguna mengaktifkan audio azan di awal, audio azan langsung melantun otomatis ketika waktu salat tiba tanpa mewajibkan menekan tombol "Dengar Azan".',
+      'Tombol Aksi Notifikasi Interaktif Mandiri: Notifikasi azan kini dilengkapi tombol "Heningkan Azan 🔕" dan "Tutup" yang mengeksekusi langsung tanpa membuka atau mengganggu jendela aplikasi.',
+      'Checklist Salat Senyap Tanpa Buka Web (Zero-Window Open): Pada notifikasi evaluasi 30 menit setelah salat, menekan tombol "Sudah Salat ✅" langsung mencatat ibadah ke IndexedDB dan localStorage secara senyap di latar belakang tanpa membuka aplikasi.',
+      'Dialog Pengaturan Pra-Azan di Awal (10 & 30 Menit): Pilihan persiapan sebelum azan langsung disajikan di awal aplikasi untuk pengguna baru maupun pengguna lama yang belum mengaturnya.',
+      'Getaran Ritmis Haptik Nyata: Pola getaran haptik [200ms, 100ms, 200ms, 100ms, 300ms, 100ms, 500ms] aktif pada push notification dan peringatan azan pada perangkat yang mendukung.',
+      'Wallpaper Pop-Out Widget Glassmorphism: Mode widget mengambang berlatar kaca transparan yang dapat disematkan di atas wallpaper desktop atau layar ponsel dengan fitur Always-on-Top / Picture-in-Picture.'
+    ],
+    soundPackUpdates: [
+      'Audio azan Subuh dan Fardhu berbunyi otomatis dan dapat diheningkan langsung lewat tombol push notification tanpa membuka jendela web'
+    ],
+    uiOverhaul: [
+      'Modal Pengaturan Awal Pengingat Azan v2.10.0 dengan desain Memphis modern 1.5px',
+      'Tampilan Wallpaper Pop-Out Widget dengan glassmorphism lembut dan dukungan jendela mandiri tanpa reload',
+      'Notifikasi konfirmasi senyap bersuara tenang yang tidak mengganggu aktivitas pengguna'
+    ],
+    recommendations: [
+      'Saran Fitur Utama Selanjutnya: Pemutar Murottal Kontinu dengan mode Uji Hafalan (sembunyikan baris kata Arab bertahap untuk latihan tahfidz mandiri)',
+      'Saran UI/UX & QoL: Opsi download seluruh audio Al-Qur\'an sekaligus dalam satu klik (One-Click Bulk Audio Download) dengan estimasi ukuran penyimpanan offline',
+      'Saran Pencegahan & Perbaikan Bug: Penanganan sinkronisasi zona waktu otomatis ketika pengguna berpindah zona waktu WIB, WITA, dan WIT tanpa perlu me-reset kota'
+    ]
+  },
+  {
     version: '2.9.0',
     releaseDate: '6 November 2026',
     title: 'Widget Desktop & Pop-Out, Navigasi Kalender Geser, Kunci Salat Mendatang, Tajwid Warna Kemenag, Salat Jumat Otomatis, & Dialog Wirid Sesudah Salat',

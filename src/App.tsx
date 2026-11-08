@@ -1,7 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Layout } from './components/Layout';
 import { useEffect, useState, useRef } from 'react';
-import { storage, CURRENT_VERSION } from './lib/storage';
+import { storage, CURRENT_VERSION, syncPendingOfflineActions } from './lib/storage';
 import { motion, AnimatePresence } from 'motion/react';
 import { getPrayerTimesForToday, getCachedPrayerData, getSunnahFastingInfo } from './lib/prayer-times';
 import { format, addDays } from 'date-fns';
@@ -32,6 +32,7 @@ import Qibla from './pages/Qibla';
 import WidgetPage from './pages/WidgetPage';
 
 // Modals
+import { PreAzanSetupModal } from './components/PreAzanSetupModal';
 import { NotificationSetupModal } from './components/NotificationSetupModal';
 import { WebsiteReviewModal } from './components/WebsiteReviewModal';
 import { InstallPwaBanner } from './components/InstallPwaBanner';
@@ -365,6 +366,17 @@ export default function App() {
         setPostPrayerCheckinAlert(null);
         return;
       }
+      if (msg.type === 'SILENCE_AZAN') {
+        stopAlarmSound();
+        setActiveAzanAlert(null);
+        return;
+      }
+      if (msg.type === 'CONFIRM_PRAYER_SILENT' && msg.prayer) {
+        const today = msg.date || format(new Date(), 'yyyy-MM-dd');
+        storage.confirmPrayer(today, msg.prayer);
+        setPostPrayerCheckinAlert(null);
+        return;
+      }
       if (msg.type === 'PUSH_RECEIVED' && msg.payload?.kind === 'prayer' && msg.payload?.prayer) {
         const prayer = String(msg.payload.prayer);
         const day = format(new Date(), 'yyyy-MM-dd');
@@ -381,6 +393,9 @@ export default function App() {
       }
     };
     if ('serviceWorker' in navigator) navigator.serviceWorker.addEventListener('message', onSwMessage);
+
+    // Sync any pending background prayers recorded by the Service Worker
+    syncPendingOfflineActions().catch(console.error);
 
     // Sinkronkan preferensi/jadwal ke server saat data berubah & saat aplikasi dibuka kembali
     const handlePushResync = () => syncPushSoon();
@@ -525,6 +540,9 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {/* Pre-Azan 10/30-minute reminder & automatic azan setup modal */}
+          <PreAzanSetupModal />
 
           {/* Polite Battery-Efficient Background Sync Prompt Modal */}
           <NotificationSetupModal />

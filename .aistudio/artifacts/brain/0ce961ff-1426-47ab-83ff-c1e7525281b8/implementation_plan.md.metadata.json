@@ -1,6 +1,6 @@
 {
-  "summary": "Comprehensive implementation plan for WaktuIbadah v2.9.0 covering:\n1. Desktop & homescreen standalone widget window with PiP pop-out and PWA shortcuts.\n2. Calendar date picker strip in Jadwal and Ibadah with smooth day-shift navigation and backfilling of missed prayers.\n3. Time-locked prayer validation (blocking future prayers until their actual time arrives).\n4. Immediate post-prayer Wirid & Doa dialog with 'Do not remind again' setting.\n5. Responsive zero-truncation UI fix across mobile headers, menu cards, and reader action clusters.\n6. Audio bug fix (eliminating double tap sound and harsh Quran open noise) and audio pack pruning.\n7. Color-coded Kemenag Tajwid in Quran reader with customizable toggle.\n8. Friday prayer dynamic adaptation ('Salat Jumat' for male users).\n9. Upfront notification permission prompt in onboarding.\n10. Version bump to v2.9.0 with updated patch notes and ongoing improvement suggestions.",
-  "updatedAt": "2026-11-06T08:13:42.273265492Z",
-  "requestFeedback": true,
-  "userFacing": true
+  "summary":  "Rencana implementasi notifikasi azan interaktif di background tanpa buka aplikasi, getaran haptic, pemilihan jeda pengingat 10/30 menit pra-azan untuk pengguna baru & lama, auto-azan tanpa tombol manual, dan penyempurnaan widget wallpaper desktop/HP (v2.10.0).",
+  "updatedAt":  "2026-11-08T00:15:33.128033730Z",
+  "requestFeedback":  true,
+  "userFacing":  true
 }

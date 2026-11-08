@@ -1,114 +1,124 @@
-# Rencana Implementasi Pembaruan WaktuIbadah v2.9.0
+# Notifikasi Azan Interaktif Background, Getar Haptic, Pengingat 10/30 Menit Pra-Azan & Widget Wallpaper (v2.10.0)
 
-Pembaruan komprehensif ini menyempurnakan fungsi widget desktop/homescreen, kalender interaktif pada Jadwal dan Ibadah, validasi waktu salat masa depan, ajakan wirid pasca-salat, perbaikan tipografi responsif (anti-tumpang tindih), fitur Tajwid berwarna Kemenag, salat Jumat untuk laki-laki, dan pembersihan audio pack ganda.
+Penyempurnaan sistem notifikasi background PWA agar azan otomatis berbunyi dengan getaran haptic tanpa harus membuka aplikasi, aksi interaktif "Sudah Salat" dan "Heningkan Azan" langsung di banner notifikasi tanpa me-reload/membuka jendela web, pengaturan jeda pengingat sebelum azan (10 atau 30 menit) di awal aplikasi untuk pengguna baru dan lama, serta penyempurnaan mode widget mengambang di atas wallpaper desktop/HP.
 
----
-
-## Tinjauan Pengguna & Keputusan Kritis
+## User Review & Critical Decisions
 
 > [!IMPORTANT]
-> Berdasarkan jawaban klarifikasi yang telah Anda konfirmasi:
-> 1. **Tajwid Berwarna**: Diterapkan mode warna tajwid standar Kemenag RI (Ghunnah, Ikhfa, Idgham, Iqlab, Qalqalah, Mad) yang dapat diaktifkan/dinonaktifkan langsung melalui modal pengaturan pembaca Al-Qur'an.
-> 2. **Wirid & Doa Pasca-Salat**: Menampilkan pop-up dialog ajakan wirid sesaat setelah pengguna mencentang salat fardhu apa pun, dilengkapi opsi sakelar *"Jangan ingatkan lagi"* dan pengaturan permanen di menu Pengaturan.
-> 3. **Kalender Jadwal & Ibadah**: Menerapkan strip horizontal geser tanggal yang intuitif (hari sebelumnya/berikutnya) disertai tombol pemilih kalender cepat dan akses untuk mengisi catatan ibadah hari-hari lampau (*qadha/backfill*).
+> Keputusan berdasarkan jawaban klarifikasi pengguna:
+> - **Jeda Pengingat Pra-Azan**: Disediakan opsi preset 10 menit dan 30 menit sebelum waktu azan tiba (dapat dipilih di awal membuka aplikasi).
+> - **Aksi Banner Notifikasi Azan**: Notifikasi azan langsung berbunyi otomatis dan banner menyediakan tombol interaktif **"Heningkan Azan"** dan **"Tutup"** tanpa membuka aplikasi.
+> - **Aksi Notifikasi Check-in +30 Menit**: Mengetuk tombol **"Sudah Salat"** pada banner notifikasi langsung mencatat salat ke data lokal & cloud secara background tanpa membuka aplikasi.
+> - **Widget Wallpaper**: Jendela Pop-out mengambang di atas wallpaper desktop/laptop dan mode PWA shortcut beranda HP dengan latar semi-transparan (glassmorphism) yang hemat ruang.
 
 ---
 
-## 1. Ikhtisar & Konsep Utama
+## 1. Overview & Core Concept
 
-- **Widget Desktop / Laptop & Homescreen**: Rute `/widget` kini dilengkapi tombol **"Buka Jendela Desktop (Pop-Out)"** menggunakan ukuran jendela ringkas tanpa browser chrome (serta dukungan Document Picture-in-Picture jika didukung peramban), serta pintasan PWA langsung di `manifest.webmanifest`.
-- **Kalender Interaktif pada Jadwal & Ibadah**:
-  - Tombol navigasi hari (`<` dan `>`) untuk berpindah hari secara cepat.
-  - Tanggal yang dipilih dapat melihat dan mengisi ibadah hari sebelumnya.
-  - **Kunci Waktu Salat Masa Depan**: Salat pada hari esok atau waktu hari ini yang belum tiba (misal: baru Subuh, maka Zuhur, Asar, Magrib, Isya terkunci) tidak bisa diceklis sampai waktunya masuk.
-- **Salat Jumat untuk Laki-laki**: Jika gender pengguna diatur sebagai *Laki-laki* dan hari yang dipilih adalah hari Jumat, nama ibadah zuhur otomatis disesuaikan menjadi **Salat Jumat** (atau *Jumat / Zuhur*).
-- **Anti Tumpang-Tindih Teks (Zero-Truncation / Anti-Overlap)**: Penataan ulang layout pada layar ponsel sempit agar judul (seperti *"Kumpulan Doa & Zikir"*, *"Widget Layar & Wallpaper"*, dan nama surah panjang) mengecilkan font secara proporsional atau memindahkan tombol aksi ke baris tersendiri tanpa pernah terpotong atau tertimpa.
-- **Tajwid Berwarna**: Integrasi teks ayat dengan penandaan warna tajwid Kemenag RI yang membedakan hukum bacaan secara visual, disertai switch toggle di pengaturan.
-- **Perbaikan Audio & Pembersihan Sound Pack**: Menghilangkan pemicu ganda (*double tap*) saat membuka surah dan meredam efek suara keras agar pengalaman membaca tenang dan khusyuk.
-- **Pemberitahuan Izin Notifikasi di Onboarding**: Memberikan dialog edukasi preferensi notifikasi di awal saat pengguna pertama kali mengatur profil.
+- **Apa yang Dibangun**:
+  1. **Background Service Worker Actions**: Menangani aksi notifikasi `sudah_salat` dan `silence_azan` di dalam `public/sw.js` secara hening (*background silent execution*) tanpa memanggil `clients.openWindow()` atau memfokuskan tab browser.
+  2. **Auto-Play Azan & Getar Haptic**: Notifikasi azan langsung memicu suara azan dan pola getar haptic `[200, 100, 200, 100, 300, 100, 500]` secara andal. Tombol "Dengar Azan" dihilangkan karena suara sudah otomatis bersuara; digantikan dengan tombol "Heningkan Azan".
+  3. **Modal Setup Awal Pra-Azan (Pengguna Baru & Pengguna Lama)**: Dialog setup awal yang menanyakan preferensi waktu pengingat pra-azan (10 menit atau 30 menit sebelum azan) serta aktivasi suara azan otomatis. Muncul otomatis bagi pengguna baru saat onboarding dan pengguna lama yang belum menyetel preferensi ini.
+  4. **Widget Wallpaper Pop-Out & PWA**: Penyempurnaan halaman `/widget` dengan mode jendela pop-out yang dapat diposisikan di sudut layar desktop (selaras dengan wallpaper), mendukung Document Picture-in-Picture jika tersedia di browser.
+  5. **Versi Aplikasi Naik ke v2.10.0**: Sesuai instruksi pengguna, posisi angka kedua dinaikkan karena terdapat penambahan fitur background actions, auto-azan, modal setup pra-azan, dan patch notes diperbarui.
 
 ---
 
-## 2. Diagram Alur & Arsitektur Sistem
+## 2. User Experience & Visual Design
+
+### Alur Interaksi Pengguna (User Flows)
+1. **Setup Awal Pengingat Pra-Azan**:
+   - Pengguna baru atau pengguna lama yang baru memperbarui aplikasi disambut oleh modal elegan: *"Atur Pengingat Azan & Persiapan Salat"*.
+   - Opsi: **10 Menit Sebelum Azan** (disarankan untuk bersiap wudhu), **30 Menit Sebelum Azan** (untuk menyelesaikan aktivitas/kuliah), atau **Tepat Waktu Saja**.
+   - Sakelar Suara Azan Otomatis: Aktif secara default sehingga pengguna tidak perlu menekan tombol manual lagi.
+
+2. **Saat Waktu Azan Masuk**:
+   - Sistem membunyikan audio azan dengan getaran haptic berirama.
+   - Banner notifikasi menampilkan judul *"Waktu Salat [Nama Salat] Masuk"* dengan 2 tombol aksi:
+     - **[Heningkan Azan]**: Menghentikan lantunan azan seketika tanpa membuka aplikasi.
+     - **[Tutup]**: Menutup notifikasi.
+
+3. **Notifikasi Check-in 30 Menit Pasca-Salat**:
+   - Banner notifikasi bertanya: *"Apakah Anda sudah menunaikan salat [Nama Salat]?"*
+   - Tombol **[Sudah Salat]**: Seketika mencatat status salat ke database/storage lokal dan mengirim konfirmasi toast/silent notification tanpa membuka tab atau jendela aplikasi baru.
+
+4. **Widget Wallpaper Desktop / Mobile**:
+   - Pengguna menekan tombol *"Pasang ke Wallpaper"* di halaman widget.
+   - Jendela pop-out compact minimalis terbuka mandiri tanpa address bar / tab browser, dengan opsi latar glassmorphism yang serasi dengan wallpaper pengguna.
+
+---
+
+## 3. Key Product Decisions & Trade-Offs
+
+- **Penyimpanan Status Salat dari Background Service Worker**:
+  - *Keputusan*: Service worker (`public/sw.js`) menggunakan `IndexedDB` dan `postMessage` broadcast ke semua klien aktif, serta endpoint API `/api/confirm-prayer` (jika dev server aktif) untuk mencatat salat seketika tanpa memicu navigasi paksa browser.
+  - *Rasional*: Memenuhi keinginan pengguna agar aplikasi tidak terbuka tiba-tiba saat menekan tombol "Sudah Salat".
+- **Heningkan Azan Langsung dari Notifikasi**:
+  - *Keputusan*: Service worker mengirim event pesan `SILENCE_AZAN` ke klien yang sedang memutar audio azan, dan menghentikan audio context seketika.
+- **Pola Getar Haptic**:
+  - *Keputusan*: Menambahkan properti `vibrate: [200, 100, 200, 100, 300, 100, 500]` pada seluruh pemicu notifikasi `showNotification()`.
+
+---
+
+## 4. Technical Architecture & Component Structure
 
 ```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        WAKTIUBADAH v2.9.0 CORE                         │
-└───────────────────────────────────┬────────────────────────────────────┘
-                                    │
-    ┌───────────────────────────────┼───────────────────────────────┐
-    ▼                               ▼                               ▼
-┌──────────────────────┐  ┌──────────────────────┐  ┌──────────────────────┐
-│  WIDGET POP-OUT &    │  │  KALENDER JADWAL &   │  │  AL-QUR'AN TAJWID    │
-│  PWA HOMESCREEN      │  │  LOG IBADAH HARIAN   │  │  BERWARNA (KEMENAG)  │
-├──────────────────────┤  ├──────────────────────┤  ├──────────────────────┤
-│ • Window Pop-Out     │  │ • Tombol Geser < / > │  │ • Parser Warna Tajwid│
-│ • PiP Floating Mode  │  │ • Akses Hari Lampau  │  │ • Ghunnah/Ikhfa/Mad  │
-│ • Ceklis Salat/Tugas │  │ • Lock Waktu Depan   │  │ • Sakelar On/Off     │
-│ • Manifest Shortcut  │  │ • Label Salat Jumat  │  │ • Unbold Font Judul  │
-└──────────────────────┘  └──────────────────────┘  └──────────────────────┘
-    │                               │                               │
-    └───────────────────────────────┼───────────────────────────────┘
-                                    ▼
-┌────────────────────────────────────────────────────────────────────────┐
-│                   PERBAIKAN QoL, UI & BUG AUDIO                       │
-├────────────────────────────────────────────────────────────────────────┤
-│ • Eliminasi Double Sound tap + open surah                              │
-│ • Modal Wirid & Doa instan pasca-ceklis salat (dengan opsi silent)     │
-│ • Responsif font mobile: flex-wrap, text-shrink, zero-overlap          │
-│ • Onboarding: konfirmasi izin notifikasi di awal                       │
-└────────────────────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                   Browser / Service Worker               │
+│                                                          │
+│  Push Event / Cron Worker                                │
+│       │                                                  │
+│       ├──► showNotification(..., {                       │
+│       │       actions: ['silence_azan', 'sudah_salat'],  │
+│       │       vibrate: [200, 100, 200, 100, 300, ...],   │
+│       │       sound: '/Assets/Adzan/Fardhu.mp3'          │
+│       │    })                                            │
+│       │                                                  │
+│  notificationclick Event                                 │
+│       │                                                  │
+│       ├──► 'sudah_salat' ──► Record directly to storage  │
+│       │                      without opening window!     │
+│       └──► 'silence_azan' ─► Stop audio stream silently  │
+└──────────────────────────────────────────────────────────┘
+                         │
+                         ▼
+┌──────────────────────────────────────────────────────────┐
+│                   React App State                        │
+│                                                          │
+│  PreAzanSetupModal (10 min / 30 min selector)            │
+│  ReminderSettings (preReminderMinutes, autoAzanSound)    │
+│  WidgetPage (Wallpaper Glass Pop-Out & PiP)              │
+│  PatchNotes v2.10.0 (Admin Dashboard & Settings)         │
+└──────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 3. Rincian Teknis Per Komponen
+## 5. Rencana Langkah Pengerjaan
 
-### A. Widget Desktop & Homescreen (`/src/pages/WidgetPage.tsx`, `/public/manifest.webmanifest`)
-1. Menambahkan tombol **"Pop-out Desktop Widget"** dengan `window.open('/widget', 'WidgetWaktuIbadah', 'width=380,height=600,menubar=no,toolbar=no,location=no,status=no,resizable=yes')` untuk laptop dan PC.
-2. Menambahkan dukungan API `documentPictureInPicture` bila peramban mendukung, memungkinkan widget selalu mengambang di atas semua aplikasi desktop (*always-on-top*).
-3. Memperbarui `manifest.webmanifest` dengan pintasan resmi *shortcuts* khusus `/widget`.
+1. **Service Worker (`public/sw.js`)**:
+   - Perbaiki event listener `notificationclick` agar action `sudah_salat` dan `silence_azan` tidak lagi memanggil `self.clients.openWindow()` atau `client.focus()`.
+   - Terapkan penyimpanan langsung ke `IndexedDB` dan sinkronisasi `postMessage` ke seluruh tab.
+   - Tambahkan parameter `vibrate` pada seluruh `showNotification`.
+   - Update aksi notifikasi azan: hilangkan tombol "Dengar Azan", ganti dengan "Heningkan Azan" dan "Tutup".
 
-### B. Kalender Geser & Kunci Waktu Salat (`/src/pages/Jadwal.tsx`, `/src/pages/Ibadah.tsx`)
-1. **Navigasi Tanggal Geser**: Tombol panah kiri (`subDays(selectedDate, 1)`) dan panah kanan (`addDays(selectedDate, 1)`) serta tombol *Hari Ini* dan kalender pemilih cepat.
-2. **Pengisian Hari Lampau**: Tanggal sebelum hari ini dapat dibuka untuk mencatat ibadah yang terlewat.
-3. **Kunci Salat Masa Depan**:
-   - Jika `selectedDate > today`: Semua ceklis salat fardhu dinonaktifkan (`disabled`) dengan keterangan *"Waktu belum tiba"*.
-   - Jika `selectedDate === today`: Membandingkan waktu sekarang (`HH:mm`) dengan waktu salat masing-masing dari jadwal resmi. Salat yang belum masuk waktunya terkunci dari centangan.
-4. **Dukungan Salat Jumat**: Jika pengguna berjenis kelamin laki-laki (`user.gender === 'male'` atau `"Laki-laki"`) dan hari tersebut adalah hari Jumat, teks "Zuhur" ditampilkan sebagai **"Salat Jumat"** (atau *"Salat Jumat / Zuhur"*).
+2. **Komponen Pengingat Pra-Azan (`PreAzanReminderModal.tsx`)**:
+   - Buat modal khusus yang otomatis memeriksa apakah preferensi pra-azan sudah disetel.
+   - Tampilkan opsi 10 Menit, 30 Menit, atau Nonaktif, serta sakelar azan otomatis.
+   - Pasang di `Layout.tsx` atau `App.tsx` agar pengguna lama yang belum mendapatkan pengaturan ini langsung disajikan modal pembaruan.
 
-### C. Alur Wirid & Doa Pasca-Salat
-1. Ketika salat fardhu dicentang selesai, periksa pengaturan `reminderSettings.autoPromptWirid !== false`.
-2. Jika aktif, munculkan modal dialog elegan yang menawarkan: *"Alhamdulillah telah menunaikan [Nama Salat]. Lanjutkan dengan wirid & doa sesudah salat?"*
-3. Terdapat tombol *"Buka Wirid"* dan tombol centang *"Jangan ingatkan lagi"* yang tersimpan di `localStorage`.
+3. **Logika Audio Azan & Client Listener (`src/lib/audio.ts` & `src/lib/push.ts`)**:
+   - Sambungkan event `SILENCE_AZAN` agar audio azan yang sedang berputar langsung berhenti ketika pengguna menekan heningkan di notifikasi.
+   - Pastikan suara azan otomatis berbunyi sesuai preferensi tanpa menunggu klik manual.
 
-### D. Tajwid Berwarna Al-Qur'an (`/src/lib/tajweed.ts`, `/src/pages/QuranHadis.tsx`, `/src/components/QuranReaderSettingsModal.tsx`)
-1. Membuat modul parser tajwid Kemenag `parseTajweedVerse(arabicText: string)` yang mendeteksi pola tajwid:
-   - **Ghunnah** (Nun & Mim Tasydid): Hijau Emerald (`text-emerald-600 dark:text-emerald-400 font-semibold`)
-   - **Ikhfa / Ikhfa Syafawi**: Oranye Amber (`text-amber-600 dark:text-amber-400 font-semibold`)
-   - **Idgham**: Biru Cyan (`text-cyan-600 dark:text-cyan-400 font-semibold`)
-   - **Iqlab**: Ungu Violet (`text-purple-600 dark:text-purple-400 font-semibold`)
-   - **Qalqalah**: Merah Rose (`text-rose-600 dark:text-rose-400 font-semibold`)
-   - **Mad Wajib / Jaiz**: Merah Tua Crimson (`text-red-600 dark:text-red-500 font-semibold`)
-2. Menambahkan opsi di `QuranReaderSettingsModal`: **"Warna Tajwid Kemenag"** (Aktif / Nonaktif).
-3. Menyesuaikan ketebalan huruf judul surah di daftar Al-Qur'an dari `font-extrabold` menjadi `font-medium` / `font-semibold` yang lebih nyaman dipandang.
+4. **Widget Wallpaper (`src/pages/WidgetPage.tsx` & `src/components/FloatingWidget.tsx`)**:
+   - Sempurnakan mode pop-out wallpaper dengan kontrol transparansi glassmorphism dan Document Picture-in-Picture.
+   - Pastikan widget dapat disimpan di wallpaper / beranda dengan nyaman.
 
-### E. Penanganan Bug Audio & Perapian Layout
-1. **Double Sound Elimination**: Menghentikan tumpang-tindih antara `playButtonTapSound()` global di `Layout.tsx` dan `playQuranSound('open')` di `QuranHadis.tsx`. Meredam suara pembuka surah agar tenang.
-2. **Pembersihan Audio Pack**: Memastikan sound effect tidak berisik dan volume seimbang (`~0.20`).
-3. **Anti Tumpang-Tindih Judul di Mobile**:
-   - Memastikan `truncate` dan `break-words` diterapkan dengan pembungkus fleksibel (`min-w-0 flex-1`).
-   - Tombol aksi di sebelah kanan judul pada layar kecil disetel agar tidak menimpa teks.
-   - Pengecilan ukuran font header tanggal di Ibadah (dari teks raksasa menjadi `text-xs sm:text-sm`).
+5. **Pembaruan Versi ke v2.10.0**:
+   - Update `CURRENT_VERSION = "2.10.0"` di `src/lib/storage.ts`.
+   - Tambahkan item rilis `2.10.0` pada `APP_PATCH_NOTES` di `src/types.ts`.
+   - Update menu dan tampilan patch notes di dashboard.
 
-### F. Onboarding Izin Notifikasi
-- Di halaman Onboarding (`/src/pages/Onboarding.tsx`), tambahkan langkah pilihan preferensi notifikasi azan & pengingat salat secara eksplisit.
-
----
-
-## 4. Rencana Rilis Versi v2.9.0
-
-Sesuai aturan format versi:
-- Versi dinaikkan ke **v2.9.0** (posisi angka ke-2 naik karena ada penambahan fitur penting).
-- `APP_PATCH_NOTES` di `src/types.ts` dan `CURRENT_VERSION` di `src/lib/storage.ts` diperbarui.
-- Catatan rilis v2.9.0 akan muncul saat mengklik tombol versi di Dashboard Admin dan menu Pengaturan, lengkap dengan rekomendasi fitur selanjutnya.
+6. **Verifikasi & Build**:
+   - Jalankan `compile_applet` dan `lint_applet` secara bersamaan untuk memastikan 0 error.
