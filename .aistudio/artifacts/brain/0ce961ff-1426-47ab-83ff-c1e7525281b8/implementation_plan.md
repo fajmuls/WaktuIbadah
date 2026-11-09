@@ -1,124 +1,111 @@
-# Notifikasi Azan Interaktif Background, Getar Haptic, Pengingat 10/30 Menit Pra-Azan & Widget Wallpaper (v2.10.0)
+# Rencana Peningkatan WaktuIbadah v2.11.0: Kalender Bulanan Asli, Checklist Salat Home, Manajemen PIN Admin, & Notifikasi Handal
 
-Penyempurnaan sistem notifikasi background PWA agar azan otomatis berbunyi dengan getaran haptic tanpa harus membuka aplikasi, aksi interaktif "Sudah Salat" dan "Heningkan Azan" langsung di banner notifikasi tanpa me-reload/membuka jendela web, pengaturan jeda pengingat sebelum azan (10 atau 30 menit) di awal aplikasi untuk pengguna baru dan lama, serta penyempurnaan mode widget mengambang di atas wallpaper desktop/HP.
+Rencana pembaruan komprehensif untuk menyempurnakan logika fitur, sinkronisasi salat, kalender bulanan penuh, panel admin, koleksi doa, serta kehandalan audio azan dan notifikasi.
 
-## User Review & Critical Decisions
+---
+
+## Ringkasan Konfirmasi Pengguna
 
 > [!IMPORTANT]
-> Keputusan berdasarkan jawaban klarifikasi pengguna:
-> - **Jeda Pengingat Pra-Azan**: Disediakan opsi preset 10 menit dan 30 menit sebelum waktu azan tiba (dapat dipilih di awal membuka aplikasi).
-> - **Aksi Banner Notifikasi Azan**: Notifikasi azan langsung berbunyi otomatis dan banner menyediakan tombol interaktif **"Heningkan Azan"** dan **"Tutup"** tanpa membuka aplikasi.
-> - **Aksi Notifikasi Check-in +30 Menit**: Mengetuk tombol **"Sudah Salat"** pada banner notifikasi langsung mencatat salat ke data lokal & cloud secara background tanpa membuka aplikasi.
-> - **Widget Wallpaper**: Jendela Pop-out mengambang di atas wallpaper desktop/laptop dan mode PWA shortcut beranda HP dengan latar semi-transparan (glassmorphism) yang hemat ruang.
+> Berdasarkan tanya jawab di Tahap 1, keputusan fitur berikut telah dikonfirmasi:
+> 1. **Tampilan Kalender Jadwal & Ibadah**: Grid kalender bulanan penuh dengan header kolom 7 hari (Ahad, Senin, Selasa, Rabu, Kamis, Jumat, Sabtu) dengan navigasi bulan (sebelumnya/berikutnya) seperti kalender asli.
+> 2. **Checklist Salat di Dashboard (Home)**: 5 kartu horizontal ringkas tepat di bawah jadwal salat, tersinkronisasi dua arah dengan data tab Ibadah, dan mengunci salat yang waktunya belum tiba.
+> 3. **Panel Admin Akun Pengguna**: Tabel daftar akun mahasiswa dengan kolom Nama Pengguna, Waktu Terdaftar/Diperbarui, dan PIN Keamanan 4 digit untuk membantu pemulihan akun saat mahasiswa lupa PIN.
 
 ---
 
-## 1. Overview & Core Concept
-
-- **Apa yang Dibangun**:
-  1. **Background Service Worker Actions**: Menangani aksi notifikasi `sudah_salat` dan `silence_azan` di dalam `public/sw.js` secara hening (*background silent execution*) tanpa memanggil `clients.openWindow()` atau memfokuskan tab browser.
-  2. **Auto-Play Azan & Getar Haptic**: Notifikasi azan langsung memicu suara azan dan pola getar haptic `[200, 100, 200, 100, 300, 100, 500]` secara andal. Tombol "Dengar Azan" dihilangkan karena suara sudah otomatis bersuara; digantikan dengan tombol "Heningkan Azan".
-  3. **Modal Setup Awal Pra-Azan (Pengguna Baru & Pengguna Lama)**: Dialog setup awal yang menanyakan preferensi waktu pengingat pra-azan (10 menit atau 30 menit sebelum azan) serta aktivasi suara azan otomatis. Muncul otomatis bagi pengguna baru saat onboarding dan pengguna lama yang belum menyetel preferensi ini.
-  4. **Widget Wallpaper Pop-Out & PWA**: Penyempurnaan halaman `/widget` dengan mode jendela pop-out yang dapat diposisikan di sudut layar desktop (selaras dengan wallpaper), mendukung Document Picture-in-Picture jika tersedia di browser.
-  5. **Versi Aplikasi Naik ke v2.10.0**: Sesuai instruksi pengguna, posisi angka kedua dinaikkan karena terdapat penambahan fitur background actions, auto-azan, modal setup pra-azan, dan patch notes diperbarui.
-
----
-
-## 2. User Experience & Visual Design
-
-### Alur Interaksi Pengguna (User Flows)
-1. **Setup Awal Pengingat Pra-Azan**:
-   - Pengguna baru atau pengguna lama yang baru memperbarui aplikasi disambut oleh modal elegan: *"Atur Pengingat Azan & Persiapan Salat"*.
-   - Opsi: **10 Menit Sebelum Azan** (disarankan untuk bersiap wudhu), **30 Menit Sebelum Azan** (untuk menyelesaikan aktivitas/kuliah), atau **Tepat Waktu Saja**.
-   - Sakelar Suara Azan Otomatis: Aktif secara default sehingga pengguna tidak perlu menekan tombol manual lagi.
-
-2. **Saat Waktu Azan Masuk**:
-   - Sistem membunyikan audio azan dengan getaran haptic berirama.
-   - Banner notifikasi menampilkan judul *"Waktu Salat [Nama Salat] Masuk"* dengan 2 tombol aksi:
-     - **[Heningkan Azan]**: Menghentikan lantunan azan seketika tanpa membuka aplikasi.
-     - **[Tutup]**: Menutup notifikasi.
-
-3. **Notifikasi Check-in 30 Menit Pasca-Salat**:
-   - Banner notifikasi bertanya: *"Apakah Anda sudah menunaikan salat [Nama Salat]?"*
-   - Tombol **[Sudah Salat]**: Seketika mencatat status salat ke database/storage lokal dan mengirim konfirmasi toast/silent notification tanpa membuka tab atau jendela aplikasi baru.
-
-4. **Widget Wallpaper Desktop / Mobile**:
-   - Pengguna menekan tombol *"Pasang ke Wallpaper"* di halaman widget.
-   - Jendela pop-out compact minimalis terbuka mandiri tanpa address bar / tab browser, dengan opsi latar glassmorphism yang serasi dengan wallpaper pengguna.
-
----
-
-## 3. Key Product Decisions & Trade-Offs
-
-- **Penyimpanan Status Salat dari Background Service Worker**:
-  - *Keputusan*: Service worker (`public/sw.js`) menggunakan `IndexedDB` dan `postMessage` broadcast ke semua klien aktif, serta endpoint API `/api/confirm-prayer` (jika dev server aktif) untuk mencatat salat seketika tanpa memicu navigasi paksa browser.
-  - *Rasional*: Memenuhi keinginan pengguna agar aplikasi tidak terbuka tiba-tiba saat menekan tombol "Sudah Salat".
-- **Heningkan Azan Langsung dari Notifikasi**:
-  - *Keputusan*: Service worker mengirim event pesan `SILENCE_AZAN` ke klien yang sedang memutar audio azan, dan menghentikan audio context seketika.
-- **Pola Getar Haptic**:
-  - *Keputusan*: Menambahkan properti `vibrate: [200, 100, 200, 100, 300, 100, 500]` pada seluruh pemicu notifikasi `showNotification()`.
-
----
-
-## 4. Technical Architecture & Component Structure
+## 1. Konsep & Alur Pengguna
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│                   Browser / Service Worker               │
-│                                                          │
-│  Push Event / Cron Worker                                │
-│       │                                                  │
-│       ├──► showNotification(..., {                       │
-│       │       actions: ['silence_azan', 'sudah_salat'],  │
-│       │       vibrate: [200, 100, 200, 100, 300, ...],   │
-│       │       sound: '/Assets/Adzan/Fardhu.mp3'          │
-│       │    })                                            │
-│       │                                                  │
-│  notificationclick Event                                 │
-│       │                                                  │
-│       ├──► 'sudah_salat' ──► Record directly to storage  │
-│       │                      without opening window!     │
-│       └──► 'silence_azan' ─► Stop audio stream silently  │
-└──────────────────────────────────────────────────────────┘
-                         │
-                         ▼
-┌──────────────────────────────────────────────────────────┐
-│                   React App State                        │
-│                                                          │
-│  PreAzanSetupModal (10 min / 30 min selector)            │
-│  ReminderSettings (preReminderMinutes, autoAzanSound)    │
-│  WidgetPage (Wallpaper Glass Pop-Out & PiP)              │
-│  PatchNotes v2.10.0 (Admin Dashboard & Settings)         │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                          DASHBOARD (HOME)                              │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ Waktu Salat Berikutnya & Hitung Mundur (Hero Card)               │  │
+│  ├──────────────────────────────────────────────────────────────────┤  │
+│  │ 5 KARTU HORIZONTAL CHECKLIST SALAT (SINKRON DENGAN TAB IBADAH)   │  │
+│  │ [Subuh: Selesai ✓] [Zuhur: ✓] [Asar: Waktu Belum Tiba 🔒] ...     │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                  TAB JADWAL & TAB IBADAH (KALENDER ASLI)               │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ < November 2026 >                     [ Hari Ini ] [ Mode Grid ] │  │
+│  ├──────────────────────────────────────────────────────────────────┤  │
+│  │  Ahad  │ Senin │ Selasa │  Rabu │ Kamis │ Jumat │ Sabtu          │  │
+│  │   1    │   2   │   3    │   4   │   5   │   6   │   7            │  │
+│  │   8    │   9   │  [10]  │  11🔒 │  12🔒 │  13🔒 │  14🔒          │  │
+│  │  ...   │  ...  │  ...   │  ...  │  ...  │  ...  │  ...           │  │
+│  │ (Tanggal masa depan dapat dilihat, namun tidak dapat diceklis)   │  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                   PANEL ADMIN (STUDENT PROFILES & PIN)                 │
+│  ┌──────────────────────────────────────────────────────────────────┐  │
+│  │ Tabel Pengguna Terdaftar:                                        │  │
+│  │ Nama Mahasiswa      │ Terdaftar      │ PIN Keamanan │ Aksi       │  │
+│  │ Achmad Fauzan       │ 07 Nov 2026    │ 1234         │ Salin/Bantu│  │
+│  └──────────────────────────────────────────────────────────────────┘  │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 5. Rencana Langkah Pengerjaan
+## 2. Rincian Pembaruan Fitur & Logika
 
-1. **Service Worker (`public/sw.js`)**:
-   - Perbaiki event listener `notificationclick` agar action `sudah_salat` dan `silence_azan` tidak lagi memanggil `self.clients.openWindow()` atau `client.focus()`.
-   - Terapkan penyimpanan langsung ke `IndexedDB` dan sinkronisasi `postMessage` ke seluruh tab.
-   - Tambahkan parameter `vibrate` pada seluruh `showNotification`.
-   - Update aksi notifikasi azan: hilangkan tombol "Dengar Azan", ganti dengan "Heningkan Azan" dan "Tutup".
+### A. Checklist Salat 5 Waktu di Dashboard (Home)
+- Menambahkan section **Checklist Salat Hari Ini** tepat di bawah kartu waktu salat.
+- Desain 5 kartu ringkas dengan border tipis 1.5px Memphis style (`Subuh`, `Zuhur/Jumat`, `Asar`, `Magrib`, `Isya`).
+- Menampilkan status ikon centang hijau jika sudah salat, atau tombol centang interaktif jika waktu telah masuk.
+- Jika waktu salat belum tiba (atau tanggal mendatang), tombol otomatis berstatus terkunci (`Waktu belum tiba 🔒`) dengan umpan balik toast lembut.
+- Perubahan status di Home otomatis tersinkronisasi seketika ke tab **Ibadah**, IndexedDB, dan Firestore cloud.
 
-2. **Komponen Pengingat Pra-Azan (`PreAzanReminderModal.tsx`)**:
-   - Buat modal khusus yang otomatis memeriksa apakah preferensi pra-azan sudah disetel.
-   - Tampilkan opsi 10 Menit, 30 Menit, atau Nonaktif, serta sakelar azan otomatis.
-   - Pasang di `Layout.tsx` atau `App.tsx` agar pengguna lama yang belum mendapatkan pengaturan ini langsung disajikan modal pembaruan.
+### B. Grid Kalender Bulanan Penuh (Ahad - Sabtu) di Jadwal & Ibadah
+- Menggantikan baris geser sempit dengan **Komponen Kalender Bulanan Asli** (`MonthlyCalendarGrid`):
+  - Header hari: **Ahad**, **Senin**, **Selasa**, **Rabu**, **Kamis**, **Jumat**, **Sabtu**.
+  - Menampilkan hari-hari dari tanggal 1 sampai akhir bulan (28/30/31 hari), lengkap dengan sel offset awal bulan.
+  - Tombol navigasi bulan: `◀ Bulan Sebelumnya` dan `Bulan Selanjutnya ▶`, serta tombol cepat `Hari Ini`.
+  - Indikator visual tanggal hari ini (sorotan hijau toska) dan tanggal terpilih (Memphis kuning/aksen).
+  - Indikator kecil di tiap sel tanggal: titik status salat fardhu lengkap atau jumlah agenda kuliah.
+  - **Proteksi Cerdas Masa Depan**: Pengguna dapat melihat tanggal dan bulan yang akan datang, namun aksi ceklis salat pada tanggal di masa depan diblokir dengan pesan informatif.
 
-3. **Logika Audio Azan & Client Listener (`src/lib/audio.ts` & `src/lib/push.ts`)**:
-   - Sambungkan event `SILENCE_AZAN` agar audio azan yang sedang berputar langsung berhenti ketika pengguna menekan heningkan di notifikasi.
-   - Pastikan suara azan otomatis berbunyi sesuai preferensi tanpa menunggu klik manual.
+### C. Panel Admin: Tampilan Akun Mahasiswa & Pemulihan PIN
+- Di halaman **Admin Dashboard**, menambahkan tab/bagian **Daftar Mahasiswa & Akun Cloud**.
+- Menampilkan tabel terstruktur berisi:
+  - **Nama Mahasiswa**: Nama profil akun.
+  - **Waktu Terdaftar / Terakhir Sinkron**: Format tanggal & jam Indonesia.
+  - **PIN Keamanan 4 Digit**: Ditampilkan jelas dengan tombol salin cepat agar Admin dapat membantu mahasiswa yang lupa PIN perangkat.
+  - **Status Data**: Indikator ringkas kelengkapan data (jadwal, tugas, log ibadah).
 
-4. **Widget Wallpaper (`src/pages/WidgetPage.tsx` & `src/components/FloatingWidget.tsx`)**:
-   - Sempurnakan mode pop-out wallpaper dengan kontrol transparansi glassmorphism dan Document Picture-in-Picture.
-   - Pastikan widget dapat disimpan di wallpaper / beranda dengan nyaman.
+### D. Perbaikan Notifikasi, Web Push & Audio Azan Otomatis
+- **Audio Azan Andalan**: Memperbarui pemutar azan di `audio.ts` dan Service Worker agar menggunakan aset audio lokal prioritas (`/audio/azan-subuh.mp3` dan `/audio/azan-fardhu.mp3`) dan fallback CDN terverifikasi.
+- **Tombol Heningkan Azan**: Memastikan sinyal `SILENCE_AZAN` dari Service Worker memanggil `stopAlarmSound()` secara real-time pada seluruh jendela aktif.
+- **Checklist Notifikasi Terupdate**: Pada aksi "Sudah Salat" di push notification, Service Worker menyimpan log ke IndexedDB, mem-broadcast event `CONFIRM_PRAYER_SILENT`, dan menampilkan notifikasi konfirmasi di sistem:
+  *"Salat [Nama] Telah Dicatat ✅ - Alhamdulillah, catatan ibadah Anda berhasil diperbarui."*
+- **Penanganan Keterlambatan Notifikasi (Timing Drift)**: Mengoptimalkan interval sinkronisasi background worker dan verifikasi jam perangkat agar toleransi pemicu waktu salat tepat pada menitnya.
 
-5. **Pembaruan Versi ke v2.10.0**:
-   - Update `CURRENT_VERSION = "2.10.0"` di `src/lib/storage.ts`.
-   - Tambahkan item rilis `2.10.0` pada `APP_PATCH_NOTES` di `src/types.ts`.
-   - Update menu dan tampilan patch notes di dashboard.
+### E. Perbaikan Doa, Wirid, & Tampilan Al-Qur'an
+- **Eliminasi Angka Ganda pada Wirid**: Memperbaiki judul wirid di `prayers-data.ts` (misal dari `"1. Istighfar"` menjadi `"Istighfar"`) agar tidak bertumpukan dengan lencana bintang nomor ornamen Islam (`IslamicStarBadge`).
+- **Penambahan Doa Harian Terlengkap**: Memperkaya koleksi doa harian dari pustaka doa terpercaya (doa bangun tidur, sebelum/sesudah makan, keluar rumah, masuk masjid, doa kemudahan belajar/ujian, doa kedua orang tua, dsb.).
+- **Perapian Spasi Ayat Al-Qur'an**: Mengurangi jeda vertikal yang berlebih pada kartu ayat di layar ponsel agar nyaman dibaca tanpa banyak scroll kosong.
+- **Optimasi Kecepatan Animasi**: Mempercepat durasi transisi Motion (`0.15s - 0.2s`) agar aplikasi terasa ringan dan responsif instan.
 
-6. **Verifikasi & Build**:
-   - Jalankan `compile_applet` dan `lint_applet` secara bersamaan untuk memastikan 0 error.
+### F. Panduan Lengkap Konversi Website ke Aplikasi (PWA & APK/TWA)
+- Menyertakan panduan langkah-demi-langkah bagi pengembang/penguji untuk mengemas proyek ini menjadi aplikasi ponsel (Android APK via Bubblewrap/TWA dan instalasi instan PWA di iOS & Desktop) untuk kebutuhan pengumpulan proyek/skripsi.
+
+---
+
+## 3. Rencana Pengujian & Verifikasi
+
+1. **Verifikasi Kompilasi & Linting**:
+   - Menjalankan `compile_applet` dan `lint_applet` bersamaan untuk menjamin 0 error TypeScript.
+2. **Uji Fungsionalitas**:
+   - Uji centang salat di Dashboard -> verifikasi otomatis centang di tab Ibadah.
+   - Uji klik tanggal mendatang di kalender bulanan -> verifikasi pesan proteksi masa depan muncul.
+   - Uji panel admin -> verifikasi daftar profil mahasiswa dan PIN dapat diakses oleh admin.
+   - Uji tombol heningkan azan dan pencatatan notifikasi di Service Worker.
+3. **Penyelarasan Versi**:
+   - Memperbarui `CURRENT_VERSION` menjadi `2.11.0` di `storage.ts` dan menambahkan catatan rilis `v2.11.0` ke `APP_PATCH_NOTES`.

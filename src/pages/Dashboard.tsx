@@ -7,7 +7,8 @@ import { getPrayerStatus, fetchPrayerTimes, PrayerData, getCachedPrayerData, get
 import { 
   MapPin, Sun, Sunrise, Sunset, Moon, Circle, AlertCircle, Calendar, 
   RefreshCcw, Sparkles, BookOpen, ChevronRight, Compass, AlertTriangle,
-  Volume2, VolumeX, Bell, ShieldCheck, Heart, Quote, ExternalLink
+  Volume2, VolumeX, Bell, ShieldCheck, Heart, Quote, ExternalLink,
+  CheckCircle2, Lock
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
@@ -16,7 +17,7 @@ import { CitySelectorModal } from '../components/CitySelectorModal';
 import { checkSchedulePrayerConflicts } from '../lib/schedule-prayer-conflict';
 import { AdminReviewBanner } from '../components/AdminReviewBanner';
 import { OPEN_EVENT } from '../components/NotificationSetupModal';
-import { playPrayerAzan, testAlarmTone, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess } from '../lib/audio';
+import { playPrayerAzan, testAlarmTone, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess, playToggleSound, playPrayerCompletedSound } from '../lib/audio';
 
 const DAILY_WISDOM = [
   { text: "Waktu Bagaikan Pedang. Jika kamu tidak memotongnya, maka ia yang akan memotongmu.", source: "Imam Syafi'i" },
@@ -206,6 +207,49 @@ export default function Dashboard() {
   };
 
   const prayersList: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
+
+  const [prayerAlertToast, setPrayerAlertToast] = useState<string | null>(null);
+
+  const isPrayerInFuture = (pName: PrayerName) => {
+    if (!prayerData) return false;
+    const scheduledTime = prayerData.times[pName];
+    if (!scheduledTime) return false;
+    const nowStr = format(new Date(), 'HH:mm');
+    return nowStr < scheduledTime;
+  };
+
+  const handleTogglePrayerFromDashboard = (prayer: PrayerName) => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const isCompleted = !!prayerLogs.prayers[prayer];
+    const isFuture = isPrayerInFuture(prayer);
+
+    // Lock future prayer
+    if (!isCompleted && isFuture) {
+      const scheduledTime = prayerData?.times[prayer] || '12:00';
+      setPrayerAlertToast(`Waktu salat ${prayer} (${scheduledTime} WIB) belum masuk.`);
+      setTimeout(() => setPrayerAlertToast(null), 3000);
+      return;
+    }
+
+    if (user?.soundEnabled !== false) {
+      if (!isCompleted) {
+        playPrayerCompletedSound();
+        vibrateSuccess();
+      } else {
+        playToggleSound();
+      }
+    }
+
+    const updated = storage.togglePrayer(todayStr, prayer);
+    setPrayerLogs(updated);
+
+    // If all 5 prayers completed today, notify review listener
+    if (Object.values(updated.prayers).every(Boolean)) {
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent('wi_check_five_prayers_review'));
+      }, 1200);
+    }
+  };
 
   const handleTestLoudAzan = () => {
     if (isTestingSound) {
@@ -398,6 +442,89 @@ export default function Dashboard() {
               <span>Magrib: <strong>{formatTimeString(prayerData.times.Magrib, user?.timeFormat || '24h')}</strong></span>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Toast Alert for Locked / Future Prayer */}
+      {prayerAlertToast && (
+        <div className="p-3 bg-amber-100 border-[1.5px] border-amber-800 text-amber-950 rounded-xl text-xs font-bold flex items-center gap-2 shadow-[2px_2px_0px_#121212] animate-in fade-in slide-in-from-top-1">
+          <AlertCircle className="w-4 h-4 text-amber-800 shrink-0" />
+          <span>{prayerAlertToast}</span>
+        </div>
+      )}
+
+      {/* 5-PRAYER HORIZONTAL COMPACT CHECKLIST (SYNCHRONIZED WITH IBADAH) */}
+      <section className="bg-white dark:bg-slate-900 border-[1.5px] border-[#121212] dark:border-slate-700 rounded-2xl shadow-[3px_3px_0px_#121212] dark:shadow-[3px_3px_0px_#000000] p-3.5 sm:p-4">
+        <div className="flex items-center justify-between mb-2.5 pb-2 border-b border-gray-100 dark:border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <h3 className="text-xs sm:text-sm font-extrabold text-[#121212] dark:text-white">
+              Ceklis Salat Fardhu Hari Ini
+            </h3>
+          </div>
+          <Link
+            to="/ibadah"
+            className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-0.5"
+          >
+            Tab Ibadah <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+
+        {/* 5 Compact Horizontal Cards Grid */}
+        <div className="grid grid-cols-5 gap-1.5 sm:gap-2">
+          {prayersList.map((prayer) => {
+            const isCompleted = !!prayerLogs.prayers[prayer];
+            const isFuture = isPrayerInFuture(prayer);
+            const prayerTime = prayerData?.times[prayer] || '--:--';
+
+            return (
+              <button
+                key={prayer}
+                type="button"
+                onClick={() => handleTogglePrayerFromDashboard(prayer)}
+                className={`flex flex-col items-center justify-center p-2 sm:p-2.5 rounded-xl border-[1.5px] transition-all text-center relative ${
+                  isCompleted
+                    ? 'bg-emerald-500 text-white border-[#121212] shadow-[2px_2px_0px_#121212]'
+                    : isFuture
+                      ? 'bg-gray-100/80 dark:bg-slate-800/60 border-gray-300 dark:border-slate-700 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                      : 'bg-white dark:bg-slate-800 border-[#121212] dark:border-slate-600 text-gray-800 dark:text-gray-200 hover:bg-emerald-50 shadow-[1.5px_1.5px_0px_#121212]'
+                }`}
+                title={
+                  isCompleted
+                    ? `Salat ${prayer} sudah ditunaikan (klik untuk batal)`
+                    : isFuture
+                      ? `Waktu ${prayer} (${prayerTime}) belum tiba`
+                      : `Klik untuk centang salat ${prayer}`
+                }
+              >
+                <div className="flex items-center justify-center mb-1">
+                  {isCompleted ? (
+                    <CheckCircle2 className="w-4 h-4 text-white" />
+                  ) : isFuture ? (
+                    <Lock className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
+                  ) : (
+                    <Circle className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
+                  )}
+                </div>
+
+                <span className={`text-[10px] sm:text-xs font-bold leading-tight block ${
+                  isCompleted ? 'text-white' : 'text-gray-900 dark:text-white'
+                }`}>
+                  {prayer}
+                </span>
+
+                <span className={`text-[9px] sm:text-[10px] mt-0.5 leading-none block ${
+                  isCompleted
+                    ? 'text-white/90 font-medium'
+                    : isFuture
+                      ? 'text-gray-400'
+                      : 'text-emerald-700 dark:text-emerald-400 font-semibold'
+                }`}>
+                  {isCompleted ? 'Selesai' : isFuture ? prayerTime : 'Centang'}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </section>
 

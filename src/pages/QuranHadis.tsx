@@ -1279,15 +1279,15 @@ export default function QuranHadis() {
                       <div
                         key={ayah.nomorAyat}
                         id={`ayah-${ayah.nomorAyat}`}
-                        className={`p-3.5 sm:p-5 transition-all duration-200 ${rowBgClass}`}
+                        className={`p-3 sm:p-4 transition-all duration-150 ${rowBgClass}`}
                       >
                         {/* Top: Star Badge on Left + Arabic Verse on Right with End Ayah Marker */}
-                        <div className="flex items-start justify-between gap-3 mb-2.5">
+                        <div className="flex items-start justify-between gap-2.5 mb-2">
                           {/* Authentic Islamic 8-Pointed Star Badge */}
-                          <div className="pt-1 shrink-0">
+                          <div className="pt-0.5 shrink-0">
                             <IslamicStarBadge 
                               number={ayah.nomorAyat} 
-                              className="w-8 h-8 sm:w-9 sm:h-9" 
+                              className="w-7 h-7 sm:w-8 sm:h-8" 
                               active={isBookmarkedInHanca || isReciting}
                             />
                           </div>
@@ -1296,7 +1296,7 @@ export default function QuranHadis() {
                           {showArabic && (
                             <div 
                               onClick={() => handleOpenTafsir(selectedSurah, ayah)}
-                              className={`flex-1 text-right font-serif font-normal leading-[2.4] sm:leading-[2.7] pr-1 cursor-pointer hover:opacity-90 transition-opacity ${
+                              className={`flex-1 text-right font-serif font-normal leading-[2.1] sm:leading-[2.4] pr-0.5 cursor-pointer hover:opacity-90 transition-opacity ${
                                 readerTheme === 'sepia' ? 'text-[#1F170D]' : 'text-gray-900 dark:text-white'
                               }`} 
                               style={{ fontSize: `${quranFontSize}px` }}
@@ -1310,7 +1310,7 @@ export default function QuranHadis() {
                               )}
                               {/* End of Verse Circle */}
                               <span 
-                                className="inline-flex items-center justify-center mx-1.5 w-6 h-6 rounded-full border border-[#C4A882] dark:border-slate-600 bg-[#FCFAF5] dark:bg-slate-900 text-gray-800 dark:text-gray-200 text-[11px] font-serif font-medium select-none align-middle"
+                                className="inline-flex items-center justify-center mx-1.5 w-5 h-5 sm:w-6 sm:h-6 rounded-full border border-[#C4A882] dark:border-slate-600 bg-[#FCFAF5] dark:bg-slate-900 text-gray-800 dark:text-gray-200 text-[10px] sm:text-[11px] font-serif font-medium select-none align-middle"
                                 title={`Ayat ${ayah.nomorAyat}`}
                               >
                                 {toArabicNumerals(ayah.nomorAyat)}
@@ -1321,7 +1321,7 @@ export default function QuranHadis() {
 
                         {/* Latin Transliteration if enabled */}
                         {showLatin && ayah.teksLatin && (
-                          <p className={`text-[12px] sm:text-[13px] italic font-medium mb-1 pl-10 sm:pl-12 ${
+                          <p className={`text-[11.5px] sm:text-[12.5px] italic font-medium mb-1 pl-8 sm:pl-10 ${
                             readerTheme === 'sepia' ? 'text-amber-900' : 'text-emerald-800 dark:text-emerald-300'
                           }`}>
                             {ayah.teksLatin}
@@ -1330,7 +1330,7 @@ export default function QuranHadis() {
 
                         {/* Indonesian Translation */}
                         {showTranslation && ayah.teksIndonesia && (
-                          <p className={`text-[13px] sm:text-[14px] leading-relaxed font-normal mb-3 pl-10 sm:pl-12 ${
+                          <p className={`text-[12px] sm:text-[13px] leading-relaxed font-normal mb-2 pl-8 sm:pl-10 ${
                             readerTheme === 'sepia' ? 'text-[#3E2F1B]' : 'text-teal-800 dark:text-teal-200'
                           }`}>
                             {ayah.teksIndonesia}

@@ -13,6 +13,7 @@ import { formatTimeString } from '../lib/utils';
 import { vibrateSuccess, playPrayerCompletedSound, playToggleSound } from '../lib/audio';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { DoaSetelahSalatModal } from '../components/DoaSetelahSalatModal';
+import { MonthlyCalendarGrid } from '../components/MonthlyCalendarGrid';
 import { Link } from 'react-router-dom';
 
 export default function Ibadah() {
@@ -259,74 +260,14 @@ export default function Ibadah() {
         </div>
       </div>
 
-      {/* Horizontal Calendar Navigation Strip with < > buttons */}
-      <div className="bg-white border-[1.5px] border-[#121212] rounded-xl p-2.5 shadow-[2px_2px_0px_#121212] space-y-2">
-        <div className="flex items-center justify-between gap-2 border-b border-gray-100 pb-2">
-          {/* Shift Left Button */}
-          <button
-            onClick={handlePrevDay}
-            className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] active:translate-y-0.5 text-black"
-            title="Hari Sebelumnya"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-
-          {/* Current Date Label & Today Shortcut */}
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs sm:text-sm font-bold text-gray-900 truncate">
-              {format(selectedDateObj, 'EEEE, d MMMM yyyy', { locale: id })}
-            </span>
-            {selectedDate !== todayStr && (
-              <button
-                onClick={handleGoToday}
-                className="px-2 py-0.5 text-[10px] font-extrabold bg-emerald-100 text-emerald-800 border border-emerald-500 rounded-md shrink-0 hover:bg-emerald-200"
-              >
-                Hari Ini
-              </button>
-            )}
-          </div>
-
-          {/* Shift Right Button & Date Input */}
-          <div className="flex items-center gap-1.5 shrink-0">
-            <input
-              type="date"
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-              className="border border-black rounded-lg px-1.5 py-0.5 text-xs font-semibold bg-white w-28 text-gray-700"
-              title="Pilih tanggal kalender"
-            />
-            <button
-              onClick={handleNextDay}
-              className="p-1.5 rounded-lg border-[1.5px] border-black bg-white hover:bg-gray-100 shadow-[1px_1px_0px_#121212] active:translate-y-0.5 text-black"
-              title="Hari Berikutnya"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Scrollable Day Strip */}
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 max-w-full hide-scrollbar">
-          {calendarStripDays.map(p => (
-            <button
-              key={p.dateStr}
-              onClick={() => setSelectedDate(p.dateStr)}
-              className={`flex flex-col items-center justify-center w-11 sm:w-12 h-13 rounded-xl border-[1.5px] border-black transition-all shrink-0 ${
-                p.isSelected 
-                  ? 'bg-gradient-to-br from-emerald-400 via-teal-300 to-green-400 text-black font-bold shadow-[2px_2px_0px_#121212] -translate-y-0.5' 
-                  : p.isToday 
-                    ? 'bg-emerald-50 text-emerald-900 font-bold shadow-[1px_1px_0px_#121212]'
-                    : p.isFutureDate
-                      ? 'bg-gray-50 text-gray-400 font-medium shadow-[1px_1px_0px_#121212] opacity-75'
-                      : 'bg-white text-gray-700 font-bold shadow-[1px_1px_0px_#121212]'
-              }`}
-            >
-              <span className="text-[9.5px] uppercase tracking-wider">{p.dayName}</span>
-              <span className="text-sm font-bold mt-0.5">{p.dayNum}</span>
-            </button>
-          ))}
-        </div>
-      </div>
+      {/* Full Monthly Calendar Grid (Ahad - Sabtu) */}
+      <MonthlyCalendarGrid
+        selectedDate={selectedDate}
+        onSelectDate={(newDate) => {
+          setSelectedDate(newDate);
+        }}
+        title="Pilih tanggal untuk melihat dan mencatat ibadah"
+      />
 
       {/* Daily Progress Status Banner */}
       <div className="bg-white border-[1.5px] border-black rounded-xl p-3 shadow-[2px_2px_0px_#121212]">

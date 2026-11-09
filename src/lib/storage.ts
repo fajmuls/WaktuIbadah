@@ -30,7 +30,7 @@ const KEYS = {
   TAJWEED_ENABLED: "wi_tajweed_enabled",
 };
 
-export const CURRENT_VERSION = "2.10.0";
+export const CURRENT_VERSION = "2.11.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',

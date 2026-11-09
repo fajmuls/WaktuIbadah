@@ -14,7 +14,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-1',
     category: 'wirid_salat',
-    title: '1. Istighfar',
+    title: 'Istighfar',
     subTitle: 'Dibaca 3 kali setelah salam',
     arabic: 'أَسْتَغْفِرُ اللهَ الْعَظِيْمَ الَّذِيْ لَا إِلَهَ إِلَّا هُوَ الْحَيَّ الْقَيُّوْمَ وَأَتُوْبُ إِلَيْهِ',
     latin: "Astaghfirullahal 'adziim, alladzii laa ilaaha illaa huwal hayyul qayyuumu wa atuubu ilaih.",
@@ -25,7 +25,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-2',
     category: 'wirid_salat',
-    title: '2. Tahlil & Pengakuan Kekuasaan Allah',
+    title: 'Tahlil & Pengakuan Kekuasaan Allah',
     subTitle: 'Dibaca 3 kali (atau 10x setelah Subuh & Magrib)',
     arabic: 'لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِيْ وَيُمِيْتُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ',
     latin: "Laa ilaaha illallaahu wahdahuu laa syariikalah, lahul mulku wa lahul hamdu yuhyii wa yumiitu wa huwa 'alaa kulli syai'in qadiir.",
@@ -36,7 +36,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-3',
     category: 'wirid_salat',
-    title: '3. Doa Keselamatan (As-Salam)',
+    title: 'Doa Keselamatan (As-Salam)',
     subTitle: 'Memohon perlindungan dan kedamaian',
     arabic: 'اللَّهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ',
     latin: "Allaahumma antas salaam wa minkas salaam tabaarakta yaa dzal jalaali wal ikraam.",
@@ -46,7 +46,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-4',
     category: 'wirid_salat',
-    title: '4. Doa Kepatuhan & Karunia',
+    title: 'Doa Kepatuhan & Karunia',
     subTitle: 'Pujian atas ketetapan Allah',
     arabic: 'اللَّهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ، وَلَا مُعْطِيَ لِمَا مَنَعْتَ، وَلَا يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ',
     latin: "Allaahumma laa maani'a limaa a'thaita, wa laa mu'thiya limaa mana'ta, wa laa yanfa'u dzal jaddi minkal jaddu.",
@@ -56,7 +56,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-5',
     category: 'wirid_salat',
-    title: '5. Ayat Kursi (QS. Al-Baqarah: 255)',
+    title: 'Ayat Kursi (QS. Al-Baqarah: 255)',
     subTitle: 'Pelindung utama setelah salat fardhu',
     arabic: 'اللهُ لَا إِلَهَ إِلَّا هُوَ الْحَيُّ الْقَيُّوْمُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمَاوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِيْ يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيْهِمْ وَمَا خَلْفَهُمْ ۖ وَلَا يُحِيْطُوْنَ بِشَيْءٍ مِنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمَاوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُوْدُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيْمُ',
     latin: "Allaahu laa ilaaha illaa huwal hayyul qayyuum, laa ta'khudzuhuu sinatuw wa laa naum, lahuu maa fis samaawaati wa maa fil ardh, man dzalladzii yasyfa'u 'indahuu illaa bi idznih, ya'lamu maa baina aidiihim wa maa khalfahum, wa laa yuhiithuuna bisyai'im min 'ilmihii illaa bimaa syaa', wasi'a kursiyyuhus samaawaati wal ardh, wa laa ya'uuduhuu hifzhuhumaa, wa huwal 'aliyyul 'azhiim.",
@@ -66,7 +66,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-6',
     category: 'wirid_salat',
-    title: '6. Tasbih (Maha Suci Allah)',
+    title: 'Tasbih (Maha Suci Allah)',
     subTitle: 'Dibaca 33 kali',
     arabic: 'سُبْحَانَ اللهِ',
     latin: 'Subhanallah.',
@@ -76,7 +76,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-7',
     category: 'wirid_salat',
-    title: '7. Tahmid (Segala Puji Bagi Allah)',
+    title: 'Tahmid (Segala Puji Bagi Allah)',
     subTitle: 'Dibaca 33 kali',
     arabic: 'الْحَمْدُ للهِ',
     latin: 'Alhamdulillah.',
@@ -86,7 +86,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-8',
     category: 'wirid_salat',
-    title: '8. Takbir (Allah Maha Besar)',
+    title: 'Takbir (Allah Maha Besar)',
     subTitle: 'Dibaca 33 kali',
     arabic: 'اللهُ أَكْبَرُ',
     latin: 'Allahu Akbar.',
@@ -96,7 +96,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-9',
     category: 'wirid_salat',
-    title: '9. Penggenap Seratus (Tahlil Sempurna)',
+    title: 'Penggenap Seratus (Tahlil Sempurna)',
     subTitle: 'Penggenap 100 zikir tasbih, tahmid, takbir',
     arabic: 'لَا إِلَهَ إِلَّا اللهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ يُحْيِيْ وَيُمِيْتُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ',
     latin: "Laa ilaaha illallaahu wahdahuu laa syariikalah, lahul mulku wa lahul hamdu yuhyii wa yumiitu wa huwa 'alaa kulli syai'in qadiir.",
@@ -106,7 +106,7 @@ export const WIRID_SESUDAH_SALAT: PrayerItem[] = [
   {
     id: 'wirid-10',
     category: 'wirid_salat',
-    title: '10. Doa Lengkap Setelah Salat Fardhu',
+    title: 'Doa Lengkap Setelah Salat Fardhu',
     subTitle: 'Doa memohon keselamatan agama, ilmu, rezeki & kebaikan akhirat',
     arabic: 'بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيْمِ. الْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِيْنَ، حَمْدًا يُوَافِي نِعَمَهُ وَيُكَافِئُ مَزِيْدَهُ. يَا رَبَّنَا لَكَ الْحَمْدُ كَمَا يَنْبَغِي لِجَلَالِ وَجْهِكَ وَعَظِيْمِ سُلْطَانِكَ. اللَّهُمَّ صَلِّ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِ سَيِّدِنَا مُحَمَّدٍ. اللَّهُمَّ إِنَّا نَسْأَلُكَ سَلَامَةً فِي الدِّيْنِ، وَعَافِيَةً فِي الْجَسَدِ، وَزِيَادَةً فِي الْعِلْمِ، وَبَرَكَةً فِي الرِّزْقِ، وَتَوْبَةً قَبْلَ الْمَوْتِ، وَرَحْمَةً عِنْدَ الْمَوْتِ، وَمَغْفِرَةً بَعْدَ الْمَوْتِ. اللَّهُمَّ هَوِّنْ عَلَيْنَا فِي سَكَرَاتِ الْمَوْتِ، وَالنَّجَاةَ مِنَ النَّارِ، وَالْعَفْوَ عِنْدَ الْحِسَابِ. رَبَّنَا لَا تُزِغْ قُلُوْبَنَا بَعْدَ إِذْ هَدَيْتَنَا وَهَبْ لَنَا مِنْ لَدُنْكَ رَحْمَةً إِنَّكَ أَنْتَ الْوَهَّابُ. رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ. وَصَلَّى اللهُ عَلَى سَيِّدِنَا مُحَمَّدٍ وَعَلَى آلِهِ وَصَحْبِهِ وَسَلَّمَ، وَالْحَمْدُ لِلَّهِ رَبِّ الْعَالَمِيْنَ.',
     latin: "Bismillaahir rahmaanir rahiim. Alhamdulillaahi rabbil 'aalamiin, hamday yuwaafii ni'amahuu wa yukaafi'u maziidah. Yaa rabbanaa lakal hamdu kamaa yambaghii lijalaali wajhika wa 'azhiimi sulthaanik. Allaahumma shalli 'alaa sayyidinaa Muhammadin wa 'alaa aali sayyidinaa Muhammad. Allaahumma innaa nas'aluka salaamatan fid diin, wa 'aafiyatan fil jasad, wa ziyaadatan fil 'ilmi, wa barakatan fir rizqi, wa taubatan qablal maut, wa rahmatan 'indal maut, wa maghfiratam ba'dal maut. Allaahumma hawwin 'alainaa fii sakaraatil maut, wan najaata minan naar, wal 'afwa 'indal hisaab. Rabbanaa laa tuzigh quluubanaa ba'da idz hadaitanaa wa hab lanaa mil ladunka rahmah, innaka antal wahhaab. Rabbanaa aatinaa fid dunyaa hasanah wa fil aakhirati hasanah wa qinaa 'adzaaban naar. Wa shallallaahu 'alaa sayyidinaa Muhammadin wa 'alaa aalihii wa shahbihii wa sallam, walhamdu lillaahi rabbil 'aalamiin.",
@@ -162,6 +162,15 @@ export const DOA_HARIAN: PrayerItem[] = [
     translation: 'Dengan nama Allah, aku bertawakal kepada Allah. Tiada daya dan kekuatan melainkan dengan pertolongan Allah.',
   },
   {
+    id: 'doa-rumah-2',
+    category: 'harian',
+    title: 'Doa Masuk Rumah',
+    subTitle: 'Menebar salam dan berkah ke dalam rumah',
+    arabic: 'بِسْمِ اللهِ وَلَجْنَا، وَبِسْمِ اللهِ خَرَجْنَا، وَعَلَى رَبِّنَا تَوَكَّلْنَا',
+    latin: "Bismillaahi walajnaa, wa bismillaahi kharajnaa, wa 'alaa rabbinaa tawakkalnaa.",
+    translation: 'Dengan nama Allah kami masuk, dan dengan nama Allah kami keluar, dan kepada Tuhan kami, kami bertawakal.',
+  },
+  {
     id: 'doa-kendaraan-1',
     category: 'harian',
     title: 'Doa Naik Kendaraan & Bepergian',
@@ -187,6 +196,60 @@ export const DOA_HARIAN: PrayerItem[] = [
     arabic: 'اللَّهُمَّ إِنِّي أَسْأَلُكَ مِنْ فَضْلِكَ',
     latin: "Allaahumma innii as'aluka min fadhlik.",
     translation: 'Ya Allah, sesungguhnya aku memohon karunia-Mu.',
+  },
+  {
+    id: 'doa-orangtua-1',
+    category: 'harian',
+    title: 'Doa untuk Kedua Orang Tua',
+    subTitle: 'Memohon ampunan dan kasih sayang untuk ayah & ibu',
+    arabic: 'رَبِّ اغْفِرْ لِي وَلِوَالِدَيَّ وَارْحَمْهُمَا كَمَا رَبَّيَانِي صَغِيرًا',
+    latin: "Rabbighfir lii wa liwaalidayya warhamhumaa kamaa rabbayaanii shaghiiraa.",
+    translation: 'Wahai Tuhanku, ampunilah aku dan kedua orang tuaku, dan sayangilah mereka berdua sebagaimana mereka telah mendidikku pada waktu kecil.',
+  },
+  {
+    id: 'doa-hajat-1',
+    category: 'harian',
+    title: 'Doa Sapu Jagad (Kebaikan Dunia & Akhirat)',
+    subTitle: 'Doa yang paling sering dibaca Rasulullah SAW',
+    arabic: 'رَبَّنَا آتِنَا فِي الدُّنْيَا حَسَنَةً وَفِي الْآخِرَةِ حَسَنَةً وَقِنَا عَذَابَ النَّارِ',
+    latin: "Rabbanaa aatinaa fid dunyaa hasanah, wa fil aakhirati hasanah, wa qinaa 'adzaaban naar.",
+    translation: 'Ya Tuhan kami, berilah kami kebaikan di dunia dan kebaikan di akhirat, dan lindungilah kami dari azab neraka.',
+  },
+  {
+    id: 'doa-kamar-mandi-1',
+    category: 'harian',
+    title: 'Doa Masuk Kamar Mandi / Toilet',
+    subTitle: 'Memohon perlindungan dari godaan setan',
+    arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْخُبُثِ وَالْخَبَائِثِ',
+    latin: "Allaahumma innii a'uudzu bika minal khubutsi wal khabaa'its.",
+    translation: 'Ya Allah, sesungguhnya aku berlindung kepada-Mu dari godaan setan laki-laki dan setan perempuan.',
+  },
+  {
+    id: 'doa-kamar-mandi-2',
+    category: 'harian',
+    title: 'Doa Keluar Kamar Mandi',
+    subTitle: 'Memohon ampunan dan rasa syukur',
+    arabic: 'غُفْرَانَكَ، الْحَمْدُ لِلَّهِ الَّذِي أَذْهَبَ عَنِّي الْأَذَىٰ وَعَافَانِي',
+    latin: "Ghufraanaka, alhamdulillaahil ladzii adzhaba 'annil adzaa wa 'aafaanii.",
+    translation: 'Aku memohon ampunan-Mu. Segala puji bagi Allah yang telah menghilangkan kotoran dari tubuhku dan menyehatkanku.',
+  },
+  {
+    id: 'doa-cermin-1',
+    category: 'harian',
+    title: 'Doa Bercermin',
+    subTitle: 'Memohon kebaikan akhlak sebagaimana kebaikan rupa',
+    arabic: 'اللَّهُمَّ كَمَا حَسَّنْتَ خَلْقِي فَحَسِّنْ خُلُقِي',
+    latin: 'Allaahumma kamaa hassanta khalqii fahassin khuluqii.',
+    translation: 'Ya Allah, sebagaimana Engkau telah memperbagus penciptaanku, maka perbaguslah pula akhlakku.',
+  },
+  {
+    id: 'doa-pakaian-1',
+    category: 'harian',
+    title: 'Doa Mengenakan Pakaian',
+    subTitle: 'Pujian atas nikmat penutup aurat',
+    arabic: 'الْحَمْدُ لِلَّهِ الَّذِي كَسَانِي هَٰذَا الثَّوْبَ وَرَزَقَنِيهِ مِنْ غَيْرِ حَوْلٍ مِنِّي وَلَا قُوَّةٍ',
+    latin: "Alhamdulillaahil ladzii kasaanii haadzats tsauba wa razaqaniihi min ghairi haulin minnii wa laa quwwah.",
+    translation: 'Segala puji bagi Allah yang telah memakaikan pakaian ini kepadaku dan mengaruniakannya kepadaku tanpa daya dan kekuatan dariku.',
   }
 ];
 
@@ -204,7 +267,7 @@ export const DOA_BELAJAR: PrayerItem[] = [
     id: 'doa-belajar-2',
     category: 'belajar',
     title: 'Doa Kelancaran Berbicara & Menghadapi Ujian',
-    subTitle: 'Doa Nabi Musa AS untuk kelapangan dada',
+    subTitle: 'Doa Nabi Musa AS untuk kelapangan dada dan kefasihan lisan',
     arabic: 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي وَاحْلُلْ عُقْدَةً مِّن لِّسَانِي يَفْقَهُوا قَوْلِي',
     latin: "Rabbisyrah lii shadrii wa yassir lii amrii wahlul 'uqdatam mil lisaanii yafqahuu qaulii.",
     translation: 'Ya Tuhanku, lapangkanlah dadaku, mudahkanlah urusanku, dan lepaskanlah kekakuan dari lidahku, agar mereka mengerti perkataanku.',
@@ -217,6 +280,24 @@ export const DOA_BELAJAR: PrayerItem[] = [
     arabic: 'اللَّهُمَّ لَا سَهْلَ إِلَّا مَا جَعَلْتَهُ سَهْلًا، وَأَنْتَ تَجْعَلُ الْحَزْنَ إِذَا شِئْتَ سَهْلًا',
     latin: "Allaahumma laa sahla illaa maa ja'altahuu sahlan, wa anta taj'alul hazna idzaa syi'ta sahlan.",
     translation: 'Ya Allah, tidak ada kemudahan melainkan apa yang Engkau jadikan mudah, dan Engkau menjadikan kesulitan jika Engkau kehendaki menjadi mudah.',
+  },
+  {
+    id: 'doa-belajar-4',
+    category: 'belajar',
+    title: 'Doa Sesudah Belajar (Menitipkan Ilmu)',
+    subTitle: 'Agar ilmu yang dipelajari tidak mudah terlupa',
+    arabic: 'اللَّهُمَّ إِنِّي أَسْتَوْدِعُكَ مَا عَلَّمْتَنِيهِ فَرُدَّهُ إِلَيَّ عِنْدَ حَاجَتِي إِلَيْهِ وَلَا تُنْسِنِيهِ يَا رَبَّ الْعَالَمِينَ',
+    latin: "Allaahumma innii astaudi'uka maa 'allamtaniihi faruddahu ilayya 'inda haajatii ilaihi wa laa tunsaniihi yaa rabbal 'aalamiin.",
+    translation: 'Ya Allah, sesungguhnya aku menitipkan kepada-Mu apa yang telah Engkau ajarkan kepadaku, maka kembalikanlah kepadaku saat aku membutuhkannya dan janganlah Engkau buat aku melupakannya, wahai Tuhan semesta alam.',
+  },
+  {
+    id: 'doa-belajar-5',
+    category: 'belajar',
+    title: 'Doa Perlindungan dari Kemalasan & Rasa Cemas',
+    subTitle: 'Memohon perlindungan dari keputusasaan dan kelemahan tekad',
+    arabic: 'اللَّهُمَّ إِنِّي أَعُوذُ بِكَ مِنَ الْهَمِّ وَالْحَزَنِ، وَأَعُوذُ بِكَ مِنَ الْعَجْزِ وَالْكَسَلِ، وَأَعُوذُ بِكَ مِنَ الْجُبْنِ وَالْبُخْلِ، وَأَعُوذُ بِكَ مِنْ غَلَبَةِ الدَّيْنِ وَقَهْرِ الرِّجَالِ',
+    latin: "Allaahumma innii a'uudzu bika minal hammi wal hazan, wa a'uudzu bika minal 'ajzi wal kasal, wa a'uudzu bika minal jubni wal bukhl, wa a'uudzu bika min ghalabatid daini wa qahrir rijaal.",
+    translation: 'Ya Allah, aku berlindung kepada-Mu dari rasa cemas dan gelisah, aku berlindung kepada-Mu dari kelemahan dan kemalasan, aku berlindung kepada-Mu dari sifat pengecut dan kikir, serta aku berlindung kepada-Mu dari lilitan utang dan penindasan orang lain.',
   }
 ];
 

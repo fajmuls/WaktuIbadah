@@ -81,6 +81,7 @@ export default async function handler(req, res) {
         name: p.name || d.id,
         city: p.user?.location?.city || null,
         hasPin: Boolean(p.pin && String(p.pin).trim().length === 4),
+        pin: p.pin ? String(p.pin).trim() : '',
         createdAt: isoOrNull(createdMs),
         lastActiveAt: isoOrNull(lastActiveMs),
         usageDays: createdMs && lastActiveMs ? dayDiff(createdMs, lastActiveMs) : 0,

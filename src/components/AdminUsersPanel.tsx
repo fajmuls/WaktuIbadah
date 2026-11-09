@@ -1,11 +1,12 @@
 import React, { useMemo, useState } from 'react';
-import { Users, BellRing, Star, RefreshCcw, Search, Smartphone, Clock } from 'lucide-react';
+import { Users, BellRing, Star, RefreshCcw, Search, Smartphone, Clock, KeyRound, Copy, Check } from 'lucide-react';
 
 export interface AdminUserRow {
   id: string;
   name: string;
   city: string | null;
   hasPin: boolean;
+  pin?: string;
   createdAt: string | null;
   lastActiveAt: string | null;
   usageDays: number;
@@ -145,6 +146,33 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
                     value={`${u.notification.totalSent}${u.notification.platforms.length ? ` (${u.notification.platforms.join(', ')})` : ''}`}
                     icon={<Smartphone className="w-3 h-3" />}
                   />
+                  {/* PIN Keamanan 4 Digit untuk Pemulihan Akun */}
+                  <div className="border-[1.5px] border-black rounded-lg p-2 bg-[#FCD34D] text-[#121212] flex items-center justify-between">
+                    <div>
+                      <div className="text-[9.5px] font-extrabold uppercase text-gray-800 flex items-center gap-1">
+                        <KeyRound className="w-3 h-3" /> PIN Pemulihan
+                      </div>
+                      <div className="text-sm font-black tracking-widest tabular-nums mt-0.5">
+                        {u.pin ? u.pin : (u.hasPin ? 'Ada PIN' : 'Tanpa PIN')}
+                      </div>
+                    </div>
+                    {u.pin && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (navigator.clipboard) {
+                            navigator.clipboard.writeText(u.pin!);
+                            alert(`PIN akun "${u.name}" (${u.pin}) berhasil disalin.`);
+                          }
+                        }}
+                        className="px-2 py-1 bg-white border border-black rounded text-[10px] font-bold shadow-xs active:translate-y-0.5 flex items-center gap-1"
+                        title="Salin PIN Mahasiswa"
+                      >
+                        <Copy className="w-3 h-3" /> Salin
+                      </button>
+                    )}
+                  </div>
                   <div className="col-span-2 sm:col-span-3 border-[1.5px] border-black rounded-lg p-2 bg-[#FFFDF8]">
                     <div className="text-[10px] uppercase text-gray-500">Ulasan</div>
                     {u.review ? (

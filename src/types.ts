@@ -268,6 +268,33 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.11.0',
+    releaseDate: '9 November 2026',
+    title: 'Checklist Salat 5 Waktu di Dashboard (Home), Grid Kalender Bulanan Asli (Ahad-Sabtu), Manajemen Akun & PIN Mahasiswa di Panel Admin, Pustaka Doa Harian, & Audio Azan Handal',
+    highlights: [
+      'Checklist Salat 5 Waktu di Dashboard (Home): 5 kartu horizontal ringkas tepat di bawah jadwal salat untuk ceklis cepat salat fardhu harian yang tersinkron penuh dua arah dengan tab Ibadah.',
+      'Proteksi Salat Masa Depan di Home & Ibadah: Salat pada waktu yang belum masuk atau hari esok otomatis terkunci dengan label status "Waktu belum tiba 🔒" untuk mencegah salah centang.',
+      'Grid Kalender Bulanan Penuh (Ahad - Sabtu): Kalender berformat asli dengan navigasi bulan lengkap di tab Jadwal dan Ibadah, memungkinkan peninjauan dan pengisian ibadah lampau (qadha).',
+      'Panel Admin Akun Mahasiswa & Pemulihan PIN: Tabel akun cloud mahasiswa terdaftar lengkap dengan Nama, Waktu Registrasi, dan PIN 4 Digit untuk mempermudah bantuan pemulihan akun.',
+      'Perbaikan Wirid & Penambahan Doa Harian: Menghilangkan nomor duplikat pada judul wirid sesudah salat dan menambahkan doa harian penting (doa orang tua, sapu jagad, sebelum/sesudah belajar, dll).',
+      'Penyelarasan Notifikasi & Audio Azan: URL audio azan Subuh dan Fardhu diperkuat dengan fallback CDN terpercaya serta aksi checklist notifikasi senyap yang langsung terupdate.',
+      'Perapian Tipografi Al-Qur\'an & Performa Ringan: Jeda vertikal ayat Al-Qur\'an dirapikan untuk layar ponsel dan durasi animasi dioptimalkan lebih cepat dan gesit.'
+    ],
+    soundPackUpdates: [
+      'Audio azan Subuh dan Fardhu terkonfigurasi dengan URL CDN stabil dan responsif'
+    ],
+    uiOverhaul: [
+      '5 Kartu checklist salat horizontal di Dashboard dengan gaya Memphis tipis 1.5px',
+      'Tampilan kalender bulanan penuh dengan kolom Ahad sampai Sabtu',
+      'Tabel daftar mahasiswa di Admin Dashboard dengan fitur salin PIN cepat'
+    ],
+    recommendations: [
+      'Saran Fitur Utama Selanjutnya: Pengingat Notifikasi Berulang Jika Belum Salat (Reminder Nudge setiap 15 menit pasca-azan hingga waktu habis)',
+      'Saran UI/UX & QoL: Opsi cetak / unduh rekap kehadiran dan checklist salat bulanan dalam format PDF untuk laporan tugas kuliah PAI',
+      'Saran Pencegahan & Perbaikan Bug: Penambahan service worker periodic background sync untuk perangkat yang membatasi background network'
+    ]
+  },
+  {
     version: '2.10.0',
     releaseDate: '7 November 2026',
     title: 'Azan Otomatis Tanpa Tombol Dengar, Tombol Heningkan Azan, Checklist Senyap Latar Belakang (Tanpa Buka Web), Pengingat Pra-Azan 10/30 Menit, Getaran Haptik Ritmis, & Wallpaper Floating Pop-Out Widget',

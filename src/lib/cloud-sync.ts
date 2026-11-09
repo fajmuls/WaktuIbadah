@@ -432,3 +432,51 @@ export async function saveAdminConfigToCloud(config: AdminReviewConfig): Promise
     return false;
   }
 }
+
+// Fetch all registered student accounts from cloud for Admin management and PIN recovery
+export interface StudentAccountInfo {
+  profileId: string;
+  name: string;
+  pin?: string;
+  hasPin: boolean;
+  updatedAt?: string;
+  createdAt?: string;
+  schedulesCount?: number;
+  tasksCount?: number;
+  prayersCount?: number;
+}
+
+export async function fetchAllStudentProfilesFromCloud(): Promise<StudentAccountInfo[]> {
+  const path = 'student_profiles';
+  try {
+    const snap = await getDocs(collection(db, 'student_profiles'));
+    const list: StudentAccountInfo[] = [];
+
+    snap.forEach((d) => {
+      const data = d.data();
+      const rawPin = data.pin ? String(data.pin).trim() : '';
+      list.push({
+        profileId: d.id,
+        name: data.name || data.user?.name || d.id,
+        pin: rawPin,
+        hasPin: Boolean(rawPin && rawPin.length === 4),
+        updatedAt: data.updatedAt,
+        createdAt: data.user?.createdAt || data.createdAt,
+        schedulesCount: Array.isArray(data.schedules) ? data.schedules.length : 0,
+        tasksCount: Array.isArray(data.tasks) ? data.tasks.length : 0,
+        prayersCount: Array.isArray(data.prayers) ? data.prayers.length : 0,
+      });
+    });
+
+    list.sort((a, b) => {
+      const timeA = a.updatedAt || a.createdAt || '';
+      const timeB = b.updatedAt || b.createdAt || '';
+      return new Date(timeB).getTime() - new Date(timeA).getTime();
+    });
+
+    return list;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+}
