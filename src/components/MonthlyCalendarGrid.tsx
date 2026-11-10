@@ -160,32 +160,40 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
           const hasPartialPrayer = Boolean(badge?.count && badge.count > 0 && !isFullPrayer);
           const hasSchedule = Boolean(badge?.hasItems || (badge?.scheduleCount && badge.scheduleCount > 0));
 
-          // Determine cell styling based on worship completeness
-          let cellBgClass = 'bg-gray-50/70 dark:bg-slate-800/50 hover:bg-gray-100 dark:hover:bg-slate-800 text-gray-800 dark:text-gray-200 border-transparent hover:border-gray-300';
+          // Determine cell styling based on date type and worship completeness
+          const isPast = dayStr < todayStr;
+          let cellBgClass = 'bg-[#F4F7F2] dark:bg-slate-900/60 border-black/20 text-gray-700 dark:text-gray-300';
 
-          if (isSelected) {
-            cellBgClass = 'bg-[#FCD34D] text-[#121212] font-black border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212] z-10 scale-[1.02]';
-          } else if (isToday) {
-            cellBgClass = 'bg-emerald-600 text-white font-black border-[1.5px] border-emerald-800 shadow-xs';
-          } else if (isCurrentMonth) {
+          if (isCurrentMonth) {
             if (isFullPrayer && hasSunnah) {
-              // Full 5 fardhu prayers + Dhuha/Sunnah: Rich green background with golden accent ring
-              cellBgClass = 'bg-emerald-100 dark:bg-emerald-950/70 border-emerald-400 dark:border-emerald-600 text-emerald-950 dark:text-emerald-100 ring-1 ring-amber-400 shadow-xs';
+              // Full 5 fardhu + Dhuha/Sunnah: Rich Zamrud Green with Gold ring
+              cellBgClass = 'bg-emerald-600 dark:bg-emerald-600 text-white font-black border-[1.5px] border-black shadow-[1.5px_1.5px_0px_#121212] ring-2 ring-amber-400';
             } else if (isFullPrayer) {
-              // Full 5 fardhu prayers: Soft emerald background
-              cellBgClass = 'bg-emerald-50 dark:bg-emerald-950/40 border-emerald-300 dark:border-emerald-700 text-emerald-900 dark:text-emerald-200';
+              // Full 5 fardhu: Emerald Green
+              cellBgClass = 'bg-emerald-500 dark:bg-emerald-600 text-white font-extrabold border-[1.5px] border-black shadow-[1.5px_1.5px_0px_#121212]';
             } else if (hasSunnah) {
               // Sunnah/Dhuha only
-              cellBgClass = 'bg-amber-50 dark:bg-amber-950/40 border-amber-300 dark:border-amber-700 text-amber-900 dark:text-amber-200';
+              cellBgClass = 'bg-amber-200 dark:bg-amber-900/70 text-amber-950 dark:text-amber-100 font-bold border-[1.5px] border-black shadow-[1.5px_1.5px_0px_#121212]';
             } else if (hasPartialPrayer) {
               // 1 to 4 fardhu prayers
-              cellBgClass = 'bg-emerald-50/40 dark:bg-emerald-950/20 border-emerald-200/60 dark:border-emerald-800/50 text-gray-800 dark:text-gray-200';
+              cellBgClass = 'bg-emerald-200/90 dark:bg-emerald-950/80 text-emerald-950 dark:text-emerald-100 font-bold border-[1.5px] border-black/80 shadow-[1px_1px_0px_#121212]';
             } else if (hasSchedule) {
               // Only schedule / agenda
-              cellBgClass = 'bg-blue-50/60 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900 text-gray-800 dark:text-gray-200';
+              cellBgClass = 'bg-sky-100 dark:bg-sky-950/60 text-sky-950 dark:text-sky-100 font-semibold border-[1.5px] border-black/60 shadow-[1px_1px_0px_#121212]';
+            } else if (isPast) {
+              // Past day without prayers recorded: Muted Sage Warm box (not stark white)
+              cellBgClass = 'bg-[#E5EBE3] dark:bg-slate-800/80 text-gray-600 dark:text-gray-400 border-[1.5px] border-black/40';
             }
           } else {
-            cellBgClass = 'text-gray-300 dark:text-gray-600 hover:text-gray-500';
+            cellBgClass = 'bg-gray-100/50 dark:bg-slate-900/30 text-gray-300 dark:text-gray-600 border-dashed border-gray-200 dark:border-slate-800';
+          }
+
+          // Outline & elevation for Selected Date & Today
+          let borderStateClass = '';
+          if (isSelected) {
+            borderStateClass = 'ring-2 ring-black dark:ring-white border-[2px] border-black dark:border-white bg-[#FDE68A] text-black dark:text-black font-black shadow-[3px_3px_0px_#121212] z-20 scale-[1.05]';
+          } else if (isToday) {
+            borderStateClass = 'border-[2px] border-emerald-600 dark:border-emerald-400 ring-2 ring-emerald-400 shadow-[2px_2px_0px_#121212]';
           }
 
           return (
@@ -196,40 +204,54 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
                 playButtonTapSound();
                 onSelectDate(dayStr);
               }}
-              className={`relative h-11 sm:h-12 rounded-xl flex flex-col items-center justify-center transition-all border ${cellBgClass} ${
-                isFuture && !isSelected && !isToday ? 'opacity-70' : ''
+              className={`relative h-11 sm:h-12 rounded-xl flex flex-col items-center justify-between p-1 transition-all ${cellBgClass} ${borderStateClass} ${
+                isFuture && !isSelected && !isToday ? 'opacity-80' : ''
               }`}
             >
-              {/* Corner Star for Dhuha / Sunnah */}
-              {hasSunnah && isCurrentMonth && !isSelected && !isToday && (
-                <span 
-                  className="absolute top-0.5 right-1 text-[8px] leading-none text-amber-500 font-extrabold select-none"
-                  title="Salat Dhuha / Sunnah dikerjakan"
-                >
-                  ⭐
-                </span>
-              )}
+              {/* Header row inside cell: Today pill on left, Sunnah star on right */}
+              <div className="w-full flex items-center justify-between min-h-[10px] px-0.5 pointer-events-none">
+                {isToday ? (
+                  <span className="text-[7.5px] font-black uppercase tracking-tighter bg-emerald-600 text-white px-1 py-0.2 rounded-sm shadow-xs leading-none border border-black">
+                    KINI
+                  </span>
+                ) : <span />}
+
+                {hasSunnah && isCurrentMonth && (
+                  <span 
+                    className="text-[10px] leading-none text-amber-400 font-black select-none filter drop-shadow-[0.5px_0.5px_0px_#000]"
+                    title="Salat Dhuha / Sunnah dikerjakan"
+                  >
+                    ⭐
+                  </span>
+                )}
+              </div>
 
               {/* Day Number */}
-              <span className="text-xs sm:text-sm leading-none tabular-nums font-bold">
+              <span className={`text-xs sm:text-sm leading-none tabular-nums font-black ${
+                isToday ? 'underline decoration-2' : ''
+              }`}>
                 {format(dayDate, 'd')}
               </span>
 
-              {/* Status Indicator Dots */}
-              <div className="flex items-center justify-center gap-0.5 mt-1 h-1.5">
+              {/* Status Indicator Badges & Dots */}
+              <div className="flex items-center justify-center gap-0.5 min-h-[11px] w-full pointer-events-none">
                 {isFullPrayer && (
-                  <span className={`w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-emerald-700' : isToday ? 'bg-white' : 'bg-emerald-500'}`} />
+                  <span className="text-[7.5px] font-black leading-none bg-black text-emerald-300 px-1 py-0.2 rounded-xs">
+                    5/5 ✓
+                  </span>
                 )}
                 {hasPartialPrayer && (
-                  <span className={`text-[8.5px] leading-none font-bold tabular-nums ${isSelected ? 'text-[#121212]' : isToday ? 'text-white' : 'text-emerald-700 dark:text-emerald-300'}`}>
+                  <span className="text-[7.5px] font-bold leading-none bg-black/10 dark:bg-white/20 text-current px-0.5 rounded-xs">
                     {badge?.count}/5
                   </span>
                 )}
                 {badge?.hasQuran && (
-                  <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-indigo-900' : isToday ? 'bg-amber-200' : 'bg-indigo-500'}`} title="Tilawah Al-Qur'an" />
+                  <span className="text-[8.5px] leading-none" title="Tilawah Al-Qur'an tercatat">
+                    📖
+                  </span>
                 )}
                 {hasSchedule && (
-                  <span className={`w-1 h-1 rounded-full ${isSelected ? 'bg-blue-800' : isToday ? 'bg-white' : 'bg-blue-500'}`} title="Ada agenda kuliah" />
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-600 border border-black inline-block" title="Ada jadwal agenda" />
                 )}
               </div>
             </button>
@@ -238,22 +260,30 @@ export const MonthlyCalendarGrid: React.FC<MonthlyCalendarGridProps> = ({
       </div>
 
       {/* Legend Information below grid */}
-      <div className="mt-3 pt-2.5 border-t border-gray-100 dark:border-slate-800 flex flex-wrap items-center justify-between gap-y-1 gap-x-3 text-[10px] text-gray-500 dark:text-gray-400">
+      <div className="mt-3 pt-2.5 border-t border-black/20 dark:border-slate-800 flex flex-wrap items-center justify-between gap-y-1.5 gap-x-3 text-[10.5px] font-bold text-gray-700 dark:text-gray-300">
         <div className="flex items-center gap-1.5">
-          <span className="w-2.5 h-2.5 rounded-sm bg-emerald-100 border border-emerald-400 inline-block" />
+          <span className="w-3 h-3 rounded-xs bg-emerald-500 border border-black inline-block shadow-xs" />
           <span>Fardhu Lengkap (5/5)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="text-[10px]">⭐</span>
-          <span>Dhuha / Sunnah</span>
+          <span className="w-3 h-3 rounded-xs bg-emerald-200 border border-black inline-block shadow-xs" />
+          <span>Fardhu Parsial (1-4/5)</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 inline-block" />
+          <span className="w-3 h-3 rounded-xs bg-[#E5EBE3] border border-black/50 inline-block shadow-xs" />
+          <span>Hari Terlewat</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span>⭐</span>
+          <span>Dhuha / Sunnah</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <span>📖</span>
           <span>Tilawah</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 inline-block" />
-          <span>Kuliah/Agenda</span>
+          <span className="w-2 h-2 rounded-full bg-blue-600 border border-black inline-block" />
+          <span>Agenda</span>
         </div>
       </div>
     </div>

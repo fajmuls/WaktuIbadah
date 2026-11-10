@@ -180,7 +180,7 @@ export default function Onboarding({ onComplete }: OnboardingProps) {
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="w-full p-3.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-sm font-semibold text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500 transition-all"
-                  placeholder="Contoh: Ahmad Fauzi"
+                  placeholder="Contoh: Muhammad Rayhan"
                   autoFocus
                 />
                 {checkingCloud && (

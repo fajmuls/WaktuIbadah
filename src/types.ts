@@ -65,7 +65,9 @@ export type SunnahPrayerName = 'Dhuha' | 'Tahajud' | 'Witir';
 export interface PrayerLog {
   date: string; // YYYY-MM-DD
   prayers: Record<PrayerName, boolean>;
+  prayerTimesRecords?: Record<string, string>; // HH:mm timestamp for each prayer
   sunnahPrayers?: Record<SunnahPrayerName, boolean>;
+  sunnahTimesRecords?: Record<string, string>; // HH:mm timestamp for sunnah
 }
 
 export interface FocusSession {
@@ -267,6 +269,51 @@ export interface PatchNoteItem {
 }
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
+  {
+    version: '2.13.0',
+    releaseDate: '10 November 2026',
+    title: 'Perombakan UI Kalender Sage-Zamrud, Kartu Template Rutin Memphis, Pencatatan Timestamp Jam Salat Otomatis/Manual, & Grafik Analitik Tren Ibadah',
+    highlights: [
+      'UI Kalender Sage-Zamrud Kompak: Redesain grid kalender dengan tema Hijau Sage, Aksen Zamrud, dan Memphis border 1.5px tegas. Tanggal terlewat (past dates) memiliki pembeda warna latar (hijau zamrud 5/5, sage 1-4/5, muted abu-sage 0/5) tanpa kotak polos berlebih.',
+      'Pencatatan Timestamp Jam Salat: Setiap kali salat fardhu atau sunnah dicentang, jam pengerjaan (HH:mm) otomatis tercatat. Pengguna dapat mengubah jam secara manual via picker jam.',
+      'Redesain Halaman Jadwal & Template Rutin 1-Klik: Kartu template rutin (Dhuha, Tilawah, Tahajud) & strip kalender mini diselaraskan dengan estetika Memphis Sage-Zamrud yang bersih dan ergonomis.',
+      'Grafik Analitik Tren Ibadah Detail: Halaman Progress kini menyajikan grafik sebaran jam salat harian, tren ketepatan waktu, dan konsistensi ibadah sunnah (Dhuha & Tahajud) serta tilawah.',
+      'Pembersihan Data Responden Dummy Firestore: Menghapus total dokumen ulasan/profil dummy dari Firestore sehingga Admin Dashboard murni menampilkan pengguna riil.'
+    ],
+    soundPackUpdates: [
+      'Audio feedback taktil saat mengubah timestamp jam salat manual dan membuat jadwal rutin'
+    ],
+    uiOverhaul: [
+      'Visualisasi Kalender Sage-Zamrud dengan indikator bintang emas Dhuha, badge 5/5, dan icon tilawah',
+      'Modal picker jam pengerjaan salat manual pada kartu rincian kalender & ibadah',
+      'Kartu template rutin 1-klik Memphis dengan aksen zamrud & sage'
+    ],
+    recommendations: [
+      'Uji coba mencentang Salat Subuh atau Dhuha, ketuk jam yang tercatat untuk mengubah jam manual, lalu periksa visualisasinya di Kalender dan Halaman Progress.'
+    ]
+  },
+  {
+    version: '2.12.1',
+    releaseDate: '10 November 2026',
+    title: 'Perbaikan Total Firestore Rules, Pembersihan Responden Dummy Ahmad Fauzi & Siti Nurhaliza, dan Indikator Kalender Ibadah Real-Time',
+    highlights: [
+      'Perbaikan Izin Akses Firestore Rules: Memisahkan operasi get dan list pada aturan student_profiles dan website_reviews, menuntaskan galat Missing or insufficient permissions saat memuat pengguna terdaftar di Admin Dashboard.',
+      'Pembersihan Total Responden Dummy: Menghapus 5 template responden Ahmad Fauzi & Siti Nurhaliza dari kode sumber sehingga dashboard hanya menyajikan data pengguna riil dari Firestore.',
+      'Indikator Kalender Ibadah Presisi: Kotak tanggal hari ini dan tanggal terpilih tidak lagi menghapus status ibadah. Status 5 fardhu lengkap tetap berlatar hijau, ikon bintang emas (⭐) Dhuha selalu muncul, dan titik tilawah tetap terlihat.',
+      'Sinkronisasi Real-Time Antar Halaman: Penambahan custom event wi_data_updated menjamin perubahan checklist salat fardhu dan Dhuha langsung terrefleksi di kalender seketika.'
+    ],
+    soundPackUpdates: [
+      'Penyegaran audio feedback saat sinkronisasi data cloud Firestore',
+    ],
+    uiOverhaul: [
+      'Desain highlight tanggal hari ini dan tanggal terpilih pada kalender tanpa menghilangkan warna capaian ibadah',
+      'Pembersihan daftar responden di Admin Dashboard hanya menampilkan data riil',
+    ],
+    recommendations: [
+      'Lakukan uji coba registrasi akun baru dan checklist Dhuha untuk memverifikasi penampilan bintang emas di kalender dan kemunculan nama di Admin Dashboard.',
+      'Gunakan tombol Hapus Akun pada Admin Dashboard untuk mengeliminasi profil uji coba yang tidak dibutuhkan sebelum presentasi penguji.'
+    ]
+  },
   {
     version: '2.12.0',
     releaseDate: '10 November 2026',

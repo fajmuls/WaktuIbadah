@@ -120,18 +120,20 @@ export default function AdminDashboard() {
     try {
       // 1. Try serverless endpoint first if token provided
       let serverOverview: AdminOverview | null = null;
-      try {
-        const res = await fetch('/api/admin/overview', { headers: { 'x-admin-token': token } });
-        if (res.status === 401) {
-          setOverviewError('Token admin salah atau sesi berakhir.');
-          return false;
+      if (token) {
+        try {
+          const res = await fetch('/api/admin/overview', { headers: { 'x-admin-token': token } });
+          if (res.status === 401) {
+            setOverviewError('Token admin salah atau sesi berakhir.');
+            return false;
+          }
+          const json = await res.json().catch(() => null);
+          if (res.ok && json?.ok && Array.isArray(json?.users) && json.users.length > 0) {
+            serverOverview = json as AdminOverview;
+          }
+        } catch (err) {
+          console.warn('API overview fetch failed, attempting direct Firestore fetch:', err);
         }
-        const json = await res.json().catch(() => null);
-        if (res.ok && json?.ok && Array.isArray(json?.users) && json.users.length > 0) {
-          serverOverview = json as AdminOverview;
-        }
-      } catch (err) {
-        console.warn('API overview fetch failed, attempting direct Firestore fetch:', err);
       }
 
       if (serverOverview) {

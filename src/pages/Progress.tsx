@@ -528,14 +528,16 @@ export default function Progress() {
               </div>
             </div>
 
-            {/* 1. Status 5 Waktu Salat */}
+            {/* 1. Status 5 Waktu Salat & Jam Pengerjaan */}
             <div>
-              <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
-                Status Salat 5 Waktu
+              <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2 flex justify-between items-center">
+                <span>Status Salat 5 Waktu & Jam Dicatat</span>
+                <span className="text-emerald-700 text-[10px]">Terbaca dari Log Jam</span>
               </h4>
               <div className="grid grid-cols-5 gap-1.5 sm:gap-2 text-center">
                 {(['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'] as const).map(p => {
                   const done = selectedDatePrayers.prayers[p];
+                  const recordedTime = selectedDatePrayers.prayerTimesRecords?.[p];
                   return (
                     <div
                       key={p}
@@ -551,12 +553,42 @@ export default function Progress() {
                         <Check className="w-3.5 h-3.5 stroke-[3]" />
                       </div>
                       <span className="text-[11px] font-bold block">{p}</span>
-                      <span className="text-[9px] font-bold">{done ? 'Selesai' : 'Belum'}</span>
+                      <span className="text-[9px] font-bold block">
+                        {done ? (recordedTime ? recordedTime : 'Selesai') : 'Belum'}
+                      </span>
                     </div>
                   );
                 })}
               </div>
             </div>
+
+            {/* 1b. Status Salat Sunnah Tanggal Terpilih */}
+            {selectedDatePrayers.sunnahPrayers && (
+              <div>
+                <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-2">
+                  Salat Sunnah & Amalan Terbaca
+                </h4>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                  {(['Dhuha', 'Tahajud', 'Witir', 'Rawatib'] as const).map(sKey => {
+                    const done = selectedDatePrayers.sunnahPrayers?.[sKey];
+                    const recordedTime = selectedDatePrayers.sunnahTimesRecords?.[sKey];
+                    return (
+                      <div 
+                        key={sKey}
+                        className={`p-2 rounded-xl border-[1.5px] border-black text-xs font-bold flex items-center justify-between ${
+                          done ? 'bg-amber-100 text-amber-950 shadow-[1.5px_1.5px_0px_#121212]' : 'bg-gray-50 text-gray-400 opacity-60'
+                        }`}
+                      >
+                        <span>Salat {sKey}</span>
+                        <span className="text-[10px] px-1.5 py-0.5 bg-white border border-black rounded font-mono">
+                          {done ? (recordedTime || '✓') : '—'}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* 2. Rincian Bacaan Al-Qur'an */}
             <div>

@@ -109,12 +109,8 @@ export default function Ibadah() {
       }
     }
 
-    const newLog = {
-      ...log,
-      prayers: { ...log.prayers, [prayer]: isCompleted }
-    };
-    setLog(newLog);
-    storage.updatePrayerLog(newLog);
+    const updatedLog = storage.togglePrayer(selectedDate, prayer);
+    setLog(updatedLog);
 
     // If prayer completed, prompt Wirid & Doa Modal if enabled
     if (isCompleted) {
@@ -127,7 +123,7 @@ export default function Ibadah() {
     }
 
     // If all 5 prayers completed today, notify review listener
-    if (Object.values(newLog.prayers).every(Boolean) && selectedDate === todayStr) {
+    if (Object.values(updatedLog.prayers).every(Boolean) && selectedDate === todayStr) {
       setTimeout(() => {
         window.dispatchEvent(new CustomEvent('wi_check_five_prayers_review'));
       }, 1200);
@@ -148,9 +144,18 @@ export default function Ibadah() {
       ...(log.sunnahPrayers || { Dhuha: false, Tahajud: false, Witir: false }),
       [sunnah]: isCompleted
     };
+    const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':');
+    const newSunnahTimes = { ...(log.sunnahTimesRecords || {}) };
+    if (isCompleted) {
+      newSunnahTimes[sunnah] = newSunnahTimes[sunnah] || nowTime;
+    } else {
+      delete newSunnahTimes[sunnah];
+    }
+
     const newLog = {
       ...log,
-      sunnahPrayers: newSunnah
+      sunnahPrayers: newSunnah,
+      sunnahTimesRecords: newSunnahTimes
     };
     setLog(newLog);
     storage.updatePrayerLog(newLog);

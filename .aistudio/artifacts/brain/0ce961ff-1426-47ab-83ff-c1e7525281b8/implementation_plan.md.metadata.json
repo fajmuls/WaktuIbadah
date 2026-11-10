@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana komprehensif pembaruan kalender ibadah dengan indikator warna fardhu/sunnah, perombakan jadwal rutin 1-klik, penyederhanaan bookmark hanca & favorit Al-Qur'an, perbaikan tajwid, pembenahan manifest PWA Builder, serta perbaikan sinkronisasi dan manajemen data admin Firestore.",
-  "updatedAt":  "2026-11-10T09:16:57.900408246Z",
+  "summary":  "Rencana perombakan UI Kalender dengan nuansa Hijau Sage & Emerald Zamrud, perbaikan UI Jadwal & Template Rutin, pencatatan timestamp jam salat otomatis/manual, grafik analitik tren ibadah detail, dan pembersihan data responden dummy dari Firebase.",
+  "updatedAt":  "2026-11-10T12:22:32.195241663Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

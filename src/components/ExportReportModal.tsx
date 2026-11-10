@@ -116,7 +116,7 @@ export function ExportReportModal({ isOpen, onClose }: ExportReportModalProps) {
               type="text" 
               value={supervisorName}
               onChange={(e) => setSupervisorName(e.target.value)}
-              placeholder="Contoh: Dr. H. Ahmad Fauzi, M.Ag"
+              placeholder="Contoh: Dr. H. Abdullah, M.Ag"
               className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs text-gray-900 dark:text-white outline-none focus:border-emerald-500"
             />
           </div>

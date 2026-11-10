@@ -4,13 +4,13 @@ import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterv
 import { id } from 'date-fns/locale';
 import { 
   ChevronLeft, ChevronRight, Calendar as CalendarIcon, RefreshCw, 
-  CheckCircle2, Clock, BookOpen, Star, AlertCircle, ChevronDown, Check, Sun, Moon
+  CheckCircle2, Clock, BookOpen, Star, AlertCircle, ChevronDown, Check, Sun, Moon, Edit3, X
 } from 'lucide-react';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { storage } from '../lib/storage';
-import { PrayerLog, Schedule, QuranLog, PrayerName } from '../types';
+import { PrayerLog, Schedule, QuranLog, PrayerName, SunnahPrayerName } from '../types';
 import { MonthlyCalendarGrid, CalendarDayBadge } from '../components/MonthlyCalendarGrid';
 import { playButtonTapSound } from '../lib/audio';
 
@@ -27,6 +27,8 @@ export default function Kalender() {
   const [prayerLogs, setPrayerLogs] = useState<PrayerLog[]>([]);
   const [quranLogs, setQuranLogs] = useState<QuranLog[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [editingTimeItem, setEditingTimeItem] = useState<{ isSunnah: boolean; key: string; currentVal: string } | null>(null);
+  const [timeInputVal, setTimeInputVal] = useState<string>('');
 
   useEffect(() => {
     // Load local storage records
@@ -38,7 +40,18 @@ export default function Kalender() {
 
     loadUserData();
     window.addEventListener('storage', loadUserData);
-    return () => window.removeEventListener('storage', loadUserData);
+    window.addEventListener('wi_data_updated', loadUserData);
+    window.addEventListener('wi_auto_cloud_sync', loadUserData);
+    window.addEventListener('wi_cloud_sync_completed', loadUserData);
+    window.addEventListener('focus', loadUserData);
+
+    return () => {
+      window.removeEventListener('storage', loadUserData);
+      window.removeEventListener('wi_data_updated', loadUserData);
+      window.removeEventListener('wi_auto_cloud_sync', loadUserData);
+      window.removeEventListener('wi_cloud_sync_completed', loadUserData);
+      window.removeEventListener('focus', loadUserData);
+    };
   }, []);
 
   useEffect(() => {
@@ -102,8 +115,17 @@ export default function Kalender() {
   const badgesMap = useMemo(() => {
     const map: Record<string, CalendarDayBadge> = {};
 
-    // Map prayer logs
-    prayerLogs.forEach((log) => {
+    // Map prayer logs (guarantee today's live status is included)
+    const allLogs = [...prayerLogs];
+    const todayLog = storage.getPrayerLog(todayStr);
+    const existingTodayIdx = allLogs.findIndex(l => l.date === todayStr);
+    if (existingTodayIdx >= 0) {
+      allLogs[existingTodayIdx] = todayLog;
+    } else {
+      allLogs.push(todayLog);
+    }
+
+    allLogs.forEach((log) => {
       if (!log.date) return;
       const fardhuCount = Object.values(log.prayers || {}).filter(Boolean).length;
       const isAllDone = fardhuCount === 5;
@@ -142,11 +164,11 @@ export default function Kalender() {
     });
 
     return map;
-  }, [prayerLogs, quranLogs, schedules]);
+  }, [prayerLogs, quranLogs, schedules, todayStr]);
 
   // Selected date details
   const selectedPrayerLog = useMemo(() => {
-    return prayerLogs.find(p => p.date === selectedDate);
+    return prayerLogs.find(p => p.date === selectedDate) || storage.getPrayerLog(selectedDate);
   }, [prayerLogs, selectedDate]);
 
   const selectedQuranLogs = useMemo(() => {
@@ -276,17 +298,34 @@ export default function Kalender() {
           <div className="grid grid-cols-5 gap-1.5">
             {PRAYER_NAMES.map((pName) => {
               const isDone = Boolean(selectedPrayerLog?.prayers?.[pName]);
+              const recTime = selectedPrayerLog?.prayerTimesRecords?.[pName];
               return (
                 <div 
                   key={pName}
-                  className={`p-2 rounded-xl border text-center transition-all ${
+                  onClick={() => {
+                    if (isDone) {
+                      setEditingTimeItem({ isSunnah: false, key: pName, currentVal: recTime || '12:00' });
+                      setTimeInputVal(recTime || '12:00');
+                    }
+                  }}
+                  className={`p-2 rounded-xl border text-center transition-all cursor-pointer relative group ${
                     isDone 
-                      ? 'bg-emerald-500 text-white border-emerald-700 shadow-xs font-bold' 
-                      : 'bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-700 font-medium'
+                      ? 'bg-emerald-600 text-white border-black shadow-[1.5px_1.5px_0px_#121212] font-bold' 
+                      : 'bg-[#F4F7F2] dark:bg-slate-800 text-gray-400 dark:text-gray-500 border-black/30 font-medium'
                   }`}
+                  title={isDone ? 'Ketuk untuk mengedit jam salat' : 'Belum dikerjakan'}
                 >
-                  <div className="text-[11px] leading-tight font-bold">{pName}</div>
-                  <div className="text-[9px] mt-0.5">{isDone ? '✓ Sudah' : 'Belum'}</div>
+                  <div className="text-[11px] leading-tight font-black">{pName}</div>
+                  <div className="text-[9.5px] mt-0.5 font-bold flex items-center justify-center gap-0.5">
+                    {isDone ? (
+                      <>
+                        <span>{recTime ? `${recTime}` : '✓'}</span>
+                        <Edit3 className="w-2.5 h-2.5 opacity-80 group-hover:opacity-100" />
+                      </>
+                    ) : (
+                      'Belum'
+                    )}
+                  </div>
                 </div>
               );
             })}
@@ -294,47 +333,40 @@ export default function Kalender() {
         </div>
 
         {/* 2. Salat Sunnah (Dhuha & Tahajud) */}
-        <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-slate-800">
+        <div className="space-y-1.5 pt-2 border-t border-black/20 dark:border-slate-800">
           <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
             <Sun className="w-4 h-4 text-amber-500" />
             Salat Sunnah
           </span>
           <div className="grid grid-cols-3 gap-2">
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
-              selectedPrayerLog?.sunnahPrayers?.Dhuha 
-                ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-400 text-amber-900 dark:text-amber-200 font-bold' 
-                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400'
-            }`}>
-              <div>
-                <div className="text-xs font-bold">Salat Dhuha</div>
-                <div className="text-[10px]">{selectedPrayerLog?.sunnahPrayers?.Dhuha ? '⭐ Dikerjakan' : 'Belum dicatat'}</div>
-              </div>
-              {selectedPrayerLog?.sunnahPrayers?.Dhuha && <Check className="w-4 h-4 text-amber-600 stroke-[3]" />}
-            </div>
-
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
-              selectedPrayerLog?.sunnahPrayers?.Tahajud 
-                ? 'bg-indigo-100 dark:bg-indigo-950/60 border-indigo-400 text-indigo-900 dark:text-indigo-200 font-bold' 
-                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400'
-            }`}>
-              <div>
-                <div className="text-xs font-bold">Tahajud</div>
-                <div className="text-[10px]">{selectedPrayerLog?.sunnahPrayers?.Tahajud ? '⭐ Dikerjakan' : 'Belum dicatat'}</div>
-              </div>
-              {selectedPrayerLog?.sunnahPrayers?.Tahajud && <Check className="w-4 h-4 text-indigo-600 stroke-[3]" />}
-            </div>
-
-            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
-              selectedPrayerLog?.sunnahPrayers?.Witir 
-                ? 'bg-purple-100 dark:bg-purple-950/60 border-purple-400 text-purple-900 dark:text-purple-200 font-bold' 
-                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400'
-            }`}>
-              <div>
-                <div className="text-xs font-bold">Witir</div>
-                <div className="text-[10px]">{selectedPrayerLog?.sunnahPrayers?.Witir ? '⭐ Dikerjakan' : 'Belum dicatat'}</div>
-              </div>
-              {selectedPrayerLog?.sunnahPrayers?.Witir && <Check className="w-4 h-4 text-purple-600 stroke-[3]" />}
-            </div>
+            {(['Dhuha', 'Tahajud', 'Witir'] as SunnahPrayerName[]).map((sName) => {
+              const isDone = Boolean(selectedPrayerLog?.sunnahPrayers?.[sName]);
+              const recTime = selectedPrayerLog?.sunnahTimesRecords?.[sName];
+              return (
+                <div
+                  key={sName}
+                  onClick={() => {
+                    if (isDone) {
+                      setEditingTimeItem({ isSunnah: true, key: sName, currentVal: recTime || '08:00' });
+                      setTimeInputVal(recTime || '08:00');
+                    }
+                  }}
+                  className={`p-2.5 rounded-xl border flex items-center justify-between transition-all cursor-pointer ${
+                    isDone 
+                      ? 'bg-amber-300 dark:bg-amber-900/80 border-black text-black dark:text-white font-bold shadow-[1.5px_1.5px_0px_#121212]' 
+                      : 'bg-[#F4F7F2] dark:bg-slate-800 border-black/30 text-gray-400'
+                  }`}
+                >
+                  <div>
+                    <div className="text-xs font-black">{sName === 'Dhuha' ? 'Salat Dhuha' : sName}</div>
+                    <div className="text-[10px] font-bold mt-0.5">
+                      {isDone ? (recTime ? `⭐ ${recTime}` : '⭐ Dikerjakan') : 'Belum dicatat'}
+                    </div>
+                  </div>
+                  {isDone && <Edit3 className="w-3.5 h-3.5 text-black dark:text-white" />}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -402,6 +434,74 @@ export default function Kalender() {
           )}
         </div>
       </section>
+
+      {/* Modal Edit Jam Pengerjaan Salat */}
+      {editingTimeItem && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-slate-900 border-[2px] border-black rounded-2xl p-4 sm:p-5 w-full max-w-xs shadow-[4px_4px_0px_#121212] space-y-4">
+            <div className="flex items-center justify-between border-b border-black/20 pb-2.5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-emerald-400 border border-black flex items-center justify-center font-bold">
+                  <Clock className="w-4 h-4 text-black" />
+                </div>
+                <div>
+                  <h4 className="font-black text-sm text-black dark:text-white">Ubah Jam Salat</h4>
+                  <p className="text-[10.5px] font-bold text-gray-500">{editingTimeItem.key} ({selectedDate})</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setEditingTimeItem(null)}
+                className="w-7 h-7 rounded-lg border border-black flex items-center justify-center font-bold hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (editingTimeItem.isSunnah) {
+                  storage.updateSunnahPrayerTime(selectedDate, editingTimeItem.key, timeInputVal);
+                } else {
+                  storage.updatePrayerTime(selectedDate, editingTimeItem.key, timeInputVal);
+                }
+                setPrayerLogs(storage.getPrayerLogs());
+                setEditingTimeItem(null);
+              }}
+              className="space-y-3"
+            >
+              <div>
+                <label className="block text-xs font-extrabold text-black dark:text-white mb-1">
+                  Jam Pengerjaan (HH:mm)
+                </label>
+                <input
+                  type="time"
+                  value={timeInputVal}
+                  onChange={(e) => setTimeInputVal(e.target.value)}
+                  className="w-full px-3 py-2 bg-gray-50 dark:bg-slate-800 border-[1.5px] border-black rounded-xl text-center font-mono font-black text-lg text-black dark:text-white outline-none shadow-[1.5px_1.5px_0px_#121212]"
+                  required
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-1">
+                <button
+                  type="button"
+                  onClick={() => setEditingTimeItem(null)}
+                  className="flex-1 py-2 bg-white dark:bg-slate-800 text-black dark:text-white border-[1.5px] border-black rounded-xl text-xs font-bold shadow-[1.5px_1.5px_0px_#121212]"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-600 text-white border-[1.5px] border-black rounded-xl text-xs font-black shadow-[1.5px_1.5px_0px_#121212]"
+                >
+                  Simpan Jam
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

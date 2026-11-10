@@ -8,7 +8,7 @@ import { format, addDays } from 'date-fns';
 import { playAlarmSound, playPrayerAzan, stopAlarmSound, vibratePrayerAlarm, vibrateSuccess } from './lib/audio';
 import { showPWANotification } from './lib/pwa-service';
 import { isPushActive, syncPushNow, syncPushSoon } from './lib/push';
-import { testFirestoreConnection, syncAllFromCloud, syncAllToCloud, subscribeToStudentProfile } from './lib/cloud-sync';
+import { testFirestoreConnection, syncAllFromCloud, syncAllToCloud, subscribeToStudentProfile, purgeDummyDataFromFirestore } from './lib/cloud-sync';
 
 // Pages
 import Dashboard from './pages/Dashboard';
@@ -105,8 +105,9 @@ export default function App() {
   const notifiedTimes = useRef<Set<string>>(new Set());
 
   useEffect(() => {
-    // Validate Firestore connection on boot
+    // Validate Firestore connection on boot and purge legacy dummy records
     testFirestoreConnection().catch(console.error);
+    purgeDummyDataFromFirestore().catch(console.error);
 
     // Initialize Theme Mode (Light / Dark / System)
     const applyTheme = (mode: 'light' | 'dark' | 'system') => {

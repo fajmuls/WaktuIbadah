@@ -1,97 +1,139 @@
-# Rencana Implementasi: Pembaruan Kalender Ibadah, Jadwal Rutin, Al-Qur'an, PWA & Admin Firestore (v2.12.0)
+# Rencana Implementasi: Perombakan UI Kalender Sage-Zamrud, Jadwal Rutin, Pencatatan Jam Salat, Analitik Ibadah & Pembersihan Data Firebase
 
-Rencana ini merombak pengalaman penjadwalan dan kalender ibadah agar bersih dan nyaman diakses di ponsel pintar, menyederhanakan bookmark Al-Qur'an sebagai penanda Hanca langsung, memperbaiki pewarnaan tajwid dan ligatur Arab, merapikan Web App Manifest untuk PWA Builder, serta memperbaiki sinkronisasi data Admin Dashboard dan penghapusan data Firestore.
-
----
-
-### User Review & Critical Decisions
-
-> [!IMPORTANT] Ringkasan Keputusan Pengguna (Hasil Klarifikasi):
-> - **Gaya Indikator Kalender**: Warna latar dan aksen berbeda dengan ikon ringkas status ibadah fardhu (hijau lembut saat 5 waktu lengkap) dan aksen emas untuk Dhuha/sunnah.
-> - **Model Penjadwalan Rutin**: Tombol cepat template rutin (Rutin Dhuha, Rutin Tilawah, Rutin Tahajud) ditambah opsi kustom berulang harian yang simpel dan mudah dibaca di HP.
-> - **Pemicu Dialog Ulasan**: Otomatis muncul setelah 7 hari penggunaan aktif atau setelah hari pertama target salat fardhu tuntas lengkap. Input ulasan dibuat bebas mandiri (tanpa template teks kaku).
+Rencana ini mencakup perombakan total UI Kalender & Penjadwalan dengan estetika **Hijau Sage, Aksen Zamrud & Memphis Border Tegas**, pencatatan **timestamp jam pengerjaan salat** (otomatis + edit manual), **grafik analitik tren ketepatan waktu & ibadah sunnah**, serta pembersihan data responden dummy dari Firestore.
 
 ---
 
-### 1. Overview & Core Concept
+## User Review & Critical Decisions
 
-- **Apa yang Dibangun**: 
-  1. **Visualisasi Kalender Ibadah**: Setiap kotak tanggal memiliki kode warna adaptif berdasarkan status ibadah (fardhu lengkap, parsial, atau ada sunnah seperti Dhuha/Tahajud) dilengkapi detail popup/drawer untuk melihat capaian hari tersebut.
-  2. **PWA Manifest Compliant**: Penyesuaian `manifest.webmanifest` agar valid dan rapi saat diverifikasi oleh PWA Builder (id, scope, orientation, categories, full icons & safe maskable, shortcuts).
-  3. **Penjadwalan Simpel & Rutin 1-Klik**: Redesain halaman Jadwal agar ergonomis di layar ponsel (anti button-overload), dengan tombol cepat template ibadah harian berulang (Dhuha, Tilawah, Tahajud) yang langsung sinkron ke Firestore.
-  4. **Bookmark Al-Qur'an = Hanca Terakhir**: Tombol bookmark per ayat langsung menyimpan ayat tersebut sebagai "Hanca Terakhir Dibaca" (1-tap action) tanpa form berbelit-belit. Tombol favorit ayat juga dipermudah (1-tap star).
-  5. **Tajwid Modular & Non-Destructive Ligatur**: Memperbaiki pemisahan kata pada parser tajwid agar huruf Arab tetap tersambung rapi. Tajwid secara default dinonaktifkan (`none`), dengan opsi pilihan di pengaturan: *Tanpa Tajwid (Default)*, *Tajwid Dasar*, dan *Tajwid Lengkap* (membedakan Idgham Bighunnah, Idgham Bilaghunnah, Ikhfa, Iqlab, Ghunnah, Qalqalah, Mad, Izhar).
-  6. **Admin Dashboard & Firestore Management**: Menghubungkan data `student_profiles` dan `website_reviews` secara andal (mengatasi error "kode 200"), menyaring/membersihkan akun palsu, serta menyediakan aksi **Hapus Akun Pengguna** langsung dari Admin Dashboard ke Firestore.
-  7. **Sistem Logout & Dialog Review Mandiri**: Fitur logout dengan dialog peringatan jika akun belum memiliki PIN pemulihan. Formulir ulasan website tanpa template bawaan agar responden mengisi kritik/saran otentik.
-  8. **Pembaruan Versi v2.12.0**: Memperbarui nomor versi di Pengaturan, `storage.ts`, dan menambahkan catatan rilis serta saran teknis yang berguna bagi penguji proyek.
+> [!IMPORTANT] Keputusan yang Telah Dikonfirmasi Pengguna:
+> - **Nuansa Warna & Gaya Kalender**: Palette Hijau Sage (`bg-emerald-50/sage`), Aksen Hijau Zamrud (`emerald-600/700`), dan batas/border hitam tegas khas Memphis (`border-[1.5px] border-black shadow-[2px_2px_0px_#121212]`). Tanggal terlewat (past dates) memiliki warna latar khusus yang membedakan hari terlewat vs hari ini vs masa depan.
+> - **Pencatatan Jam Salat**: Saat tombol/checklist salat dicentang, jam pengerjaan (`HH:mm`) otomatis tercatat sesuai waktu server/lokal, dan pengguna dapat mengetuk jam tersebut untuk melakukan edit manual bila baru sempat mencatatnya.
+> - **Grafik Analitik Detail**: Halaman Progress/Analitik akan menampilkan grafik sebaran jam pengerjaan salat, tren ketepatan waktu (Awal Waktu vs Tepat Waktu vs Terakhir), serta konsistensi ibadah sunnah (Dhuha & Tahajud) dan tilawah Al-Qur'an.
+> - **Pembersihan Firestore Dummy**: Menghapus total sisa dokumen dummy/responden lama (seperti Nadia Putri, Rian Hidayat, Ahmad Fauzi, Siti Nurhaliza) dari Firestore dan lokal agar hanya data responden/mahasiswa asli yang tampil di Admin Dashboard.
 
 ---
 
-### 2. User Experience & Visual Design
+## 1. Overview & Core Concept
 
-#### A. Desain Kotak Tanggal Kalender (`MonthlyCalendarGrid` & `Kalender.tsx`)
-- **Status Warna Kotak**:
-  - *Fardhu Lengkap (5/5)*: Latar hijau pastel (`bg-emerald-50 dark:bg-emerald-950/40`), border emerald halus, dot hijau cerah.
-  - *Parsial (1-4 fardhu)*: Latar netral dengan dot indikator jumlah salat.
-  - *Ada Dhuha / Sunnah*: Aksen sudut emas/kuning cerah (`bg-amber-400/20` border `border-amber-400/50`) dengan ikon bintang/matahari mungil di pojok tanggal.
-- **Drawer / Rincian Tanggal**: Mengetuk tanggal langsung membuka ringkasan rapi: Salat fardhu yang sudah diceklis, salat Dhuha & Tahajud, tilawah Al-Qur'an, dan jadwal kegiatan pada hari itu.
+1. **Kalender Ibadah Berwarna Sage-Zamrud**:
+   - Kotak tanggal berukuran proporsional (kompak, tidak terlalu kaku/besar) dengan hierarki warna:
+     - **Masa Lalu (Terlewat)**: Latar hijau sage redup/terstruktur dengan indikator keterisian salat (misal 5/5 hijau zamrud, 1-4/5 sage transparan, atau merah muda bila 0/5).
+     - **Hari Ini (`KINI`)**: Aksen zamrud dengan ring hitam tegas & lencana `KINI`.
+     - **Masa Depan**: Latar putih-sage bersih dengan border subtle.
+     - **Ikon & Indikator**: Bintang emas (⭐) untuk Dhuha, ikon Al-Qur'an (📖) untuk tilawah, dan titik biru untuk agenda kuliah.
 
-#### B. Redesain Halaman Jadwal (Mobile-Friendly & Ergonomis)
-- **Zero-Clutter Header**: Mengurangi tombol ganda; navigasi tanggal dibuat dalam carousel geser 7 hari yang nyaman dijangkau jempol.
-- **Kartu Template Rutin 1-Klik**:
-  - `[ + Rutin Dhuha (08:30) ]`
-  - `[ + Rutin Tilawah (18:30) ]`
-  - `[ + Rutin Tahajud (03:30) ]`
-- **Kartu Agenda yang Bersih**: Waktu mulai - selesai, tag kategori dengan warna lembut, status bentrok dengan waktu salat, dan aksi centang/hapus tanpa menu berlapis.
+2. **UI Halaman Jadwal & Template Rutin 1-Klik**:
+   - Desain ulang kartu template rutin harian (Rutin Dhuha, Rutin Tilawah, Rutin Tahajud) mengikuti tema Memphis (border hitam 1.5px, aksen sage-zamrud-kuning, tombol aksional yang reponsif di smartphone).
+   - Kalender mini/strip navigasi tanggal di halaman Jadwal diselaraskan dengan gaya UI utama.
 
-#### C. Pengalaman Membaca Al-Qur'an (Bookmark & Tajwid)
-- **1-Tap Hanca Bookmark**: Ikon pita bookmark di setiap ayat langsung menyematkan ayat tersebut sebagai Hanca terakhir, memutar audio konfirmasi, dan menampilkan indikator aktif pada ayat tersebut.
-- **1-Tap Favorit**: Ikon hati/bintang langsung menambahkan ayat ke daftar favorit pengguna.
-- **Pewarnaan Tajwid Bersih**: Mencegah pemutusan sambungan kaligrafi Arab (menggunakan font LPMQ/Amiri dan styling span inline yang tidak merusak harakat/ligatur). Pengaturan tajwid di modal reader: Tanpa Tajwid (Default), Tajwid Dasar, Tajwid Lengkap.
+3. **Detail Waktu Salat & Edit Jam Manual**:
+   - Memperbarui `PrayerLog` schema untuk menyimpan `prayerTimesRecords?: Record<string, string>` (misal `Subuh: "04:35"`, `Dhuha: "08:15"`).
+   - Saat dicentang, jam waktu saat ini otomatis terisi. Di bagian rincian, pengguna dapat memilih "Ubah Jam" melalui picker jam sederhana.
 
----
+4. **Grafik Analitik Trend & Ketepatan Waktu**:
+   - Menambahkan Visualisasi Chart (Bar/Area/Line) di halaman Progress:
+     - **Sebaran Jam Salat**: Menunjukkan jam berapa pengguna biasa menunaikan Subuh, Zuhur, Asar, Magrib, Isya.
+     - **Tren Ketepatan Waktu**: Persentase Awal Waktu vs Tepat Waktu.
+     - **Statistik Ibadah Sunnah & Tilawah**: Rekap bulanan Dhuha, Tahajud, dan lembar tilawah.
 
-### 3. Key Product Decisions & Trade-Offs
-
-- **Sinkronisasi Admin Firestore (Dual Mode)**:
-  - *Pendekatan*: Selain memanggil API route `/api/admin/overview`, Admin Dashboard memuat data langsung dari Firestore client SDK (`student_profiles` & `website_reviews`) secara otomatis jika serverless endpoint mengalami kendala. Ini memastikan dashboard selalu menampilkan pengguna asli secara real-time.
-  - *Manajemen Data*: Admin memiliki kontrol menghapus akun dummy/palsu dari Firestore langsung dari UI dengan tombol hapus terproteksi konfirmasi.
-- **Struktur Hanca Tunggal Utama vs Riwayat**:
-  - Tombol bookmark pada ayat langsung memperbarui Hanca aktif utama. Riwayat bookmark tetap tersimpan di riwayat Hanca lokal dan Firestore agar data tidak hilang.
-- **Ulasan Bebas Mandiri**:
-  - Menghilangkan template ulasan otomatis agar input mahasiswa murni dan otentik untuk keperluan laporan pengujian proyek.
+5. **Pembersihan Responden Firebase Firestore**:
+   - Menjalankan fungsi pembersihan massal (auto-clean script/method) untuk menghapus dokumen review atau profile dummy yang menggunakan ID `seed-rev-*` atau nama template lama di database Firestore `website_reviews` & `student_profiles`.
 
 ---
 
-### 4. Technical Architecture & Data Strategy
+## 2. User Experience & Visual Design
+
+### Key User Flows
+1. **Mencentang Ibadah & Mengedit Jam**:
+   - Pengguna membuka Dashboard / Ibadah $\rightarrow$ Mencentang Salat Subuh $\rightarrow$ Sistem mencatat pengerjaan pada jam `04:32 WIB` $\rightarrow$ Pengguna mengetuk chip jam untuk menyesuaikan ke `04:25 WIB` bila perlu $\rightarrow$ Data otomatis tersinkron ke Cloud Firestore.
+2. **Melihat Kalender Sage-Zamrud**:
+   - Pengguna membuka halaman Kalender $\rightarrow$ Melihat visualisasi sebulan penuh dengan kotak-kotak tanggal sage-zamrud yang rapi $\rightarrow$ Tanggal lalu yang 5/5 berwarna zamrud penuh, tanggal dengan Dhuha berhiaskan bintang emas, tanggal terlewat 0/5 bernuansa bergaris halus $\rightarrow$ Ketuk tanggal untuk melihat rincian jam salat & agenda.
+3. **Menggunakan Template Jadwal Rutin**:
+   - Pengguna membuka Halaman Jadwal $\rightarrow$ Mengetuk "Rutin Dhuha 08:30" pada kartu Memphis Sage $\rightarrow$ Jadwal rutin 7 hari otomatis terbuat dengan feedback audio taktil.
+4. **Melihat Analitik Detail**:
+   - Pengguna membuka Progress $\rightarrow$ Melihat grafik sebaran jam salat harian dan tren konsistensi pengerjaan Dhuha & Tahajud sepanjang minggu/bulan.
+
+### Visual Identity & Color Palette (Sage-Zamrud Memphis)
+- **Canvas Base**: `#F8FAF6` (White-Sage Warm) / Dark `#0F1715`.
+- **Sage Neutral Surface**: `#E2E8DF` (Sage Muted) / `#1E2925` (Dark Sage).
+- **Emerald Accent**: `#10B981` / `#059669` (Zamrud Active).
+- **Golden Accent**: `#F59E0B` / `#FBBF24` (Sunnah Dhuha Star).
+- **Border Style**: `border-[1.5px] border-[#121212] shadow-[2px_2px_0px_#121212]` (Khas Memphis Design System).
+
+---
+
+## 3. Technical Architecture & Data Strategy
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                 WaktuIbadah Client (React SPA)              │
-├──────────────────────────────┬──────────────────────────────┤
-│       Fitur Harian           │      Layanan Cloud & PWA     │
-│ ┌──────────────────────────┐ │ ┌──────────────────────────┐ │
-│ │ Kalender & Detail Ibadah │ │ │ manifest.webmanifest     │ │
-│ │ (Warna Fardhu + Sunnah)  │ │ │ (PWA Builder Compliant)  │ │
-│ └──────────────────────────┘ │ └──────────────────────────┘ │
-│ ┌──────────────────────────┐ │ ┌──────────────────────────┐ │
-│ │ Jadwal & Template Rutin  │ │ │ Firestore Sync           │ │
-│ │ (Dhuha, Tilawah, dsb.)   │ │ │ (student_profiles)       │ │
-│ └──────────────────────────┘ │ └──────────────────────────┘ │
-│ ┌──────────────────────────┐ │ ┌──────────────────────────┐ │
-│ │ Al-Qur'an: 1-Tap Hanca,  │ │ │ Admin Direct Delete &    │ │
-│ │ Favorit, Tajwid Modular  │ │ │ website_reviews Sync     │ │
-│ └──────────────────────────┘ │ └──────────────────────────┘ │
-└──────────────────────────────┴──────────────────────────────┘
+┌────────────────────────────────────────────────────────────────────────┐
+│                        React Application View                          │
+│                                                                        │
+│  ┌──────────────────┐  ┌──────────────────┐  ┌──────────────────────┐  │
+│  │ Kalender (Sage)  │  │ Jadwal & Template│  │ Progress (Analytics) │  │
+│  └────────┬─────────┘  └────────┬─────────┘  └──────────┬───────────┘  │
+└───────────┼─────────────────────┼───────────────────────┼──────────────┘
+            │                     │                       │
+            ▼                     ▼                       ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                          Storage & State Manager                       │
+│  - storage.togglePrayer(date, key, customTime?)                        │
+│  - storage.getPrayerLog(date) -> includes prayerTimesRecords           │
+│  - storage.getSchedules() & addRoutineSchedule()                       │
+│  - storage.cleanDummyFirestoreData()                                   │
+└──────────────────────────────────┬─────────────────────────────────────┘
+                                   │
+                                   ▼
+┌────────────────────────────────────────────────────────────────────────┐
+│                      Firebase Firestore Database                       │
+│  - student_profiles/{profileId} (user data + prayerTimesRecords)       │
+│  - website_reviews/{reviewId} (clean real reviews only)               │
+└────────────────────────────────────────────────────────────────────────┘
 ```
 
-#### Komponen yang Diperbarui:
-1. `public/manifest.webmanifest`: Pembenahan format manifest lengkap (standar PWA Builder).
-2. `src/components/MonthlyCalendarGrid.tsx`: Indikator warna latar box tanggal (fardhu lengkap, parsial, aksen sunnah/dhuha, icon badge).
-3. `src/pages/Kalender.tsx`: Penyatuan kalender hijriah dengan catatan ibadah fardhu & sunnah harian, plus drawer detail hari.
-4. `src/pages/Jadwal.tsx`: Penyederhanaan UI jadwal di HP + tombol cepat template rutin harian (Dhuha, Tilawah, Tahajud) yang tersinkron ke cloud.
-5. `src/pages/QuranHadis.tsx`: Bookmark 1-klik sebagai Hanca terakhir, penyederhanaan favorit ayat, integrasi mode tajwid (none/dasar/lengkap).
-6. `src/lib/tajweed.ts`: Penyempurnaan regex tajwid dan pelestarian sambungan huruf Arab, dengan opsi level aturan tajwid.
-7. `src/pages/AdminDashboard.tsx` & `src/components/AdminUsersPanel.tsx`: Perbaikan koneksi Firestore, fitur hapus akun langsung dari dashboard, pembersihan filter dummy.
-8. `src/components/WebsiteReviewModal.tsx`: Pemicu otomatis (7 hari aktif / 5 fardhu lengkap), form komentar bebas tanpa teks template.
-9. `src/pages/Settings.tsx` & `src/lib/storage.ts`: Tombol Logout dengan peringatan PIN, pembaruan versi ke v2.12.0 beserta catatan rilis dan rekomendasi pengembang.
+### Data Schema Enhancements (`src/types.ts`)
+```typescript
+export interface PrayerLog {
+  date: string; // YYYY-MM-DD
+  prayers: Record<PrayerName, boolean>;
+  prayerTimesRecords?: Record<string, string>; // HH:mm timestamp for each prayer
+  sunnahPrayers?: {
+    Dhuha?: boolean;
+    Tahajud?: boolean;
+    Witir?: boolean;
+    [key: string]: boolean | undefined;
+  };
+  sunnahTimesRecords?: Record<string, string>; // HH:mm timestamp for sunnah
+}
+```
+
+---
+
+## 4. Implementation Steps
+
+1. **Data Model & Storage (`src/types.ts` & `src/lib/storage.ts`)**:
+   - Tambahkan `prayerTimesRecords` & `sunnahTimesRecords` pada `PrayerLog`.
+   - Perbarui `togglePrayer` agar otomatis mengisi jam `format(new Date(), 'HH:mm')` jika belum ada, serta fungsi `updatePrayerTime(date, prayerKey, timeStr)`.
+   - Buat fungsi pembersih `cleanFirestoreDummyData()` yang memanggil `deleteDoc` untuk dokumen review `seed-rev-*` dan akun dummy lama di Firestore.
+
+2. **UI Kalender Sage-Zamrud (`MonthlyCalendarGrid.tsx` & `Kalender.tsx`)**:
+   - Rombak grid tanggal agar berukuran kompak (`h-10 sm:h-11`), dengan kelas latar sage-zamrud yang bervariasi untuk:
+     - Tanggal terlewat (5/5 zamrud penuh, 1-4/5 sage, 0/5 abu-sage).
+     - Hari ini (`border-2 border-[#121212] ring-2 ring-emerald-400`).
+     - Bintang Dhuha (⭐), penanda Tilawah (📖), dan titik agenda.
+   - Tampilkan rincian jam pengerjaan salat (`Subuh dicentang jam 04:30`) di kartu inspeksi harian.
+
+3. **UI Jadwal & Routine Cards Overhaul (`Jadwal.tsx`)**:
+   - Restyle kartu template rutin 1-klik dengan Memphis Sage-Zamrud styling.
+   - Restyle strip kalender horizontal halaman Jadwal agar serasi dengan sistem desain utama.
+
+4. **Detail Analytics & Grafik Jam Salat (`Progress.tsx`)**:
+   - Tambahkan komponen chart Recharts/custom SVG untuk:
+     - Distribusi jam pengerjaan salat fardhu.
+     - Grafik tren konsistensi Dhuha, Tahajud & Tilawah harian/mingguan.
+
+5. **Pembersihan Massal Firestore (`cloud-sync.ts` & `AdminDashboard.tsx`)**:
+   - Eksekusi pembersihan otomatis pada Firestore agar data `website_reviews` dan `student_profiles` di cloud bersih dari dokumen dummy.
+
+6. **Pembaruan Versi**:
+   - Naikkan versi aplikasi ke **v2.13.0** dengan rincian patch note lengkap.

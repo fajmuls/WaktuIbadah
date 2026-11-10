@@ -299,34 +299,34 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
       </div>
 
       {/* Date Carousel & Navigator */}
-      <div className="bg-white dark:bg-slate-900 border-[1.5px] border-black dark:border-slate-700 rounded-2xl p-3 shadow-[2px_2px_0px_#121212] space-y-2.5">
+      <div className="bg-white dark:bg-slate-900 border-[1.5px] border-black dark:border-slate-700 rounded-2xl p-3 sm:p-4 shadow-[3px_3px_0px_#121212] space-y-2.5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handlePrevDay}
-              className="w-7 h-7 rounded-lg border border-gray-300 dark:border-slate-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100"
+              className="w-8 h-8 rounded-lg border-[1.5px] border-black flex items-center justify-center text-black dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 shadow-[1px_1px_0px_#121212]"
               aria-label="Hari sebelumnya"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-4 h-4 stroke-[2.5]" />
             </button>
-            <span className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white capitalize px-1">
+            <span className="text-xs sm:text-sm font-black text-gray-900 dark:text-white capitalize px-1">
               {format(selectedDateObj, 'EEEE, d MMMM yyyy', { locale: id })}
             </span>
             <button
               type="button"
               onClick={handleNextDay}
-              className="w-7 h-7 rounded-lg border border-gray-300 dark:border-slate-700 flex items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-100"
+              className="w-8 h-8 rounded-lg border-[1.5px] border-black flex items-center justify-center text-black dark:text-white hover:bg-gray-100 dark:hover:bg-slate-800 shadow-[1px_1px_0px_#121212]"
               aria-label="Hari selanjutnya"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-4 h-4 stroke-[2.5]" />
             </button>
           </div>
 
           {selectedDate !== todayStr && (
             <button
               onClick={handleGoToday}
-              className="text-[11px] font-bold px-2.5 py-1 bg-gray-100 dark:bg-slate-800 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-200"
+              className="text-[11px] font-black px-2.5 py-1 bg-emerald-300 hover:bg-emerald-400 text-black rounded-lg border-[1.5px] border-black shadow-[1.5px_1.5px_0px_#121212]"
             >
               Hari Ini
             </button>
@@ -334,24 +334,24 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
         </div>
 
         {/* 7-Day Carousel strip */}
-        <div className="grid grid-cols-7 gap-1">
+        <div className="grid grid-cols-7 gap-1.5">
           {carouselDays.map((item) => (
             <button
               key={item.dateStr}
               type="button"
               onClick={() => setSelectedDate(item.dateStr)}
-              className={`py-2 px-1 rounded-xl text-center flex flex-col items-center justify-center transition-all ${
+              className={`py-2 px-1 rounded-xl text-center flex flex-col items-center justify-center transition-all border ${
                 item.isSelected
-                  ? 'bg-[#FCD34D] text-black font-black border border-black shadow-xs'
+                  ? 'bg-[#FDE68A] text-black font-black border-[1.5px] border-black shadow-[2px_2px_0px_#121212] scale-[1.03] z-10'
                   : item.isToday
-                    ? 'bg-emerald-600 text-white font-bold'
-                    : 'bg-gray-50 dark:bg-slate-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100'
+                    ? 'bg-emerald-500 text-white font-black border-[1.5px] border-black shadow-[1.5px_1.5px_0px_#121212]'
+                    : 'bg-[#E5EBE3] dark:bg-slate-800 text-gray-800 dark:text-gray-200 font-bold border-[1.5px] border-black/40 hover:border-black'
               }`}
             >
-              <span className="text-[10px] uppercase font-bold">{item.dayName}</span>
+              <span className="text-[9.5px] uppercase font-black">{item.dayName}</span>
               <span className="text-xs sm:text-sm font-black tabular-nums">{item.dayNum}</span>
               {item.hasSched && (
-                <span className={`w-1 h-1 rounded-full mt-0.5 ${item.isSelected ? 'bg-black' : item.isToday ? 'bg-white' : 'bg-blue-500'}`} />
+                <span className={`w-1.5 h-1.5 rounded-full mt-0.5 border border-black ${item.isSelected ? 'bg-black' : item.isToday ? 'bg-white' : 'bg-blue-600'}`} />
               )}
             </button>
           ))}
@@ -359,36 +359,38 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
       </div>
 
       {/* Routine Templates: 1-Click Fast Routine Creator */}
-      <section className="bg-emerald-50/70 dark:bg-emerald-950/30 border border-emerald-300 dark:border-emerald-800 rounded-2xl p-3.5 space-y-2.5">
+      <section className="bg-[#EBF2EA] dark:bg-emerald-950/40 border-[1.5px] border-black rounded-2xl p-3.5 sm:p-4 shadow-[3px_3px_0px_#121212] space-y-3">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Sparkles className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
-            <h3 className="text-xs font-bold text-emerald-900 dark:text-emerald-200 uppercase tracking-wider">
-              Template Jadwal Rutin 1-Klik
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-emerald-400 border border-black flex items-center justify-center font-bold shadow-xs">
+              <Sparkles className="w-4 h-4 text-black" />
+            </div>
+            <h3 className="text-xs sm:text-sm font-black text-black dark:text-emerald-200 uppercase tracking-wider">
+              Template Rutin 1-Klik
             </h3>
           </div>
-          <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-semibold">
-            Untuk {format(selectedDateObj, 'd MMM')}
+          <span className="text-[11px] text-emerald-900 dark:text-emerald-300 font-extrabold bg-emerald-200 dark:bg-emerald-900/60 px-2 py-0.5 rounded-md border border-black">
+            {format(selectedDateObj, 'd MMM yyyy')}
           </span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
           {/* Routine Dhuha */}
-          <div className="bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center font-bold">
-                <Sun className="w-4 h-4" />
+          <div className="bg-white dark:bg-slate-900 border-[1.5px] border-black rounded-xl p-3 flex items-center justify-between shadow-[2px_2px_0px_#121212]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-amber-300 text-black border border-black flex items-center justify-center font-bold shadow-xs shrink-0">
+                <Sun className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
-                <div className="text-xs font-bold text-gray-900 dark:text-white">Rutin Dhuha</div>
-                <div className="text-[10px] text-gray-500">08:30 - 09:00</div>
+                <div className="text-xs font-black text-black dark:text-white">Rutin Dhuha</div>
+                <div className="text-[10.5px] font-bold text-gray-500">08:30 - 09:00</div>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => handleAddQuickRoutine('dhuha', false)}
-                className="px-2 py-1 bg-amber-300 hover:bg-amber-400 text-black text-[10px] font-bold rounded-lg border border-black shadow-xs"
+                className="px-2.5 py-1 bg-amber-400 hover:bg-amber-500 text-black text-[11px] font-black rounded-lg border border-black shadow-[1px_1px_0px_#121212] active:translate-y-0.5"
                 title="Jadwalkan Hari Ini"
               >
                 + Hari Ini
@@ -396,30 +398,30 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
               <button
                 type="button"
                 onClick={() => handleAddQuickRoutine('dhuha', true)}
-                className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold rounded-lg border border-gray-300"
+                className="p-1.5 bg-gray-100 hover:bg-gray-200 text-black text-[11px] font-bold rounded-lg border border-black shadow-xs active:translate-y-0.5"
                 title="Jadwalkan 7 Hari Penuh"
               >
-                <Repeat className="w-3.5 h-3.5" />
+                <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
           </div>
 
           {/* Routine Tilawah */}
-          <div className="bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold">
-                <BookOpen className="w-4 h-4" />
+          <div className="bg-white dark:bg-slate-900 border-[1.5px] border-black rounded-xl p-3 flex items-center justify-between shadow-[2px_2px_0px_#121212]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-indigo-200 text-indigo-950 border border-black flex items-center justify-center font-bold shadow-xs shrink-0">
+                <BookOpen className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
-                <div className="text-xs font-bold text-gray-900 dark:text-white">Rutin Tilawah</div>
-                <div className="text-[10px] text-gray-500">18:30 - 19:00</div>
+                <div className="text-xs font-black text-black dark:text-white">Rutin Tilawah</div>
+                <div className="text-[10.5px] font-bold text-gray-500">18:30 - 19:00</div>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => handleAddQuickRoutine('tilawah', false)}
-                className="px-2 py-1 bg-indigo-300 hover:bg-indigo-400 text-black text-[10px] font-bold rounded-lg border border-black shadow-xs"
+                className="px-2.5 py-1 bg-indigo-300 hover:bg-indigo-400 text-black text-[11px] font-black rounded-lg border border-black shadow-[1px_1px_0px_#121212] active:translate-y-0.5"
                 title="Jadwalkan Hari Ini"
               >
                 + Hari Ini
@@ -427,30 +429,30 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
               <button
                 type="button"
                 onClick={() => handleAddQuickRoutine('tilawah', true)}
-                className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold rounded-lg border border-gray-300"
+                className="p-1.5 bg-gray-100 hover:bg-gray-200 text-black text-[11px] font-bold rounded-lg border border-black shadow-xs active:translate-y-0.5"
                 title="Jadwalkan 7 Hari Penuh"
               >
-                <Repeat className="w-3.5 h-3.5" />
+                <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
           </div>
 
           {/* Routine Tahajud */}
-          <div className="bg-white dark:bg-slate-900 border border-emerald-300 dark:border-emerald-800 rounded-xl p-2.5 flex items-center justify-between shadow-xs">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-purple-100 text-purple-700 flex items-center justify-center font-bold">
-                <Moon className="w-4 h-4" />
+          <div className="bg-white dark:bg-slate-900 border-[1.5px] border-black rounded-xl p-3 flex items-center justify-between shadow-[2px_2px_0px_#121212]">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl bg-purple-200 text-purple-950 border border-black flex items-center justify-center font-bold shadow-xs shrink-0">
+                <Moon className="w-5 h-5 stroke-[2.5]" />
               </div>
               <div>
-                <div className="text-xs font-bold text-gray-900 dark:text-white">Rutin Tahajud</div>
-                <div className="text-[10px] text-gray-500">03:30 - 04:00</div>
+                <div className="text-xs font-black text-black dark:text-white">Rutin Tahajud</div>
+                <div className="text-[10.5px] font-bold text-gray-500">03:30 - 04:00</div>
               </div>
             </div>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 type="button"
                 onClick={() => handleAddQuickRoutine('tahajud', false)}
-                className="px-2 py-1 bg-purple-300 hover:bg-purple-400 text-black text-[10px] font-bold rounded-lg border border-black shadow-xs"
+                className="px-2.5 py-1 bg-purple-300 hover:bg-purple-400 text-black text-[11px] font-black rounded-lg border border-black shadow-[1px_1px_0px_#121212] active:translate-y-0.5"
                 title="Jadwalkan Hari Ini"
               >
                 + Hari Ini
@@ -458,15 +460,16 @@ export default function Jadwal({ isNew = false }: JadwalProps) {
               <button
                 type="button"
                 onClick={() => handleAddQuickRoutine('tahajud', true)}
-                className="p-1 bg-gray-100 hover:bg-gray-200 text-gray-700 text-[10px] font-bold rounded-lg border border-gray-300"
+                className="p-1.5 bg-gray-100 hover:bg-gray-200 text-black text-[11px] font-bold rounded-lg border border-black shadow-xs active:translate-y-0.5"
                 title="Jadwalkan 7 Hari Penuh"
               >
-                <Repeat className="w-3.5 h-3.5" />
+                <Repeat className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
           </div>
         </div>
       </section>
+
 
       {/* Form Tambah / Edit */}
       {showForm && (

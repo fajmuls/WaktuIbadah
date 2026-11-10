@@ -31,7 +31,7 @@ const KEYS = {
   TAJWEED_MODE: "wi_tajweed_mode",
 };
 
-export const CURRENT_VERSION = "2.12.0";
+export const CURRENT_VERSION = "2.13.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -69,6 +69,9 @@ function triggerAutoSync() {
 function setItem<T>(key: string, value: T): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_data_updated', { detail: { key, value } }));
+    }
     if ([KEYS.USER, KEYS.TASKS, KEYS.SCHEDULES, KEYS.PRAYERS, KEYS.QURAN_LOGS, KEYS.FAVORITE_AYAHS, KEYS.FAVORITE_HADITHS, KEYS.KHATAM_TARGET, KEYS.REMINDER_SETTINGS].includes(key)) {
       triggerAutoSync();
     }
@@ -134,17 +137,65 @@ export const storage = {
     }
     storage.setPrayerLogs(logs);
   },
-  togglePrayer: (date: string, prayerKey: string): PrayerLog => {
+  togglePrayer: (date: string, prayerKey: string, customTime?: string): PrayerLog => {
     const current = storage.getPrayerLog(date);
     const validKeys: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
     const targetKey = validKeys.find(k => k.toLowerCase() === prayerKey.toLowerCase()) || ('Subuh' as PrayerName);
     
+    const willBeCompleted = !current.prayers[targetKey];
+    const nowTime = customTime || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':');
+    
+    const timesMap = { ...(current.prayerTimesRecords || {}) };
+    if (willBeCompleted) {
+      timesMap[targetKey] = timesMap[targetKey] || nowTime;
+    } else {
+      delete timesMap[targetKey];
+    }
+
     const updated: PrayerLog = {
       ...current,
       prayers: {
         ...current.prayers,
-        [targetKey]: !current.prayers[targetKey]
-      }
+        [targetKey]: willBeCompleted
+      },
+      prayerTimesRecords: timesMap
+    };
+    storage.updatePrayerLog(updated);
+    return updated;
+  },
+
+  updatePrayerTime: (date: string, prayerKey: string, timeStr: string): PrayerLog => {
+    const current = storage.getPrayerLog(date);
+    const validKeys: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
+    const targetKey = validKeys.find(k => k.toLowerCase() === prayerKey.toLowerCase()) || ('Subuh' as PrayerName);
+
+    const timesMap = { ...(current.prayerTimesRecords || {}) };
+    if (timeStr.trim()) {
+      timesMap[targetKey] = timeStr.trim();
+    } else {
+      delete timesMap[targetKey];
+    }
+
+    const updated: PrayerLog = {
+      ...current,
+      prayerTimesRecords: timesMap
+    };
+    storage.updatePrayerLog(updated);
+    return updated;
+  },
+
+  updateSunnahPrayerTime: (date: string, sunnahKey: string, timeStr: string): PrayerLog => {
+    const current = storage.getPrayerLog(date);
+    const timesMap = { ...(current.sunnahTimesRecords || {}) };
+    if (timeStr.trim()) {
+      timesMap[sunnahKey] = timeStr.trim();
+    } else {
+      delete timesMap[sunnahKey];
+    }
+
+    const updated: PrayerLog = {
+      ...current,
+      sunnahTimesRecords: timesMap
     };
     storage.updatePrayerLog(updated);
     return updated;
@@ -154,13 +205,18 @@ export const storage = {
     const current = storage.getPrayerLog(date);
     const validKeys: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
     const targetKey = validKeys.find(k => k.toLowerCase() === prayerKey.toLowerCase()) || ('Subuh' as PrayerName);
+    const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', hour12: false }).replace('.', ':');
     
+    const timesMap = { ...(current.prayerTimesRecords || {}) };
+    timesMap[targetKey] = timesMap[targetKey] || nowTime;
+
     const updated: PrayerLog = {
       ...current,
       prayers: {
         ...current.prayers,
         [targetKey]: true
-      }
+      },
+      prayerTimesRecords: timesMap
     };
     storage.updatePrayerLog(updated);
     return updated;
@@ -299,69 +355,8 @@ export const storage = {
   // Website Reviews (5-Star System)
   getWebsiteReviews: (): WebsiteReview[] => {
     const list = getItem<WebsiteReview[]>(KEYS.WEBSITE_REVIEWS, []);
-    if (list.length === 0) {
-      // Seed default initial respondent reviews for nice chart visualization
-      const defaultReviews: WebsiteReview[] = [
-        {
-          id: 'seed-rev-1',
-          userName: 'Ahmad Fauzi (Teknik Informatika)',
-          rating: 5,
-          ratingLabel: 'Sangat Membantu',
-          comment: 'Sangat membantu menyeimbangkan tugas kuliah dan sholat tepat waktu. Suara adzannya jernih dan otomatis.',
-          prayerAspectRating: 5,
-          scheduleAspectRating: 5,
-          submittedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-          date: new Date(Date.now() - 86400000 * 2).toISOString().split('T')[0]
-        },
-        {
-          id: 'seed-rev-2',
-          userName: 'Siti Nurhaliza (Manajemen)',
-          rating: 5,
-          ratingLabel: 'Sangat Membantu',
-          comment: 'Tampilan bersih tanpa distraksi, fitur murottal dan jadwal bebas bentrok sangat memudahkan kegiatan sehari-hari.',
-          prayerAspectRating: 5,
-          scheduleAspectRating: 4,
-          submittedAt: new Date(Date.now() - 86400000).toISOString(),
-          date: new Date(Date.now() - 86400000).toISOString().split('T')[0]
-        },
-        {
-          id: 'seed-rev-3',
-          userName: 'Budi Santoso (Sistem Informasi)',
-          rating: 4,
-          ratingLabel: 'Membantu',
-          comment: 'Pengingat adzan di HP sangat berguna saat sedang praktikum. Sangat rekomendasi untuk mahasiswa.',
-          prayerAspectRating: 5,
-          scheduleAspectRating: 4,
-          submittedAt: new Date(Date.now() - 3600000 * 10).toISOString(),
-          date: new Date().toISOString().split('T')[0]
-        },
-        {
-          id: 'seed-rev-4',
-          userName: 'Nadia Putri (Pendidikan Agama Islam)',
-          rating: 5,
-          ratingLabel: 'Sangat Membantu',
-          comment: 'Proyek website ini sangat relevan untuk kebutuhan ibadah dan kuliah. Evaluasi 5 bintang penuh!',
-          prayerAspectRating: 5,
-          scheduleAspectRating: 5,
-          submittedAt: new Date(Date.now() - 3600000 * 4).toISOString(),
-          date: new Date().toISOString().split('T')[0]
-        },
-        {
-          id: 'seed-rev-5',
-          userName: 'Rian Hidayat (Ilmu Komputer)',
-          rating: 3,
-          ratingLabel: 'Cukup Membantu',
-          comment: 'Bagus dan bermanfaat. Akan lebih mantap jika ada sinkronisasi cloud.',
-          prayerAspectRating: 4,
-          scheduleAspectRating: 3,
-          submittedAt: new Date(Date.now() - 3600000 * 2).toISOString(),
-          date: new Date().toISOString().split('T')[0]
-        }
-      ];
-      setItem(KEYS.WEBSITE_REVIEWS, defaultReviews);
-      return defaultReviews;
-    }
-    return list;
+    // Filter out any legacy dummy/seed reviews
+    return list.filter(r => !r.id.startsWith('seed-rev-') && r.userName !== 'Ahmad Fauzi (Teknik Informatika)');
   },
   addWebsiteReview: (review: WebsiteReview) => {
     const list = storage.getWebsiteReviews();

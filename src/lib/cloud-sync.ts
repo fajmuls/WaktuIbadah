@@ -371,33 +371,38 @@ export async function fetchAllReviewsFromCloud(): Promise<WebsiteReview[]> {
     const snap = await getDocs(collection(db, 'website_reviews'));
     const list: WebsiteReview[] = [];
     snap.forEach((d) => {
-      list.push(d.data() as WebsiteReview);
+      const data = d.data() as WebsiteReview;
+      if (data && data.userName && data.userName !== 'Ahmad Fauzi (Teknik Informatika)' && !data.id?.startsWith('seed-rev-')) {
+        list.push(data);
+      }
     });
 
     // Sort by submittedAt descending
     list.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
     return list;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    console.warn('fetchAllReviewsFromCloud error:', error);
     return [];
   }
 }
 
 // Real-time listener for website reviews in Admin Dashboard
 export function subscribeToReviews(callback: (reviews: WebsiteReview[]) => void): Unsubscribe {
-  const path = 'website_reviews';
   return onSnapshot(
     collection(db, 'website_reviews'),
     (snap) => {
       const list: WebsiteReview[] = [];
       snap.forEach((d) => {
-        list.push(d.data() as WebsiteReview);
+        const data = d.data() as WebsiteReview;
+        if (data && data.userName && data.userName !== 'Ahmad Fauzi (Teknik Informatika)' && !data.id?.startsWith('seed-rev-')) {
+          list.push(data);
+        }
       });
       list.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime());
       callback(list);
     },
     (error) => {
-      handleFirestoreError(error, OperationType.LIST, path);
+      console.warn('subscribeToReviews snapshot error:', error);
     }
   );
 }
@@ -493,15 +498,44 @@ export async function deleteStudentProfileFromCloud(profileId: string): Promise<
   }
 }
 
-// Delete a website review from Firestore (Admin action)
-export async function deleteReviewFromCloud(reviewId: string): Promise<boolean> {
-  const path = `website_reviews/${reviewId}`;
+// Purge any lingering legacy dummy records from Firestore collections
+export async function purgeDummyDataFromFirestore(): Promise<void> {
   try {
-    await deleteDoc(doc(db, 'website_reviews', reviewId));
-    return true;
-  } catch (error) {
-    handleFirestoreError(error, OperationType.DELETE, path);
-    return false;
+    // 1. Purge dummy website reviews
+    const revSnap = await getDocs(collection(db, 'website_reviews'));
+    revSnap.forEach((d) => {
+      const data = d.data();
+      const userName = String(data.userName || '');
+      if (
+        d.id.startsWith('seed-rev-') ||
+        userName.includes('Ahmad Fauzi') ||
+        userName.includes('Siti Nurhaliza') ||
+        userName.includes('Budi Santoso') ||
+        userName.includes('Nadia Putri') ||
+        userName.includes('Rian Hidayat')
+      ) {
+        deleteDoc(doc(db, 'website_reviews', d.id)).catch(console.warn);
+      }
+    });
+
+    // 2. Purge dummy student profiles
+    const profSnap = await getDocs(collection(db, 'student_profiles'));
+    profSnap.forEach((d) => {
+      const data = d.data();
+      const name = String(data.name || data.user?.name || '');
+      if (
+        d.id.startsWith('seed-') ||
+        name.includes('Ahmad Fauzi') ||
+        name.includes('Siti Nurhaliza') ||
+        name.includes('Budi Santoso') ||
+        name.includes('Nadia Putri') ||
+        name.includes('Rian Hidayat')
+      ) {
+        deleteDoc(doc(db, 'student_profiles', d.id)).catch(console.warn);
+      }
+    });
+  } catch (err) {
+    console.warn('Purge dummy data exception:', err);
   }
 }
 
@@ -525,8 +559,9 @@ export async function fetchAllStudentProfilesDetailed(reviewsList?: WebsiteRevie
     snap.forEach((d) => {
       const data = d.data();
       const name = data.name || data.user?.name || d.id;
-      // Filter out corrupted/empty dummy accounts with no name or blank id
+      // Filter out corrupted/empty dummy accounts or template dummy names
       if (!name || String(name).trim() === '' || String(name).toLowerCase() === 'anonymous_user') return;
+      if (String(name).includes('Ahmad Fauzi') || String(name).includes('Siti Nurhaliza')) return;
 
       const rawPin = data.pin ? String(data.pin).trim() : '';
       const prayerLogs = Array.isArray(data.prayerLogs) 
@@ -597,7 +632,7 @@ export async function fetchAllStudentProfilesDetailed(reviewsList?: WebsiteRevie
     rows.sort((a, b) => String(b.lastActiveAt || '').localeCompare(String(a.lastActiveAt || '')));
     return rows;
   } catch (error) {
-    handleFirestoreError(error, OperationType.LIST, path);
+    console.warn('fetchAllStudentProfilesDetailed error:', error);
     return [];
   }
 }

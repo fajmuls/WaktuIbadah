@@ -18,7 +18,8 @@ service cloud.firestore {
 
     // Student Profiles (Multi-device sync based on student name and optional PIN)
     match /student_profiles/{profileId} {
-      allow read: if isValidId(profileId);
+      allow get: if isValidId(profileId);
+      allow list: if true;
       
       allow create: if isValidId(profileId)
         && request.resource.data.name is string
@@ -42,7 +43,8 @@ service cloud.firestore {
 
     // Website Reviews (Submitted by students, monitored in Admin Dashboard)
     match /website_reviews/{reviewId} {
-      allow read: if isValidId(reviewId);
+      allow get: if isValidId(reviewId);
+      allow list: if true;
 
       allow create: if isValidId(reviewId)
         && isNonEmptyString(request.resource.data.userName, 100)
@@ -56,7 +58,8 @@ service cloud.firestore {
 
     // Admin Review Configuration (Global settings for website review / Google Form review)
     match /admin_config/{configId} {
-      allow read: if isValidId(configId);
+      allow get: if isValidId(configId);
+      allow list: if true;
       allow write: if isValidId(configId)
         && request.resource.data.reviewMode in ['website', 'inapp', 'gform', 'both'];
     }
