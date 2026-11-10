@@ -188,14 +188,19 @@ export default function App() {
     };
     window.addEventListener('wi_auto_cloud_sync', handleAutoCloudSync);
 
-    // Check if user has completed all 5 prayers today
+    // Check if user has completed all 5 prayers today or active for 7 days
     const checkFivePrayersReview = () => {
       const today = format(new Date(), 'yyyy-MM-dd');
       const prayerLog = storage.getPrayerLog(today);
       const isAllDone = Object.values(prayerLog.prayers).every(Boolean);
       const hasReviewed = localStorage.getItem('wi_five_prayers_reviewed') === 'true';
       const reviewConfig = storage.getAdminReviewConfig();
-      if (isAllDone && !hasReviewed && reviewConfig.isEnabled) {
+
+      const allLogs = storage.getPrayerLogs();
+      const activeDaysCount = allLogs.filter(l => Object.values(l.prayers).some(Boolean) || (l.sunnahPrayers && Object.values(l.sunnahPrayers).some(Boolean))).length;
+      const isSevenDaysActive = activeDaysCount >= 7;
+
+      if ((isAllDone || isSevenDaysActive) && !hasReviewed && reviewConfig.isEnabled) {
         setIsReviewOpen(true);
       }
     };

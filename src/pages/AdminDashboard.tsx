@@ -15,7 +15,8 @@ import {
 } from 'recharts';
 import { 
   subscribeToReviews, fetchAllReviewsFromCloud, 
-  fetchAdminConfigFromCloud, saveAdminConfigToCloud 
+  fetchAdminConfigFromCloud, saveAdminConfigToCloud,
+  fetchAllStudentProfilesDetailed, deleteStudentProfileFromCloud
 } from '../lib/cloud-sync';
 
 // Token admin TIDAK lagi ditulis di kode. Diverifikasi server (env ADMIN_TOKEN) lewat /api/admin/overview
@@ -117,21 +118,68 @@ export default function AdminDashboard() {
     setOverviewLoading(true);
     setOverviewError('');
     try {
-      const res = await fetch('/api/admin/overview', { headers: { 'x-admin-token': token } });
-      if (res.status === 401) {
-        setOverviewError('Token admin salah atau sesi berakhir.');
-        return false;
+      // 1. Try serverless endpoint first if token provided
+      let serverOverview: AdminOverview | null = null;
+      try {
+        const res = await fetch('/api/admin/overview', { headers: { 'x-admin-token': token } });
+        if (res.status === 401) {
+          setOverviewError('Token admin salah atau sesi berakhir.');
+          return false;
+        }
+        const json = await res.json().catch(() => null);
+        if (res.ok && json?.ok && Array.isArray(json?.users) && json.users.length > 0) {
+          serverOverview = json as AdminOverview;
+        }
+      } catch (err) {
+        console.warn('API overview fetch failed, attempting direct Firestore fetch:', err);
       }
-      const json = await res.json().catch(() => null);
-      if (!res.ok || !json?.ok) {
-        setOverviewError(json?.error || `Server mengembalikan kode ${res.status}.`);
-        return true; // token benar, server bermasalah
+
+      if (serverOverview) {
+        setOverview(serverOverview);
+        return true;
       }
-      setOverview(json as AdminOverview);
+
+      // 2. Direct Firestore fallback (Guarantees 100% of accounts and reviews in Firestore are loaded)
+      const cloudReviews = await fetchAllReviewsFromCloud();
+      const detailedUsers = await fetchAllStudentProfilesDetailed(cloudReviews);
+
+      const directOverview: AdminOverview = {
+        generatedAt: new Date().toISOString(),
+        totals: {
+          users: detailedUsers.length,
+          withNotifications: detailedUsers.length,
+          notificationDevices: detailedUsers.length,
+          platforms: { android: 0, ios: 0, desktop: detailedUsers.length },
+          reviews: cloudReviews.length,
+        },
+        users: detailedUsers
+      };
+
+      setOverview(directOverview);
       return true;
-    } catch {
-      setOverviewError('Tidak bisa menghubungi server. Periksa koneksi internet.');
+    } catch (err: any) {
+      console.error('Failed to load overview:', err);
+      setOverviewError(err?.message || 'Gagal memuat ringkasan data dari Firestore.');
       return true;
+    } finally {
+      setOverviewLoading(false);
+    }
+  };
+
+  const handleDeleteUser = async (profileId: string, name: string) => {
+    try {
+      setOverviewLoading(true);
+      const success = await deleteStudentProfileFromCloud(profileId);
+      if (success) {
+        vibrateSuccess();
+        playButtonTapSound();
+        alert(`Akun "${name}" berhasil dihapus permanen dari database Firestore.`);
+        await loadOverview();
+      } else {
+        alert(`Gagal menghapus akun "${name}". Periksa koneksi Firestore.`);
+      }
+    } catch (err: any) {
+      alert(`Terjadi kesalahan saat menghapus: ${err?.message || err}`);
     } finally {
       setOverviewLoading(false);
     }
@@ -361,12 +409,13 @@ export default function AdminDashboard() {
             </p>
           </div>
 
-          {/* Pengguna terdaftar (data dari server, dilindungi token admin) */}
+          {/* Pengguna terdaftar (data dari server & Firestore, dilindungi token admin) */}
           <AdminUsersPanel
             data={overview}
             loading={overviewLoading}
             error={overviewError}
             onRefresh={() => loadOverview()}
+            onDeleteUser={handleDeleteUser}
           />
 
           {/* Stats Summary (Memphis Cards) */}

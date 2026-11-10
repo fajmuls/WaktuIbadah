@@ -1,5 +1,5 @@
 import { 
-  doc, getDoc, setDoc, getDocs, collection, onSnapshot, getDocFromServer, Unsubscribe 
+  doc, getDoc, setDoc, deleteDoc, getDocs, collection, onSnapshot, getDocFromServer, Unsubscribe 
 } from 'firebase/firestore';
 import { db, auth } from './firebase';
 import { storage } from './storage';
@@ -475,6 +475,127 @@ export async function fetchAllStudentProfilesFromCloud(): Promise<StudentAccount
     });
 
     return list;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.LIST, path);
+    return [];
+  }
+}
+
+// Delete a student profile from Firestore (Admin action)
+export async function deleteStudentProfileFromCloud(profileId: string): Promise<boolean> {
+  const path = `student_profiles/${profileId}`;
+  try {
+    await deleteDoc(doc(db, 'student_profiles', profileId));
+    return true;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+    return false;
+  }
+}
+
+// Delete a website review from Firestore (Admin action)
+export async function deleteReviewFromCloud(reviewId: string): Promise<boolean> {
+  const path = `website_reviews/${reviewId}`;
+  try {
+    await deleteDoc(doc(db, 'website_reviews', reviewId));
+    return true;
+  } catch (error) {
+    handleFirestoreError(error, OperationType.DELETE, path);
+    return false;
+  }
+}
+
+// Fetch all registered student accounts with detailed metrics directly from Firestore
+export async function fetchAllStudentProfilesDetailed(reviewsList?: WebsiteReview[]): Promise<any[]> {
+  const path = 'student_profiles';
+  try {
+    const snap = await getDocs(collection(db, 'student_profiles'));
+    const rows: any[] = [];
+    const now = Date.now();
+
+    const reviewsByUser = new Map<string, WebsiteReview[]>();
+    if (reviewsList && reviewsList.length > 0) {
+      reviewsList.forEach(r => {
+        const k = normalizeProfileId(r.userName);
+        if (!reviewsByUser.has(k)) reviewsByUser.set(k, []);
+        reviewsByUser.get(k)!.push(r);
+      });
+    }
+
+    snap.forEach((d) => {
+      const data = d.data();
+      const name = data.name || data.user?.name || d.id;
+      // Filter out corrupted/empty dummy accounts with no name or blank id
+      if (!name || String(name).trim() === '' || String(name).toLowerCase() === 'anonymous_user') return;
+
+      const rawPin = data.pin ? String(data.pin).trim() : '';
+      const prayerLogs = Array.isArray(data.prayerLogs) 
+        ? data.prayerLogs 
+        : (data.prayerLogs && typeof data.prayerLogs === 'object' ? Object.values(data.prayerLogs) : []);
+      const tasks = Array.isArray(data.tasks) ? data.tasks : [];
+      const schedules = Array.isArray(data.schedules) ? data.schedules : [];
+      const quranLogs = Array.isArray(data.tilawahLogs) ? data.tilawahLogs : [];
+
+      let prayersDone = 0;
+      let firstLogDate: string | null = null;
+      for (const log of prayerLogs as any[]) {
+        prayersDone += Object.values(log?.prayers || {}).filter(Boolean).length;
+        if (log?.date && (!firstLogDate || log.date < firstLogDate)) firstLogDate = log.date;
+      }
+
+      const updatedMs = Date.parse(data.updatedAt || '') || null;
+      const createdMs =
+        Number(data.createdAt) ||
+        Date.parse(data.createdAt || '') ||
+        Date.parse(data.user?.createdAt || '') ||
+        (firstLogDate ? Date.parse(firstLogDate) : null) ||
+        updatedMs ||
+        now;
+
+      const lastActiveMs = updatedMs || createdMs || now;
+      const usageDays = Math.max(1, Math.round((lastActiveMs - createdMs) / 86400000) + 1);
+      const daysSinceActive = Math.max(0, Math.round((now - lastActiveMs) / 86400000));
+
+      const rv = reviewsByUser.get(d.id) || reviewsByUser.get(normalizeProfileId(name)) || [];
+      const avg = rv.length ? rv.reduce((s, r) => s + (Number(r.rating) || 0), 0) / rv.length : null;
+      const latest = [...rv].sort((a, b) => String(b.submittedAt).localeCompare(String(a.submittedAt)))[0];
+
+      rows.push({
+        id: d.id,
+        name: String(name).trim(),
+        city: data.user?.location?.city || data.location?.city || null,
+        hasPin: Boolean(rawPin && rawPin.length === 4),
+        pin: rawPin,
+        createdAt: new Date(createdMs).toISOString(),
+        lastActiveAt: new Date(lastActiveMs).toISOString(),
+        usageDays,
+        daysSinceActive,
+        prayerDaysFilled: prayerLogs.length,
+        prayersDone,
+        tasksTotal: tasks.length,
+        tasksDone: tasks.filter((t: any) => t?.status === 'Selesai').length,
+        schedulesTotal: schedules.length,
+        quranLogs: quranLogs.length,
+        notification: {
+          devices: 1,
+          platforms: ['web'],
+          lastSentAt: data.updatedAt || null,
+          totalSent: 0,
+        },
+        review: rv.length
+          ? {
+              count: rv.length,
+              averageRating: Math.round((avg || 5) * 10) / 10,
+              latestRating: latest?.rating ?? null,
+              latestComment: latest?.comment ? String(latest.comment).slice(0, 300) : '',
+              latestAt: latest?.submittedAt || null,
+            }
+          : null,
+      });
+    });
+
+    rows.sort((a, b) => String(b.lastActiveAt || '').localeCompare(String(a.lastActiveAt || '')));
+    return rows;
   } catch (error) {
     handleFirestoreError(error, OperationType.LIST, path);
     return [];

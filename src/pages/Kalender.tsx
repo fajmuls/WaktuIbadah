@@ -1,27 +1,50 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { format, addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay } from 'date-fns';
 import { id } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, RefreshCw } from 'lucide-react';
+import { 
+  ChevronLeft, ChevronRight, Calendar as CalendarIcon, RefreshCw, 
+  CheckCircle2, Clock, BookOpen, Star, AlertCircle, ChevronDown, Check, Sun, Moon
+} from 'lucide-react';
 import { getAuth, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import firebaseConfig from '../../firebase-applet-config.json';
 import { storage } from '../lib/storage';
+import { PrayerLog, Schedule, QuranLog, PrayerName } from '../types';
+import { MonthlyCalendarGrid, CalendarDayBadge } from '../components/MonthlyCalendarGrid';
+import { playButtonTapSound } from '../lib/audio';
 
 export default function Kalender() {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const todayStr = format(new Date(), 'yyyy-MM-dd');
+  const [selectedDate, setSelectedDate] = useState<string>(todayStr);
   const [token, setToken] = useState<string | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
-  const [hijriDates, setHijriDates] = useState<Record<string, { day: string, month: string }>>({});
   const [todayHijriText, setTodayHijriText] = useState<string>('');
+
+  // Local user records
+  const [prayerLogs, setPrayerLogs] = useState<PrayerLog[]>([]);
+  const [quranLogs, setQuranLogs] = useState<QuranLog[]>([]);
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+
+  useEffect(() => {
+    // Load local storage records
+    const loadUserData = () => {
+      setPrayerLogs(storage.getPrayerLogs());
+      setQuranLogs(storage.getQuranLogs());
+      setSchedules(storage.getSchedules());
+    };
+
+    loadUserData();
+    window.addEventListener('storage', loadUserData);
+    return () => window.removeEventListener('storage', loadUserData);
+  }, []);
 
   useEffect(() => {
     // Fetch today's official Hijri date from MyQuran Cal API
     const fetchTodayHijri = async () => {
       try {
-        const todayStr = format(new Date(), 'yyyy-MM-dd');
         const res = await fetch(`https://api.myquran.com/v2/cal/hijr/${todayStr}`);
         if (res.ok) {
           const json = await res.json();
@@ -34,39 +57,7 @@ export default function Kalender() {
       }
     };
     fetchTodayHijri();
-  }, []);
-
-  const nextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const prevMonth = () => setCurrentDate(subMonths(currentDate, 1));
-
-  const startDate = startOfMonth(currentDate);
-  const endDate = endOfMonth(currentDate);
-  const days = eachDayOfInterval({ start: startDate, end: endDate });
-
-  const fetchHijriForMonth = async (month: number, year: number) => {
-    try {
-      const res = await fetch(`https://api.aladhan.com/v1/gToHCalendar/${month}/${year}`);
-      if (res.ok) {
-        const json = await res.json();
-        const map: Record<string, { day: string, month: string }> = {};
-        json.data.forEach((item: any) => {
-          map[item.gregorian.date] = {
-            day: item.hijri.day,
-            month: item.hijri.month.en
-          };
-        });
-        setHijriDates(prev => ({ ...prev, ...map }));
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  };
-
-  useEffect(() => {
-    const m = parseInt(format(currentDate, 'MM'));
-    const y = parseInt(format(currentDate, 'yyyy'));
-    fetchHijriForMonth(m, y);
-  }, [currentDate]);
+  }, [todayStr]);
 
   const initAuth = async () => {
     const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
@@ -91,9 +82,10 @@ export default function Kalender() {
   const fetchEvents = async (accessToken: string) => {
     setIsSyncing(true);
     try {
-      const timeMin = startDate.toISOString();
-      const timeMax = endDate.toISOString();
-      const res = await fetch(`https://www.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`, {
+      const curDate = new Date(`${selectedDate}T12:00:00`);
+      const timeMin = startOfMonth(curDate).toISOString();
+      const timeMax = endOfMonth(curDate).toISOString();
+      const res = await fetch(`https://api.googleapis.com/calendar/v3/calendars/primary/events?timeMin=${timeMin}&timeMax=${timeMax}&singleEvents=true&orderBy=startTime`, {
         headers: { Authorization: `Bearer ${accessToken}` }
       });
       const data = await res.json();
@@ -106,157 +98,310 @@ export default function Kalender() {
     setIsSyncing(false);
   };
 
-  useEffect(() => {
-    if (token) {
-      fetchEvents(token);
-    }
-  }, [currentDate]);
+  // Compute Badges for each date in the calendar
+  const badgesMap = useMemo(() => {
+    const map: Record<string, CalendarDayBadge> = {};
 
-  // Important Islamic Dates 2026/2027 roughly mapped by user request. 
-  // We use Hijri mapping for accurate tracking, but to answer user: "kapan Idul Fitri" we check if hijri month is Shawwal day 1.
-  
+    // Map prayer logs
+    prayerLogs.forEach((log) => {
+      if (!log.date) return;
+      const fardhuCount = Object.values(log.prayers || {}).filter(Boolean).length;
+      const isAllDone = fardhuCount === 5;
+      
+      const hasDhuha = Boolean(log.sunnahPrayers?.Dhuha);
+      const hasTahajud = Boolean(log.sunnahPrayers?.Tahajud);
+      const hasWitir = Boolean(log.sunnahPrayers?.Witir);
+      const hasSunnah = hasDhuha || hasTahajud || hasWitir;
+
+      map[log.date] = {
+        ...map[log.date],
+        count: fardhuCount,
+        isAllDone,
+        hasDhuha,
+        hasSunnah
+      };
+    });
+
+    // Map quran logs
+    quranLogs.forEach((q) => {
+      if (!q.date) return;
+      map[q.date] = {
+        ...map[q.date],
+        hasQuran: true
+      };
+    });
+
+    // Map schedules
+    schedules.forEach((s) => {
+      if (!s.date) return;
+      map[s.date] = {
+        ...map[s.date],
+        hasItems: true,
+        scheduleCount: (map[s.date]?.scheduleCount || 0) + 1
+      };
+    });
+
+    return map;
+  }, [prayerLogs, quranLogs, schedules]);
+
+  // Selected date details
+  const selectedPrayerLog = useMemo(() => {
+    return prayerLogs.find(p => p.date === selectedDate);
+  }, [prayerLogs, selectedDate]);
+
+  const selectedQuranLogs = useMemo(() => {
+    return quranLogs.filter(q => q.date === selectedDate);
+  }, [quranLogs, selectedDate]);
+
+  const selectedSchedules = useMemo(() => {
+    return schedules.filter(s => s.date === selectedDate);
+  }, [schedules, selectedDate]);
+
+  const selectedEvents = useMemo(() => {
+    return events.filter(e => {
+      const dt = e.start?.dateTime || e.start?.date || '';
+      return dt.startsWith(selectedDate);
+    });
+  }, [events, selectedDate]);
+
+  const PRAYER_NAMES: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
+
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="space-y-5 pb-20 animate-in fade-in duration-300">
+      {/* Top Header */}
       <div className="flex justify-between items-center flex-wrap gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-text-main">Kalender Islami</h1>
-          <p className="text-text-muted text-sm mt-1">Hijriah & Masehi terintegrasi</p>
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Kalender Ibadah & Agenda</h1>
+          <p className="text-gray-500 dark:text-gray-400 text-xs sm:text-sm mt-0.5">
+            Pantau ketuntasan salat fardhu, salat sunnah dhuha, tilawah, dan jadwal kuliah
+          </p>
         </div>
         
         {!token ? (
           <button 
             onClick={initAuth} 
             disabled={isLoading}
-            className="flex items-center gap-2 bg-white border border-gray-200 px-4 py-2 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50 shadow-sm transition-colors"
+            className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 px-3.5 py-2 rounded-xl text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-slate-700 shadow-xs transition-colors"
           >
-            <CalendarIcon className="w-4 h-4" />
+            <CalendarIcon className="w-4 h-4 text-emerald-600" />
             {isLoading ? 'Menghubungkan...' : 'Sinkron Google Calendar'}
           </button>
         ) : (
-          <div className="flex items-center gap-2 bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-xl text-sm font-bold">
+          <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-700 dark:text-emerald-300 border border-emerald-200 dark:border-emerald-800 px-3 py-1.5 rounded-xl text-xs font-bold">
             <CalendarIcon className="w-4 h-4" />
-            Terhubung
-            <button onClick={() => fetchEvents(token)} className="ml-2 p-1 hover:bg-green-100 rounded-full transition-colors">
-              <RefreshCw className={`w-3 h-3 ${isSyncing ? 'animate-spin' : ''}`} />
+            Google Calendar Aktif
+            <button 
+              onClick={() => fetchEvents(token)} 
+              className="p-1 hover:bg-emerald-100 dark:hover:bg-emerald-900 rounded-full transition-colors"
+              title="Perbarui Agenda Google"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isSyncing ? 'animate-spin' : ''}`} />
             </button>
           </div>
         )}
       </div>
 
+      {/* Hijri Banner */}
       {todayHijriText && (
-        <div className="bg-primary/10 border border-primary/20 p-4 rounded-2xl flex items-center justify-between">
+        <div className="p-3.5 bg-emerald-50/70 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-2xl flex items-center justify-between gap-3">
           <div>
-            <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Hari Ini (MyQuran API)</span>
-            <span className="text-base font-bold text-text-main">{todayHijriText}</span>
+            <span className="text-[10px] font-bold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+              Kalender Hijriah Resmi Hari Ini
+            </span>
+            <span className="text-sm font-bold text-gray-900 dark:text-white">{todayHijriText}</span>
           </div>
           <Link
             to="/tools"
-            className="text-xs font-bold bg-primary text-white px-3.5 py-2 rounded-xl shadow-sm hover:bg-primary/90 transition-colors"
+            className="text-[11px] font-bold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-xl shadow-xs transition-colors shrink-0"
           >
             Konversi Hijriyah
           </Link>
         </div>
       )}
 
-      <div className="bg-surface rounded-3xl p-6 shadow-sm border border-gray-100 overflow-hidden">
-        
-        <div className="flex justify-between items-center mb-6">
-          <button onClick={prevMonth} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <h2 className="text-lg font-bold text-text-main">
-            {format(currentDate, 'MMMM yyyy', { locale: id })}
-          </h2>
-          <button onClick={nextMonth} className="p-2 hover:bg-gray-50 rounded-xl transition-colors">
-            <ChevronRight className="w-5 h-5 text-gray-600" />
-          </button>
-        </div>
+      {/* Main Monthly Calendar with Worship Indicators */}
+      <MonthlyCalendarGrid
+        selectedDate={selectedDate}
+        onSelectDate={(d) => {
+          setSelectedDate(d);
+          playButtonTapSound();
+        }}
+        badgesMap={badgesMap}
+        title="Pilih tanggal untuk melihat rincian ibadah fardhu, sunnah, dan jadwal"
+      />
 
-        <div className="grid grid-cols-7 gap-1 md:gap-2 mb-2">
-          {['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'].map(day => (
-            <div key={day} className="text-center text-xs font-bold text-text-muted py-2">
-              {day}
+      {/* Detail Ibadah & Jadwal Tanggal Terpilih */}
+      <section className="bg-white dark:bg-slate-900 border-[1.5px] border-[#121212] dark:border-slate-700 rounded-2xl p-4 sm:p-5 shadow-[3px_3px_0px_#121212] dark:shadow-[3px_3px_0px_#000000] space-y-4">
+        <div className="flex items-center justify-between border-b border-gray-100 dark:border-slate-800 pb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-400 border border-black flex items-center justify-center font-bold shrink-0">
+              <CalendarIcon className="w-5 h-5 text-black" />
             </div>
-          ))}
+            <div>
+              <span className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400">Rincian Ibadah & Jadwal</span>
+              <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white">
+                {format(new Date(`${selectedDate}T12:00:00`), 'EEEE, d MMMM yyyy', { locale: id })}
+              </h3>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Link 
+              to="/ibadah" 
+              className="px-2.5 py-1 text-[11px] font-bold border border-black bg-emerald-300 hover:bg-emerald-400 rounded-lg shadow-xs"
+            >
+              Catat Ibadah
+            </Link>
+            <Link 
+              to="/jadwal" 
+              className="px-2.5 py-1 text-[11px] font-bold border border-black bg-[#FFE600] hover:bg-[#FFE600]/80 rounded-lg shadow-xs"
+            >
+              + Agenda
+            </Link>
+          </div>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 md:gap-2">
-          {Array.from({ length: startDate.getDay() }).map((_, i) => (
-            <div key={`empty-${i}`} className="p-2" />
-          ))}
-          
-          {days.map(day => {
-            const dateStr = format(day, 'dd-MM-yyyy');
-            const isToday = isSameDay(day, new Date());
-            const hijri = hijriDates[dateStr];
-            const dayEvents = events.filter(e => e.start?.dateTime?.startsWith(format(day, 'yyyy-MM-dd')) || e.start?.date === format(day, 'yyyy-MM-dd'));
-            
-            const isEid = hijri?.month === 'Shawwāl' && hijri?.day === '1';
-            const isRamadan = hijri?.month === 'Ramaḍān' && hijri?.day === '1';
+        {/* 1. Salat Fardhu Status */}
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+              Salat Fardhu 5 Waktu
+            </span>
+            <span className="text-[11px] font-bold text-gray-500">
+              {selectedPrayerLog ? `${Object.values(selectedPrayerLog.prayers || {}).filter(Boolean).length}/5 selesai` : '0/5 selesai'}
+            </span>
+          </div>
 
-            return (
-              <div 
-                key={day.toISOString()} 
-                className={`relative min-h-[60px] md:min-h-[80px] p-1 md:p-2 border rounded-xl flex flex-col items-center justify-start transition-colors ${
-                  isToday ? 'border-primary bg-primary/5' : 'border-gray-100 hover:border-primary/30 bg-white'
-                } ${isEid || isRamadan ? 'bg-amber-50 border-amber-200' : ''}`}
-              >
-                <span className={`text-sm md:text-base font-bold ${isToday ? 'text-primary' : 'text-text-main'}`}>
-                  {format(day, 'd')}
-                </span>
-                
-                {hijri && (
-                  <span className="text-[9px] md:text-[10px] font-medium text-text-muted mt-0.5 text-center leading-tight">
-                    {hijri.day} {hijri.month.substring(0, 3)}
-                  </span>
-                )}
+          <div className="grid grid-cols-5 gap-1.5">
+            {PRAYER_NAMES.map((pName) => {
+              const isDone = Boolean(selectedPrayerLog?.prayers?.[pName]);
+              return (
+                <div 
+                  key={pName}
+                  className={`p-2 rounded-xl border text-center transition-all ${
+                    isDone 
+                      ? 'bg-emerald-500 text-white border-emerald-700 shadow-xs font-bold' 
+                      : 'bg-gray-50 dark:bg-slate-800 text-gray-400 dark:text-gray-500 border-gray-200 dark:border-slate-700 font-medium'
+                  }`}
+                >
+                  <div className="text-[11px] leading-tight font-bold">{pName}</div>
+                  <div className="text-[9px] mt-0.5">{isDone ? '✓ Sudah' : 'Belum'}</div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
 
-                {(isEid || isRamadan) && (
-                  <span className="text-[8px] bg-amber-100 text-amber-700 px-1 py-0.5 rounded-sm font-bold mt-1 max-w-full truncate text-center line-clamp-1">
-                    {isEid ? 'Idul Fitri' : 'Awal Ramadan'}
-                  </span>
-                )}
+        {/* 2. Salat Sunnah (Dhuha & Tahajud) */}
+        <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-slate-800">
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <Sun className="w-4 h-4 text-amber-500" />
+            Salat Sunnah
+          </span>
+          <div className="grid grid-cols-3 gap-2">
+            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
+              selectedPrayerLog?.sunnahPrayers?.Dhuha 
+                ? 'bg-amber-100 dark:bg-amber-950/60 border-amber-400 text-amber-900 dark:text-amber-200 font-bold' 
+                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400'
+            }`}>
+              <div>
+                <div className="text-xs font-bold">Salat Dhuha</div>
+                <div className="text-[10px]">{selectedPrayerLog?.sunnahPrayers?.Dhuha ? '⭐ Dikerjakan' : 'Belum dicatat'}</div>
+              </div>
+              {selectedPrayerLog?.sunnahPrayers?.Dhuha && <Check className="w-4 h-4 text-amber-600 stroke-[3]" />}
+            </div>
 
-                <div className="mt-auto pt-1 flex gap-1 flex-wrap justify-center w-full">
-                  {dayEvents.slice(0, 2).map((_, i) => (
-                    <div key={i} className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                  ))}
-                  {dayEvents.length > 2 && (
-                    <div className="w-1.5 h-1.5 rounded-full bg-gray-300" />
+            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
+              selectedPrayerLog?.sunnahPrayers?.Tahajud 
+                ? 'bg-indigo-100 dark:bg-indigo-950/60 border-indigo-400 text-indigo-900 dark:text-indigo-200 font-bold' 
+                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400'
+            }`}>
+              <div>
+                <div className="text-xs font-bold">Tahajud</div>
+                <div className="text-[10px]">{selectedPrayerLog?.sunnahPrayers?.Tahajud ? '⭐ Dikerjakan' : 'Belum dicatat'}</div>
+              </div>
+              {selectedPrayerLog?.sunnahPrayers?.Tahajud && <Check className="w-4 h-4 text-indigo-600 stroke-[3]" />}
+            </div>
+
+            <div className={`p-2.5 rounded-xl border flex items-center justify-between ${
+              selectedPrayerLog?.sunnahPrayers?.Witir 
+                ? 'bg-purple-100 dark:bg-purple-950/60 border-purple-400 text-purple-900 dark:text-purple-200 font-bold' 
+                : 'bg-gray-50 dark:bg-slate-800 border-gray-200 dark:border-slate-700 text-gray-400'
+            }`}>
+              <div>
+                <div className="text-xs font-bold">Witir</div>
+                <div className="text-[10px]">{selectedPrayerLog?.sunnahPrayers?.Witir ? '⭐ Dikerjakan' : 'Belum dicatat'}</div>
+              </div>
+              {selectedPrayerLog?.sunnahPrayers?.Witir && <Check className="w-4 h-4 text-purple-600 stroke-[3]" />}
+            </div>
+          </div>
+        </div>
+
+        {/* 3. Catatan Tilawah Al-Qur'an */}
+        <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-slate-800">
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <BookOpen className="w-4 h-4 text-indigo-500" />
+            Tilawah Al-Qur'an
+          </span>
+          {selectedQuranLogs.length > 0 ? (
+            <div className="space-y-1.5">
+              {selectedQuranLogs.map((log) => (
+                <div key={log.id} className="p-2.5 bg-indigo-50/60 dark:bg-indigo-950/30 border border-indigo-200 dark:border-indigo-900/40 rounded-xl flex items-center justify-between text-xs">
+                  <div>
+                    <span className="font-bold text-indigo-900 dark:text-indigo-200">{log.surahName}</span>
+                    <span className="text-gray-500 dark:text-gray-400 ml-2">Ayat {log.ayahStart} - {log.ayahEnd}</span>
+                  </div>
+                  {log.durationMinutes && (
+                    <span className="text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
+                      ⏱ {log.durationMinutes} menit
+                    </span>
                   )}
                 </div>
-              </div>
-            );
-          })}
-        </div>
-        
-      </div>
-      
-      {token && (
-        <div className="bg-surface rounded-3xl p-6 shadow-sm border border-gray-100">
-          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <CalendarIcon className="w-5 h-5 text-blue-500" />
-            Agenda Google Calendar
-          </h3>
-          {events.length > 0 ? (
-             <div className="space-y-3 max-h-64 overflow-y-auto pr-2">
-               {events.map(e => (
-                 <div key={e.id} className="p-3 bg-gray-50 rounded-xl border border-gray-100 text-sm">
-                   <div className="font-bold text-text-main">{e.summary}</div>
-                   <div className="text-text-muted mt-1 text-xs">
-                     {e.start.dateTime ? format(new Date(e.start.dateTime), 'd MMM yyyy, HH:mm') : format(new Date(e.start.date), 'd MMM yyyy')}
-                   </div>
-                 </div>
-               ))}
-             </div>
+              ))}
+            </div>
           ) : (
-             <div className="text-center py-6 text-text-muted text-sm">
-               Belum ada agenda di bulan ini.
-             </div>
+            <p className="text-[11px] text-gray-400 italic">Belum ada tilawah dicatat pada tanggal ini.</p>
           )}
         </div>
-      )}
 
+        {/* 4. Jadwal Kuliah & Agenda Hari Ini */}
+        <div className="space-y-1.5 pt-2 border-t border-gray-100 dark:border-slate-800">
+          <span className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center gap-1.5">
+            <Clock className="w-4 h-4 text-blue-500" />
+            Jadwal Kuliah & Kegiatan ({selectedSchedules.length + selectedEvents.length})
+          </span>
+          {selectedSchedules.length === 0 && selectedEvents.length === 0 ? (
+            <p className="text-[11px] text-gray-400 italic">Tidak ada agenda kuliah atau kegiatan pada tanggal ini.</p>
+          ) : (
+            <div className="space-y-1.5">
+              {selectedSchedules.map((item) => (
+                <div key={item.id} className="p-2.5 bg-gray-50 dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className={`w-2 h-2 rounded-full ${item.completed ? 'bg-emerald-500' : 'bg-blue-500'}`} />
+                    <span className={`font-bold ${item.completed ? 'line-through text-gray-400' : 'text-gray-800 dark:text-gray-200'}`}>
+                      {item.title}
+                    </span>
+                    <span className="text-[10px] bg-gray-200 dark:bg-slate-700 px-1.5 py-0.5 rounded font-bold">
+                      {item.category}
+                    </span>
+                  </div>
+                  <span className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 tabular-nums">
+                    {item.startTime} - {item.endTime}
+                  </span>
+                </div>
+              ))}
+
+              {selectedEvents.map((evt) => (
+                <div key={evt.id} className="p-2.5 bg-blue-50/70 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-900 rounded-xl flex items-center justify-between text-xs">
+                  <span className="font-bold text-blue-900 dark:text-blue-200">{evt.summary}</span>
+                  <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Google Calendar</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

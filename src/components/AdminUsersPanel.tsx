@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Users, BellRing, Star, RefreshCcw, Search, Smartphone, Clock, KeyRound, Copy, Check } from 'lucide-react';
+import { Users, BellRing, Star, RefreshCcw, Search, Smartphone, Clock, KeyRound, Copy, Check, Trash2, AlertTriangle } from 'lucide-react';
 
 export interface AdminUserRow {
   id: string;
@@ -41,9 +41,10 @@ interface Props {
   loading: boolean;
   error: string;
   onRefresh: () => void;
+  onDeleteUser?: (profileId: string, name: string) => Promise<void>;
 }
 
-export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefresh }) => {
+export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefresh, onDeleteUser }) => {
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState<string | null>(null);
 
@@ -187,6 +188,29 @@ export const AdminUsersPanel: React.FC<Props> = ({ data, loading, error, onRefre
                       <div className="text-gray-500">Belum memberi ulasan.</div>
                     )}
                   </div>
+
+                  {/* Action Bar: Hapus Akun dari Firestore */}
+                  {onDeleteUser && (
+                    <div className="col-span-2 sm:col-span-3 pt-2 border-t border-dashed border-black/20 flex items-center justify-between flex-wrap gap-2">
+                      <span className="text-[10px] text-gray-500 font-semibold truncate max-w-[200px]">
+                        ID Dokumen: <code className="bg-gray-100 px-1 py-0.5 rounded font-mono text-[9px]">{u.id}</code>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (confirm(`Hapus akun "${u.name}" dari database Firestore?\nSemua jadwal, progres ibadah, dan profil mahasiswa ini akan dihapus permanen dari cloud.`)) {
+                            onDeleteUser(u.id, u.name);
+                          }
+                        }}
+                        className="px-2.5 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded-lg border border-black text-[10px] font-bold flex items-center gap-1 shadow-xs active:translate-y-0.5 ml-auto"
+                        title="Hapus akun palsu / dummy langsung dari Firestore"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Hapus Akun</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

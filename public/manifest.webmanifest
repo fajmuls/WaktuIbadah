@@ -1,8 +1,8 @@
 {
   "id": "/",
-  "name": "WaktuIbadah",
+  "name": "WaktuIbadah - Pengingat Salat & Jadwal Kuliah",
   "short_name": "WaktuIbadah",
-  "description": "Pengingat salat, azan, dan jadwal kuliah untuk mahasiswa Muslim.",
+  "description": "Aplikasi manajemen waktu, jadwal kuliah, dan ibadah harian untuk mahasiswa Muslim.",
   "lang": "id",
   "dir": "ltr",
   "start_url": "/?source=pwa",
@@ -13,13 +13,54 @@
   "theme_color": "#059669",
   "categories": ["lifestyle", "productivity", "education"],
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
   ],
   "shortcuts": [
-    { "name": "Widget Minimalis", "url": "/widget", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Jadwal", "url": "/jadwal", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] },
-    { "name": "Ibadah", "url": "/ibadah", "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }] }
+    {
+      "name": "Jadwal & Agenda",
+      "short_name": "Jadwal",
+      "description": "Lihat dan kelola jadwal kuliah serta aktivitas harian",
+      "url": "/jadwal",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Jurnal Ibadah",
+      "short_name": "Ibadah",
+      "description": "Catat salat fardhu, dhuha, dan ibadah harian",
+      "url": "/ibadah",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Al-Qur'an & Hanca",
+      "short_name": "Al-Qur'an",
+      "description": "Buka mushaf Al-Qur'an dan lanjutkan hanca bacaan",
+      "url": "/quran",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Widget Minimalis",
+      "short_name": "Widget",
+      "description": "Buka widget waktu salat ringkas",
+      "url": "/widget",
+      "icons": [{ "src": "/icons/icon-192.png", "sizes": "192x192" }]
+    }
   ]
 }
+

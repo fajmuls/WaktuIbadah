@@ -51,7 +51,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
       userName: finalName,
       rating: rating,
       ratingLabel: STAR_LABELS[rating],
-      comment: comment.trim() || 'Aplikasi sangat bermanfaat untuk perkuliahan dan ibadah.',
+      comment: comment.trim(),
       prayerAspectRating: prayerAspect,
       scheduleAspectRating: scheduleAspect,
       submittedAt: new Date().toISOString(),
@@ -149,7 +149,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
                 </div>
                 <div>
                   <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 block">
-                    Pencapaian Salat 5 Waktu Hari Ini!
+                    Evaluasi & Ulasan Pengguna
                   </span>
                   <h3 className="text-base font-bold text-gray-900 dark:text-white">
                     Ulasan Efektivitas Aplikasi
@@ -167,7 +167,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
             </div>
 
             <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed">
-              Alhamdulillah, Anda telah menuntaskan salat 5 waktu hari ini! Apakah aplikasi WaktuIbadah membantu Anda menjaga ibadah dan mengelola jadwal perkuliahan?
+              Alhamdulillah! Terima kasih telah menggunakan WaktuIbadah. Bagikan pendapat dan masukan Anda secara bebas mengenai website ini untuk evaluasi dan pengembangan.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -273,7 +273,7 @@ export const WebsiteReviewModal: React.FC<WebsiteReviewModalProps> = ({ isOpen, 
                   rows={3}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Ceritakan bagaimana website ini membantu ibadah dan jadwal kuliah Anda..."
+                  placeholder="Tulis ulasan, komentar, atau saran Anda secara bebas di sini..."
                   className="w-full px-3.5 py-2.5 bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl text-xs sm:text-sm text-gray-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-emerald-500"
                 />
               </div>

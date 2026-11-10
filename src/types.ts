@@ -268,6 +268,39 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.12.0',
+    releaseDate: '10 November 2026',
+    title: 'Indikator Warna Kalender Ibadah & Sunnah Dhuha, Penjadwalan Simpel Template Rutin 1-Klik, 1-Tap Hanca Bookmark Al-Qur\'an, Tajwid Non-Destruktif, Admin Dashboard Firestore Direct & PWA Builder 100%',
+    highlights: [
+      'Visualisasi Kalender Ibadah & Salat Sunnah: Kotak tanggal memiliki kode warna adaptif (hijau pastel fardhu 5 waktu lengkap, dot hitung parsial) serta aksen sudut emas dan ikon bintang untuk salat Dhuha & Tahajud yang dikerjakan.',
+      'Rincian Detail Ibadah Tanggal Kalender: Mengetuk tanggal pada kalender langsung membuka rincian lengkap salat fardhu, salat sunnah (Dhuha & Tahajud), catatan tilawah Al-Qur\'an, dan agenda kegiatan hari tersebut.',
+      'Perombakan Jadwal Simpel & Mobile-Friendly: UI Jadwal disederhanakan tanpa button-overload dengan touch target ergonomis serta tombol cepat template ibadah rutin 1-klik (Rutin Dhuha, Rutin Tilawah, Rutin Tahajud) yang langsung sinkron ke Firestore.',
+      'Al-Qur\'an 1-Tap Bookmark = Hanca Terakhir: Tombol bookmark pada setiap ayat kini langsung menyematkan ayat sebagai penanda Hanca terakhir dibaca tanpa form berbelit-belit, lengkap dengan audio taktil dan indikator aktif.',
+      'Penyederhanaan Favorit Ayat: Ikon bintang/hati 1-sentuhan untuk menandai dan menghapus ayat favorit pengguna secara instan.',
+      'Pewarnaan Tajwid Bersih & Non-Destruktif: Mode tajwid secara bawaan (default) dinonaktifkan agar tulisan Arab tampil murni dan sambungan huruf (ligatur) tidak terpotong. Pilihan pengaturan Tajwid Dasar dan Tajwid Lengkap (membedakan Idgham Bighunnah vs Bilaghunnah).',
+      'Admin Dashboard Terhubung Langsung ke Firestore: Mengatasi kendala galat "server mengembalikan kode 200" dengan mekanisme dual-fetch langsung ke Firestore client SDK (student_profiles & website_reviews).',
+      'Fitur Hapus Akun & Pembersihan Data Dummy: Admin dapat menghapus akun palsu/dummy langsung dari Admin Dashboard ke Firestore dengan konfirmasi aman.',
+      'Sistem Logout dengan Peringatan PIN: Tombol keluar akun di Pengaturan dilengkapi peringatan proteksi bagi akun yang belum mengatur PIN 4-digit.',
+      'Ulasan Website Bebas & Otomatis: Dialog ulasan muncul otomatis setelah 7 hari penggunaan aktif atau setelah hari pertama menuntaskan salat 5 waktu, dengan kotak isian mandiri tanpa template kaku.',
+      'PWA Builder Standard Compliance: Format manifest.webmanifest dan manifest.json diperbarui memenuhi standar evaluasi 100% PWA Builder.'
+    ],
+    soundPackUpdates: [
+      'Efek suara khusus penyimpanan bookmark hanca terakhir dan penghapusan favorit Al-Qur\'an',
+      'Audio konfirmasi taktil saat pembuatan jadwal rutin 1-klik'
+    ],
+    uiOverhaul: [
+      'Kotak tanggal kalender multi-indikator dengan pembeda warna fardhu lengkap dan aksen emas Dhuha',
+      'Kartu template rutin 1-klik di halaman Jadwal',
+      'Pilihan Tajwid di modal pengaturan baca Al-Qur\'an (Tanpa Tajwid, Tajwid Dasar, Tajwid Lengkap)',
+      'Modal konfirmasi hapus data mahasiswa pada Admin Dashboard'
+    ],
+    recommendations: [
+      'Saran #1 (Penting Sebelum Sidang): Pastikan seluruh responden mahasiswa menyetel PIN 4-Digit di profil untuk mencegah tumpang-tindih data cloud pada saat demonstrasi multi-perangkat.',
+      'Saran #2: Gunakan tombol "Ekspor .ics" di halaman Jadwal untuk memasukkan agenda kuliah dan pengingat salat ke aplikasi Google Calendar ponsel penguji.',
+      'Saran #3: Buat cadangan data (Backup JSON) di Pengaturan sebelum hari evaluasi tugas akhir PAI.'
+    ]
+  },
+  {
     version: '2.11.0',
     releaseDate: '9 November 2026',
     title: 'Checklist Salat 5 Waktu di Dashboard (Home), Grid Kalender Bulanan Asli (Ahad-Sabtu), Manajemen Akun & PIN Mahasiswa di Panel Admin, Pustaka Doa Harian, & Audio Azan Handal',

@@ -6,7 +6,7 @@ import {
   Clock, Vibrate, Volume2, Sparkles, Shield, Moon, CheckCircle2,
   Calendar, BookOpen, AlertTriangle, Lock, Play, Cloud, KeyRound,
   ShieldCheck, RefreshCw, Smartphone, Laptop, ArrowRightLeft, Send,
-  Music, CheckSquare, Layers, HelpCircle, X, Download, Upload
+  Music, CheckSquare, Layers, HelpCircle, X, Download, Upload, LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
@@ -120,6 +120,9 @@ export default function Settings() {
   const [switchPin, setSwitchPin] = useState('');
   const [switchError, setSwitchError] = useState('');
   const [isSwitching, setIsSwitching] = useState(false);
+
+  // Logout state
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [showArabic, setShowArabicState] = useState<boolean>(() => {
     const saved = localStorage.getItem('wi_quran_show_arabic');
@@ -390,6 +393,12 @@ export default function Settings() {
     reader.readAsText(file);
   };
 
+  const handleConfirmLogout = () => {
+    playButtonTapSound();
+    localStorage.removeItem('wi_user');
+    window.location.href = '/';
+  };
+
   if (!user) return null;
 
   return (
@@ -497,6 +506,13 @@ export default function Settings() {
             >
               <ArrowRightLeft className="w-3.5 h-3.5" />
               <span>Ganti Akun</span>
+            </button>
+            <button
+              onClick={() => setShowLogoutModal(true)}
+              className="px-2.5 py-1.5 h-9 bg-rose-50 hover:bg-rose-100 text-rose-700 border-[1.5px] border-black rounded-lg text-xs font-bold shadow-[1.5px_1.5px_0px_#121212] flex items-center gap-1 active:translate-y-0.5"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Keluar</span>
             </button>
           </div>
         </div>
@@ -1287,6 +1303,105 @@ export default function Settings() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ==================== MODAL LOGOUT & PIN WARNING ==================== */}
+      {showLogoutModal && (
+        <div className="fixed inset-0 bg-black/75 backdrop-blur-xs z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+          <div className="memphis-card bg-white w-full max-w-md p-4 space-y-4">
+            <div className="flex items-center justify-between border-b-[1.5px] border-[#121212] pb-3">
+              <div className="flex items-center gap-2.5">
+                <div className={`w-10 h-10 border-[1.5px] border-[#121212] rounded-xl flex items-center justify-center font-bold ${
+                  (!user.pin || user.pin.trim().length !== 4) ? 'bg-[#FFE600] text-black' : 'bg-rose-100 text-rose-700'
+                }`}>
+                  {(!user.pin || user.pin.trim().length !== 4) ? <AlertTriangle className="w-5 h-5 text-amber-900" /> : <LogOut className="w-5 h-5" />}
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm tracking-tight">
+                    {(!user.pin || user.pin.trim().length !== 4) ? 'Peringatan Sebelum Keluar' : 'Konfirmasi Keluar Akun'}
+                  </h3>
+                  <p className="text-[11px] font-bold text-gray-500">Akun: {user.name}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowLogoutModal(false)}
+                className="w-8 h-8 rounded-lg border-[1.5px] border-[#121212] flex items-center justify-center font-bold hover:bg-gray-100"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {(!user.pin || user.pin.trim().length !== 4) ? (
+              <div className="space-y-3">
+                <div className="p-3 bg-amber-50 border-[1.5px] border-amber-300 rounded-xl space-y-1.5 text-xs text-amber-900">
+                  <div className="flex items-center gap-1.5 font-bold text-amber-950">
+                    <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+                    <span>Akun Belum Memiliki PIN Keamanan!</span>
+                  </div>
+                  <p className="leading-relaxed">
+                    Data jadwal, ibadah, dan tilawah Anda saat ini hanya tersimpan di perangkat lokal. Jika Anda keluar tanpa memasang PIN, data berisiko terhapus atau tertimpa jika ada pengguna lain yang masuk, dan Anda <strong>tidak dapat memulihkan akun ini di perangkat lain</strong> tanpa PIN terdaftar.
+                  </p>
+                </div>
+                <p className="text-xs text-gray-600 leading-normal">
+                  Sangat disarankan untuk memasang PIN 4-digit terlebih dahulu agar data akun Anda aman tersinkronisasi ke Cloud Firestore.
+                </p>
+                <div className="flex flex-col gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowLogoutModal(false);
+                      setPinInput('');
+                      setShowPinModal(true);
+                    }}
+                    className="memphis-btn bg-emerald-400 hover:bg-emerald-500 text-black py-2.5 text-xs font-bold flex items-center justify-center gap-1.5 shadow-[1.5px_1.5px_0px_#121212]"
+                  >
+                    <KeyRound className="w-4 h-4" />
+                    <span>Pasang PIN Dulu (Disarankan)</span>
+                  </button>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowLogoutModal(false)}
+                      className="memphis-btn memphis-btn-white flex-1 py-2 text-xs"
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleConfirmLogout}
+                      className="memphis-btn bg-rose-500 hover:bg-rose-600 text-white flex-1 py-2 text-xs font-bold"
+                    >
+                      Tetap Keluar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-xs text-gray-700 leading-relaxed">
+                  Akun Anda telah <strong>terproteksi PIN 4-digit</strong>. Anda dapat masuk kembali kapan saja di perangkat ini atau perangkat lain menggunakan nama <strong>"{user.name}"</strong> dan PIN Anda.
+                </p>
+                <div className="flex items-center gap-2 pt-2">
+                  <button
+                    type="button"
+                    onClick={() => setShowLogoutModal(false)}
+                    className="memphis-btn memphis-btn-white flex-1 py-2.5 text-xs font-bold"
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleConfirmLogout}
+                    className="memphis-btn bg-rose-500 hover:bg-rose-600 text-white flex-1 py-2.5 text-xs font-bold flex items-center justify-center gap-1.5"
+                  >
+                    <LogOut className="w-3.5 h-3.5" />
+                    <span>Ya, Keluar Akun</span>
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

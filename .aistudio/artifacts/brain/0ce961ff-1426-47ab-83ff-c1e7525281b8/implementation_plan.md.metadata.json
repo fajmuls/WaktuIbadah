@@ -1,6 +1,6 @@
 {
-  "summary":  "Rencana implementasi WaktuIbadah v2.11.0:\n1. Checklist Salat 5 Waktu di Dashboard (Home): 5 kartu horizontal ringkas dengan status ceklis sinkron dan status terkunci untuk waktu mendatang.\n2. Kalender Bulanan Penuh (Ahad - Sabtu): Tab/tampilan kalender asli per bulan di Jadwal dan Ibadah dengan navigasi bulan dan pencegahan ceklis masa depan.\n3. Panel Admin Data Akun Mahasiswa: Tabel lengkap Nama, Tanggal Registrasi, dan PIN Keamanan 4 Digit untuk pemulihan akun.\n4. Perombakan Notifikasi, Web Push & Audio Azan: Pemanfaatan URL azan audio Subuh & Fardhu yang teruji, aksi notifikasi heningkan instan, dan checklist senyap yang terupdate dengan notifikasi sukses.\n5. Perbaikan Wirid & Doa Harian: Menghilangkan duplikasi angka di wirid (misal '1. Istighfar' di samping lencana nomor 1), serta memperkaya koleksi doa harian.\n6. Peningkatan Performa & Panduan Konversi Website ke Aplikasi: Perapian spasi ayat Quran, percepatan transisi animasi, dan panduan lengkap PWA / TWA Android / desktop install.",
-  "updatedAt":  "2026-11-09T09:43:02.735132853Z",
+  "summary":  "Rencana komprehensif pembaruan kalender ibadah dengan indikator warna fardhu/sunnah, perombakan jadwal rutin 1-klik, penyederhanaan bookmark hanca & favorit Al-Qur'an, perbaikan tajwid, pembenahan manifest PWA Builder, serta perbaikan sinkronisasi dan manajemen data admin Firestore.",
+  "updatedAt":  "2026-11-10T09:16:57.900408246Z",
   "requestFeedback":  true,
   "userFacing":  true
 }

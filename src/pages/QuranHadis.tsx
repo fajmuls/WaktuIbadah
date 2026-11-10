@@ -22,7 +22,7 @@ import { QuranReaderSettingsModal } from '../components/QuranReaderSettingsModal
 import { QURAN_JUZ_LIST, QuranJuzItem } from '../data/quran-juz';
 import { getSurahAyahs, getSurahTafsir } from '../lib/quran-api';
 import { getCachedAudioUrl } from '../lib/murottal-cache';
-import { renderTajweedHtml } from '../lib/tajweed';
+import { renderTajweedHtml, TajweedMode } from '../lib/tajweed';
 
 // Helper to convert western digits to authentic Arabic numerals (١, ٢, ٣...)
 export const toArabicNumerals = (num: number | string): string => {
@@ -71,11 +71,54 @@ export default function QuranHadis() {
   const [offlineSurahsMap, setOfflineSurahsMap] = useState<Record<string, any>>(storage.getOfflineSurahs());
   const [downloadingSurahNomor, setDownloadingSurahNomor] = useState<number | null>(null);
   
-  // Multi-Hanca State
+  // Multi-Hanca State & 1-Tap Bookmark
   const [hancas, setHancas] = useState<ReadingHancaItem[]>(() => storage.getReadingHancas());
+  const [lastReadAyah, setLastReadAyah] = useState<{ surahNumber: number; surahName: string; ayahNumber: number; date: string } | null>(() => storage.getLastReadAyah());
   const [hancaModalTarget, setHancaModalTarget] = useState<{ surah: SurahItem; ayah: AyatItem } | null>(null);
   const [isCreatingNewHanca, setIsCreatingNewHanca] = useState(false);
   const [newHancaTitle, setNewHancaTitle] = useState('');
+  const [tajweedMode, setTajweedMode] = useState<TajweedMode>(() => storage.getTajweedMode());
+
+  const handleSetTajweedMode = (mode: TajweedMode) => {
+    setTajweedMode(mode);
+    storage.setTajweedMode(mode);
+  };
+
+  // 1-Tap Direct Bookmark = Hanca Terakhir
+  const handleToggleBookmarkHanca = (ayah: AyatItem) => {
+    if (!selectedSurah) return;
+    const isCurrentHanca = lastReadAyah?.surahNumber === selectedSurah.nomor && lastReadAyah?.ayahNumber === ayah.nomorAyat;
+
+    if (isCurrentHanca) {
+      storage.clearLastReadAyah();
+      setLastReadAyah(null);
+      playQuranSound('bookmark_removed');
+      vibrateSuccess();
+    } else {
+      const data = {
+        surahNumber: selectedSurah.nomor,
+        surahName: selectedSurah.namaLatin,
+        ayahNumber: ayah.nomorAyat,
+        date: new Date().toISOString()
+      };
+      storage.setLastReadAyah(data);
+      setLastReadAyah(data);
+
+      // Save into reading hancas list
+      storage.saveReadingHanca({
+        id: `hanca-${selectedSurah.nomor}-${ayah.nomorAyat}`,
+        name: `${selectedSurah.namaLatin}: Ayat ${ayah.nomorAyat}`,
+        surahNumber: selectedSurah.nomor,
+        surahName: selectedSurah.namaLatin,
+        ayahNumber: ayah.nomorAyat,
+        updatedAt: new Date().toISOString()
+      });
+      setHancas(storage.getReadingHancas());
+
+      playQuranSound('bookmark_saved');
+      vibrateSuccess();
+    }
+  };
 
   // Font size, visibility & mode controls
   const [quranFontSize, setQuranFontSize] = useState<number>(() => {
@@ -1201,8 +1244,8 @@ export default function QuranHadis() {
                             className="hover:bg-emerald-100/60 dark:hover:bg-emerald-950/60 rounded px-1 transition-colors cursor-pointer"
                             title={`Tafsir Ayat ${a.nomorAyat}`}
                           >
-                            {tajweedEnabled ? (
-                              <span dangerouslySetInnerHTML={{ __html: renderTajweedHtml(a.teksArab) }} />
+                            {tajweedMode !== 'none' ? (
+                              <span dangerouslySetInnerHTML={{ __html: renderTajweedHtml(a.teksArab, tajweedMode) }} />
                             ) : (
                               a.teksArab
                             )}
@@ -1254,9 +1297,8 @@ export default function QuranHadis() {
                   {ayahs.map((ayah, index) => {
                     const ayahId = `${selectedSurah.nomor}:${ayah.nomorAyat}`;
                     const isFav = storage.isAyahFavorite(ayahId);
-                    const isBookmarkedInHanca = hancas.some(
-                      h => h.surahNumber === selectedSurah.nomor && h.ayahNumber === ayah.nomorAyat
-                    );
+                    const isBookmarkedInHanca = (lastReadAyah?.surahNumber === selectedSurah.nomor && lastReadAyah?.ayahNumber === ayah.nomorAyat) ||
+                      hancas.some(h => h.surahNumber === selectedSurah.nomor && h.ayahNumber === ayah.nomorAyat);
                     
                     // Zebra alternating background or active Murottal reciting highlight
                     const isEven = index % 2 === 1;
@@ -1283,13 +1325,19 @@ export default function QuranHadis() {
                       >
                         {/* Top: Star Badge on Left + Arabic Verse on Right with End Ayah Marker */}
                         <div className="flex items-start justify-between gap-2.5 mb-2">
-                          {/* Authentic Islamic 8-Pointed Star Badge */}
-                          <div className="pt-0.5 shrink-0">
+                          {/* Authentic Islamic 8-Pointed Star Badge & Hanca indicator */}
+                          <div className="pt-0.5 shrink-0 flex items-center gap-1.5 flex-wrap">
                             <IslamicStarBadge 
                               number={ayah.nomorAyat} 
                               className="w-7 h-7 sm:w-8 sm:h-8" 
                               active={isBookmarkedInHanca || isReciting}
                             />
+                            {isBookmarkedInHanca && (
+                              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-amber-400 text-black text-[9.5px] font-bold rounded border border-black shadow-2xs">
+                                <Bookmark className="w-2.5 h-2.5 fill-black" />
+                                Hanca
+                              </span>
+                            )}
                           </div>
 
                           {/* Arabic Text with Circular End Ayah Marker */}
@@ -1303,8 +1351,8 @@ export default function QuranHadis() {
                               dir="rtl"
                               title="Ketuk ayat untuk membaca Tafsir Kemenag RI"
                             >
-                              {tajweedEnabled ? (
-                                <span dangerouslySetInnerHTML={{ __html: renderTajweedHtml(ayah.teksArab) }} />
+                              {tajweedMode !== 'none' ? (
+                                <span dangerouslySetInnerHTML={{ __html: renderTajweedHtml(ayah.teksArab, tajweedMode) }} />
                               ) : (
                                 <span>{ayah.teksArab}</span>
                               )}
@@ -1381,17 +1429,17 @@ export default function QuranHadis() {
                             <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-current text-rose-600' : ''}`} />
                           </button>
 
-                          {/* 4. Bookmark (Multi-Hanca & Unbookmark) */}
+                          {/* 4. Bookmark (1-Tap Direct Bookmark = Hanca Terakhir) */}
                           <button
-                            onClick={() => setHancaModalTarget({ surah: selectedSurah, ayah })}
+                            onClick={() => handleToggleBookmarkHanca(ayah)}
                             className={`w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
                               isBookmarkedInHanca
-                                ? 'bg-emerald-700 text-white shadow-2xs'
+                                ? 'bg-amber-400 text-black border border-black shadow-xs font-bold'
                                 : 'text-gray-500 hover:text-emerald-700 hover:bg-black/5 dark:hover:bg-white/5'
                             }`}
-                            title={isBookmarkedInHanca ? "Kelola Penanda Hanca (Unbookmark)" : "Tandai Batas Bacaan (Hanca)"}
+                            title={isBookmarkedInHanca ? "Hanca Terakhir Dibaca (Klik untuk lepas)" : "Tandai Hanca Terakhir Dibaca (1-Klik)"}
                           >
-                            <Bookmark className={`w-3.5 h-3.5 ${isBookmarkedInHanca ? 'fill-white' : ''}`} />
+                            <Bookmark className={`w-3.5 h-3.5 ${isBookmarkedInHanca ? 'fill-black' : ''}`} />
                           </button>
                         </div>
                       </div>
@@ -1435,8 +1483,10 @@ export default function QuranHadis() {
         setSelectedQari={handleSetSelectedQari}
         autoScroll={autoScroll}
         toggleAutoScroll={toggleAutoScroll}
-        tajweedEnabled={tajweedEnabled}
-        toggleTajweed={toggleTajweed}
+        tajweedEnabled={tajweedMode !== 'none'}
+        toggleTajweed={() => handleSetTajweedMode(tajweedMode === 'none' ? 'basic' : 'none')}
+        tajweedMode={tajweedMode}
+        setTajweedMode={handleSetTajweedMode}
       />
 
       {/* ======================= BOTTOM SHEET TAFSIR KEMENAG RI ======================= */}

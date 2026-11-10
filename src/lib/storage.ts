@@ -28,9 +28,10 @@ const KEYS = {
   LAST_READ_AYAH: "wi_last_read_ayah",
   READING_HANCAS: "wi_reading_hancas",
   TAJWEED_ENABLED: "wi_tajweed_enabled",
+  TAJWEED_MODE: "wi_tajweed_mode",
 };
 
-export const CURRENT_VERSION = "2.11.0";
+export const CURRENT_VERSION = "2.12.0";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -423,12 +424,22 @@ export const storage = {
   isQuranWhiteTheme: () => getItem<boolean>(KEYS.QURAN_WHITE_THEME, true),
   setQuranWhiteTheme: (enabled: boolean) => setItem(KEYS.QURAN_WHITE_THEME, enabled),
 
-  // Tajweed Highlighting Standard Kemenag
-  getTajweedEnabled: () => getItem<boolean>(KEYS.TAJWEED_ENABLED, true),
+  // Tajweed Highlighting Standard Kemenag (Default: nonaktif / 'none')
+  getTajweedEnabled: () => getItem<boolean>(KEYS.TAJWEED_ENABLED, false),
   setTajweedEnabled: (enabled: boolean) => {
     setItem(KEYS.TAJWEED_ENABLED, enabled);
+    setItem(KEYS.TAJWEED_MODE, enabled ? 'basic' : 'none');
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('wi_tajweed_changed', { detail: enabled }));
+    }
+  },
+  getTajweedMode: () => getItem<'none' | 'basic' | 'complex'>(KEYS.TAJWEED_MODE, 'none'),
+  setTajweedMode: (mode: 'none' | 'basic' | 'complex') => {
+    setItem(KEYS.TAJWEED_MODE, mode);
+    setItem(KEYS.TAJWEED_ENABLED, mode !== 'none');
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('wi_tajweed_changed', { detail: mode !== 'none' }));
+      window.dispatchEvent(new CustomEvent('wi_tajweed_mode_changed', { detail: mode }));
     }
   },
 

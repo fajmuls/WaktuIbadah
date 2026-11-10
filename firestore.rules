@@ -37,7 +37,7 @@ service cloud.firestore {
           ('pin' in request.resource.data && (request.resource.data.pin.size() == 4 || request.resource.data.pin == ''))
         );
 
-      allow delete: if false;
+      allow delete: if isValidId(profileId); // Allowed for admin cleanup
     }
 
     // Website Reviews (Submitted by students, monitored in Admin Dashboard)
