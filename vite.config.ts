@@ -5,6 +5,18 @@ import {defineConfig} from 'vite';
 
 export default defineConfig(() => {
   return {
+    build: {
+      chunkSizeWarningLimit: 900,
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            firebase: ['firebase/app', 'firebase/firestore'],
+            charts: ['recharts'],
+            motion: ['framer-motion'],
+          },
+        },
+      },
+    },
     plugins: [
       react(),
       tailwindcss(),

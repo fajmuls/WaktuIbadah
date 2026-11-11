@@ -1,20 +1,9 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://ai.google.dev/static/site-assets/images/share-ais-513315318.png" />
-</div>
+# WaktuIbadah
 
-# Run and deploy your AI Studio app
+Aplikasi PWA pengingat salat & jadwal kuliah untuk mahasiswa Muslim. Vite + React + TypeScript + Firebase + Web Push (Vercel).
 
-This contains everything you need to run your app locally.
-
-View your app in AI Studio: https://ai.studio/apps/0ce961ff-1426-47ab-83ff-c1e7525281b8
-
-## Run Locally
-
-**Prerequisites:**  Node.js
-
-
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+- `npm install` lalu `npm run dev`
+- `npm run build` untuk produksi, `npm run lint` untuk cek tipe
+- Notifikasi: lihat `PANDUAN-NOTIFIKASI.md` dan `.env.example`
+- Video demo: isi `YOUTUBE_VIDEO_ID` di `src/lib/site.ts`
+- Rilis APK (PWABuilder): salin `docs/assetlinks.json.example` ke `public/.well-known/assetlinks.json` setelah mendapat package ID & SHA-256

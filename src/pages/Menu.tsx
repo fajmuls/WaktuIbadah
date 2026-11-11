@@ -2,6 +2,8 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ExternalLink } from 'lucide-react';
 import { storage } from '../lib/storage';
+import YouTubeEmbed from '../components/YouTubeEmbed';
+import { YOUTUBE_VIDEO_ID } from '../lib/site';
 
 // Bespoke SVG Icons for Menu Categories
 const DoaMenuSvg = () => (
@@ -169,7 +171,7 @@ export default function Menu() {
       color: 'text-[#6EE7B7]' 
     },
     { 
-      label: 'Pengaturan & Versi v2.9.0', 
+      label: 'Pengaturan & Versi v2.10.0', 
       icon: SettingsMenuSvg, 
       path: '/settings', 
       desc: 'Notifikasi azan, suara qari, tema, & cloud sync', 
@@ -204,6 +206,8 @@ export default function Menu() {
           Pengaturan
         </Link>
       </div>
+
+      {YOUTUBE_VIDEO_ID && <YouTubeEmbed videoId={YOUTUBE_VIDEO_ID} title="Kenali WaktuIbadah dalam 2 menit" />}
 
       {/* Menu Navigation Grid */}
       <div className="grid gap-2 sm:gap-2.5">
