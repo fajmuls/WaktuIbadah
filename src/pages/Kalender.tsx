@@ -17,6 +17,13 @@ import { playButtonTapSound } from '../lib/audio';
 export default function Kalender() {
   const todayStr = format(new Date(), 'yyyy-MM-dd');
   const [selectedDate, setSelectedDate] = useState<string>(todayStr);
+  const [detailOpen, setDetailOpen] = useState<boolean>(() => {
+    try { return localStorage.getItem('wi_cal_detail_open') === '1'; } catch { return false; }
+  });
+  const toggleDetail = () => setDetailOpen((v) => {
+    try { localStorage.setItem('wi_cal_detail_open', v ? '0' : '1'); } catch { /* abaikan */ }
+    return !v;
+  });
   const [token, setToken] = useState<string | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -140,6 +147,8 @@ export default function Kalender() {
         count: fardhuCount,
         isAllDone,
         hasDhuha,
+        hasTahajud,
+        hasWitir,
         hasSunnah
       };
     });
@@ -268,6 +277,15 @@ export default function Kalender() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={toggleDetail}
+              aria-expanded={detailOpen}
+              className="px-2.5 py-1 text-[11px] font-bold border border-black bg-white dark:bg-slate-800 rounded-lg inline-flex items-center gap-1"
+            >
+              <ChevronDown className={`w-3.5 h-3.5 transition-transform ${detailOpen ? 'rotate-180' : ''}`} />
+              {detailOpen ? 'Sembunyikan' : 'Rincian'}
+            </button>
             <Link 
               to="/ibadah" 
               className="px-2.5 py-1 text-[11px] font-bold border border-black bg-emerald-300 hover:bg-emerald-400 rounded-lg shadow-xs"
@@ -283,6 +301,7 @@ export default function Kalender() {
           </div>
         </div>
 
+        {detailOpen && (<>
         {/* 1. Salat Fardhu Status */}
         <div className="space-y-1.5">
           <div className="flex items-center justify-between">
@@ -433,6 +452,7 @@ export default function Kalender() {
             </div>
           )}
         </div>
+        </>)}
       </section>
 
       {/* Modal Edit Jam Pengerjaan Salat */}

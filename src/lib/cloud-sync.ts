@@ -176,12 +176,36 @@ export function applyCloudDataToLocalStorage(data: any) {
     storage.setSchedules(data.schedules);
   }
 
-  if (Array.isArray(data.prayerLogs)) {
-    storage.setPrayerLogs(data.prayerLogs);
-  } else if (data.prayerLogs && typeof data.prayerLogs === 'object') {
-    // If stored as map
-    const list = Object.values(data.prayerLogs) as PrayerLog[];
-    if (list.length > 0) storage.setPrayerLogs(list);
+  {
+    // GABUNGKAN (bukan timpa) agar centang lokal yang belum terkirim tidak hilang saat tarik data cloud.
+    const incoming: PrayerLog[] = Array.isArray(data.prayerLogs)
+      ? data.prayerLogs
+      : data.prayerLogs && typeof data.prayerLogs === 'object'
+        ? (Object.values(data.prayerLogs) as PrayerLog[])
+        : [];
+    if (incoming.length > 0) {
+      const byDate = new Map<string, PrayerLog>();
+      storage.getPrayerLogs().forEach((l) => l?.date && byDate.set(l.date, l));
+      incoming.forEach((r) => {
+        if (!r?.date) return;
+        const l = byDate.get(r.date);
+        if (!l) { byDate.set(r.date, r); return; }
+        const orMap = <T extends Record<string, boolean>>(a?: T, b?: T) => {
+          const out: Record<string, boolean> = { ...(a || {}) };
+          Object.entries(b || {}).forEach(([k, v]) => { out[k] = Boolean(out[k]) || Boolean(v); });
+          return out as T;
+        };
+        byDate.set(r.date, {
+          ...r,
+          ...l,
+          prayers: orMap(r.prayers as any, l.prayers as any),
+          sunnahPrayers: orMap(r.sunnahPrayers as any, l.sunnahPrayers as any),
+          prayerTimesRecords: { ...(r.prayerTimesRecords || {}), ...(l.prayerTimesRecords || {}) },
+          sunnahTimesRecords: { ...(r.sunnahTimesRecords || {}), ...(l.sunnahTimesRecords || {}) },
+        } as PrayerLog);
+      });
+      storage.setPrayerLogs(Array.from(byDate.values()));
+    }
   }
 
   if (Array.isArray(data.tilawahLogs)) {

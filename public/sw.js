@@ -8,7 +8,7 @@
  * menimpa file ini dan menghapus handler 'push' di bawah.
  */
 
-const VERSION = 'v2.10.0';
+const VERSION = 'v2.10.1';
 const SHELL_CACHE = `waktuibadah-shell-${VERSION}`;
 const ASSET_CACHE = `waktuibadah-assets-${VERSION}`;
 
@@ -37,7 +37,7 @@ function recordPrayerOffline(prayer, dateStr) {
         store.add({
           action: 'sudah_salat',
           prayer: prayer,
-          date: dateStr || new Date().toISOString().split('T')[0],
+          date: dateStr,
           timestamp: Date.now()
         });
         tx.oncomplete = () => resolve(true);
@@ -227,7 +227,9 @@ self.addEventListener('notificationclick', (event) => {
   if (event.action === 'sudah_salat' && data.prayer) {
     event.waitUntil(
       (async () => {
-        const todayStr = new Date().toISOString().split('T')[0];
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const todayStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`; // tanggal LOKAL, bukan UTC
 
         // A. Catat ke IndexedDB agar aman walau tidak ada tab terbuka
         await recordPrayerOffline(data.prayer, todayStr);

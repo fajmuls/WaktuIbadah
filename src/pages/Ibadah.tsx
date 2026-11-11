@@ -13,7 +13,7 @@ import { formatTimeString } from '../lib/utils';
 import { vibrateSuccess, playPrayerCompletedSound, playToggleSound } from '../lib/audio';
 import { QuranLogModal } from '../components/QuranLogModal';
 import { DoaSetelahSalatModal } from '../components/DoaSetelahSalatModal';
-import { MonthlyCalendarGrid } from '../components/MonthlyCalendarGrid';
+import { MonthlyCalendarGrid, buildCalendarBadges } from '../components/MonthlyCalendarGrid';
 import { Link } from 'react-router-dom';
 
 export default function Ibadah() {
@@ -58,6 +58,9 @@ export default function Ibadah() {
       }
     }
   }, [selectedDate, todayStr]);
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const calendarBadges = useMemo(() => buildCalendarBadges(), [log]);
 
   const prayers: PrayerName[] = ['Subuh', 'Zuhur', 'Asar', 'Magrib', 'Isya'];
   const times = prayerData ? prayerData.times : getPrayerTimesForToday();
@@ -267,6 +270,7 @@ export default function Ibadah() {
 
       {/* Full Monthly Calendar Grid (Ahad - Sabtu) */}
       <MonthlyCalendarGrid
+        badgesMap={calendarBadges}
         selectedDate={selectedDate}
         onSelectDate={(newDate) => {
           setSelectedDate(newDate);

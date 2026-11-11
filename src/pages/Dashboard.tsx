@@ -286,6 +286,7 @@ export default function Dashboard() {
             />
           </div>
           <div className="min-w-0 flex-1">
+            <div className="wi-arab text-[17px] leading-none text-[#8A5A2B] mb-1" lang="ar">السَّلَامُ عَلَيْكُمْ</div>
             <h1 className="text-base sm:text-lg font-bold tracking-tight text-[#121212] truncate">
               Assalamu'alaikum, {user?.name?.split(' ')[0] || 'Fajmuls'}!
             </h1>

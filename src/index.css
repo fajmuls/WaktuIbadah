@@ -3,30 +3,33 @@
 @custom-variant dark (&:where(.dark, .dark *));
 
 @theme {
-  --color-primary: #059669;
-  --color-primary-dark: #047857;
+  --color-primary: #0F6B52;
+  --color-primary-dark: #0B4A3B;
   --color-memphis-yellow: #10B981; /* Calibrated to rich emerald green */
   --color-memphis-pink: #FF4B91;
   --color-memphis-cyan: #00F0FF;
   --color-memphis-orange: #FF6B35;
   --color-memphis-purple: #9D4EDD;
   --color-memphis-green: #059669;
-  --color-memphis-black: #121212;
-  --color-memphis-bg: #FFFDF8;
-  --color-memphis-surface: #FFFFFF;
+  --color-memphis-black: #0F3D31;
+  --color-memphis-bg: #D5EBDD;
+  --color-memphis-surface: #FFF8E8;
 
   --font-sans: "Plus Jakarta Sans", "Inter", "system-ui", sans-serif;
 }
 
 @layer base {
+  :root {
+    --wi-pattern: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64'%3E%3Cg fill='none' stroke='%230B4A3B' stroke-opacity='.14' stroke-width='1.2'%3E%3Crect x='14' y='14' width='36' height='36'/%3E%3Crect x='14' y='14' width='36' height='36' transform='rotate(45 32 32)'/%3E%3Ccircle cx='32' cy='32' r='6'/%3E%3C/g%3E%3Cg fill='%230B4A3B' fill-opacity='.11'%3E%3Ccircle cx='0' cy='0' r='3'/%3E%3Ccircle cx='64' cy='0' r='3'/%3E%3Ccircle cx='0' cy='64' r='3'/%3E%3Ccircle cx='64' cy='64' r='3'/%3E%3C/g%3E%3C/svg%3E");
+  }
   html, body {
     max-width: 100vw;
     overflow-x: hidden;
-    background-color: #FFFDF8;
-    background-image: radial-gradient(rgba(18, 18, 18, 0.09) 1.5px, transparent 1.5px);
-    background-size: 22px 22px;
+    background-color: #B4DAC5;
+    background-image: var(--wi-pattern), linear-gradient(180deg, #D9EEE1 0%, #B4DAC5 55%, #8FC6AB 100%);
+    background-size: 64px 64px, 100% 100%;
     background-attachment: fixed;
-    color: #121212;
+    color: #0F2F27;
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
   }
@@ -40,9 +43,9 @@
 
 /* Memphis Style Utility Classes with Solid Borders & Retro Offsets */
 .memphis-card {
-  background-color: #ffffff;
-  border: 1.5px solid #121212;
-  box-shadow: 2px 2px 0px #121212;
+  background-color: #FFF8E8;
+  border: 1.5px solid #0F3D31;
+  box-shadow: 2px 2px 0px #0F3D31;
   border-radius: 0.75rem;
   transition: transform 0.12s ease, box-shadow 0.12s ease;
 }
@@ -57,33 +60,33 @@
 @media (min-width: 640px) {
   .memphis-card {
     border-width: 1.5px;
-    box-shadow: 3px 3px 0px #121212;
+    box-shadow: 3px 3px 0px #0F3D31;
     border-radius: 0.875rem;
   }
 }
 
 .memphis-card-sm {
-  background-color: #ffffff;
-  border: 1.5px solid #121212;
-  box-shadow: 2px 2px 0px #121212;
+  background-color: #FFF8E8;
+  border: 1.5px solid #0F3D31;
+  box-shadow: 2px 2px 0px #0F3D31;
   border-radius: 0.75rem;
 }
 
 /* Rich Emerald Multi-tone Gradient Memphis Cards */
 .memphis-card-yellow,
 .memphis-card-green {
-  background: linear-gradient(135deg, #34D399 0%, #10B981 45%, #059669 100%);
-  border: 2px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
+  background: linear-gradient(135deg, #1D9C7B 0%, #0F6B52 55%, #0B4A3B 100%);
+  border: 2px solid #0F3D31;
+  box-shadow: 3px 3px 0px #0F3D31;
   border-radius: 0.875rem;
-  color: #121212;
+  color: #FFF8E8;
 }
 
 @media (min-width: 640px) {
   .memphis-card-yellow,
   .memphis-card-green {
     border-width: 2.5px;
-    box-shadow: 4px 4px 0px #121212;
+    box-shadow: 4px 4px 0px #0F3D31;
     border-radius: 1rem;
   }
 }
@@ -92,27 +95,27 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid #121212;
-  box-shadow: 2px 2px 0px #121212;
+  border: 2px solid #0F3D31;
+  box-shadow: 2px 2px 0px #0F3D31;
   border-radius: 0.65rem;
   flex-shrink: 0;
   transition: transform 0.1s ease;
 }
 
 .memphis-card-pink {
-  background-color: #FF4B91;
-  border: 2px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
+  background-color: #A8622F;
+  border: 2px solid #0F3D31;
+  box-shadow: 3px 3px 0px #0F3D31;
   border-radius: 0.875rem;
   color: #ffffff;
 }
 
 .memphis-card-cyan {
-  background-color: #00F0FF;
-  border: 2px solid #121212;
-  box-shadow: 3px 3px 0px #121212;
+  background-color: #6FC1AE;
+  border: 2px solid #0F3D31;
+  box-shadow: 3px 3px 0px #0F3D31;
   border-radius: 0.875rem;
-  color: #121212;
+  color: #0F3D31;
 }
 
 /* Tactile Memphis Buttons */
@@ -121,8 +124,8 @@
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  border: 1.5px solid #121212;
-  box-shadow: 2px 2px 0px #121212;
+  border: 1.5px solid #0F3D31;
+  box-shadow: 2px 2px 0px #0F3D31;
   border-radius: 0.625rem;
   transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
   user-select: none;
@@ -131,66 +134,66 @@
 @media (min-width: 640px) {
   .memphis-btn {
     border-width: 1.5px;
-    box-shadow: 2px 2px 0px #121212;
+    box-shadow: 2px 2px 0px #0F3D31;
     border-radius: 0.75rem;
   }
 }
 
 .memphis-btn:hover {
   transform: translate(-1px, -1px);
-  box-shadow: 2.5px 2.5px 0px #121212;
+  box-shadow: 2.5px 2.5px 0px #0F3D31;
 }
 
 .memphis-btn:active {
   transform: translate(1.5px, 1.5px);
-  box-shadow: 1px 1px 0px #121212;
+  box-shadow: 1px 1px 0px #0F3D31;
 }
 
 .memphis-btn-primary,
 .memphis-btn-green {
-  background: linear-gradient(135deg, #10B981, #059669);
-  color: #ffffff;
+  background: linear-gradient(135deg, #13866A, #0B4A3B);
+  color: #FFF8E8;
 }
 
 /* Green Multi-tone Gradient for Buttons (Replaces raw yellow) */
 .memphis-btn-yellow {
-  background: linear-gradient(135deg, #6EE7B7 0%, #34D399 50%, #10B981 100%);
-  color: #121212;
+  background: linear-gradient(135deg, #E6C27A 0%, #D4A957 55%, #C99A4B 100%);
+  color: #0F2F27;
 }
 
 .memphis-btn-pink {
-  background-color: #FF4B91;
+  background-color: #A8622F;
   color: #ffffff;
 }
 
 .memphis-btn-cyan {
-  background-color: #00F0FF;
-  color: #121212;
+  background-color: #6FC1AE;
+  color: #0F3D31;
 }
 
 .memphis-btn-orange {
-  background-color: #FF6B35;
+  background-color: #C8782D;
   color: #ffffff;
 }
 
 .memphis-btn-white {
-  background-color: #ffffff;
-  color: #121212;
+  background-color: #FFF8E8;
+  color: #0F3D31;
 }
 
 .memphis-input {
-  border: 2px solid #121212;
-  box-shadow: 2.5px 2.5px 0px #121212;
+  border: 2px solid #0F3D31;
+  box-shadow: 2.5px 2.5px 0px #0F3D31;
   border-radius: 0.75rem;
   background-color: #ffffff;
-  color: #121212;
+  color: #0F3D31;
   font-weight: 600;
   transition: all 0.15s ease;
 }
 
 .memphis-input:focus {
   outline: none;
-  border-color: #121212;
+  border-color: #0F3D31;
   box-shadow: 3.5px 3.5px 0px #10B981;
   transform: translate(-1px, -1px);
 }
@@ -203,13 +206,13 @@
   font-weight: 900;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border: 1.5px solid #121212;
-  box-shadow: 1.5px 1.5px 0px #121212;
+  border: 1.5px solid #0F3D31;
+  box-shadow: 1.5px 1.5px 0px #0F3D31;
   border-radius: 9999px;
 }
 
 .memphis-pattern-dots {
-  background-image: radial-gradient(#121212 1.5px, transparent 1.5px);
+  background-image: radial-gradient(#0F3D31 1.5px, transparent 1.5px);
   background-size: 16px 16px;
 }
 
@@ -242,3 +245,62 @@
     scrollbar-width: none;
   }
 }
+
+
+/* =====================================================================
+   TEMA "ZAMRUD & KRIM" (mode terang) - 60% hijau, 30% krim, 10% cokelat/emas
+   Ditimpa di sini agar seluruh halaman ikut berubah tanpa mengedit satu per satu.
+   ===================================================================== */
+html:not(.dark) .bg-white,
+html:not(.dark) .bg-\[\#FFFDF8\],
+html:not(.dark) .bg-\[\#FCFAF5\],
+html:not(.dark) .bg-\[\#F9F8F5\] { background-color: #FFF8E8; }
+html:not(.dark) .bg-gray-50,
+html:not(.dark) .bg-\[\#F4F7F2\],
+html:not(.dark) .bg-\[\#F4EEDD\] { background-color: #F7EDD2; }
+html:not(.dark) .bg-gray-100 { background-color: #F0E3C2; }
+html:not(.dark) .bg-white\/95 { background-color: rgba(255,248,232,.95); }
+
+html:not(.dark) .border-\[\#121212\],
+html:not(.dark) .border-black { border-color: #0F3D31; }
+html:not(.dark) .border-gray-200,
+html:not(.dark) .border-gray-100 { border-color: #E3D3A8; }
+html:not(.dark) .text-\[\#121212\] { color: #0F2F27; }
+html:not(.dark) .text-gray-500 { color: #5C6B5F; }
+html:not(.dark) .text-gray-600 { color: #4B5B4F; }
+html:not(.dark) .text-gray-700 { color: #2F4036; }
+
+/* bayangan keras memphis -> hijau tua */
+html:not(.dark) [class*="0px_#121212]"] { --wi-sh: #0F3D31; }
+html:not(.dark) .shadow-\[1px_1px_0px_\#121212\] { box-shadow: 1px 1px 0 #0F3D31; }
+html:not(.dark) .shadow-\[1\.5px_1\.5px_0px_\#121212\] { box-shadow: 1.5px 1.5px 0 #0F3D31; }
+html:not(.dark) .shadow-\[2px_2px_0px_\#121212\] { box-shadow: 2px 2px 0 #0F3D31; }
+html:not(.dark) .shadow-\[3px_3px_0px_\#121212\] { box-shadow: 3px 3px 0 #0F3D31; }
+html:not(.dark) .shadow-\[4px_4px_0px_\#121212\] { box-shadow: 4px 4px 0 #0F3D31; }
+html:not(.dark) .shadow-\[6px_6px_0px_\#121212\] { box-shadow: 6px 6px 0 #0F3D31; }
+
+/* warna aksen ramai -> palet zamrud / emas / cokelat */
+html:not(.dark) .bg-\[\#00F0FF\] { background-color: #6FC1AE; }
+html:not(.dark) .bg-\[\#FFE600\] { background-color: #E2B659; }
+html:not(.dark) .bg-\[\#FF4B91\] { background-color: #A8622F; color: #FFF8E8; }
+html:not(.dark) .bg-\[\#10B981\] { background-color: #13866A; }
+html:not(.dark) .bg-\[\#121212\] { background-color: #0F3D31; }
+html:not(.dark) .bg-\[\#D4C4A8\] { background-color: #D9BE86; }
+html:not(.dark) .text-\[\#FF4B91\] { color: #A8622F; }
+html:not(.dark) .text-\[\#FFE600\] { color: #E2B659; }
+html:not(.dark) .from-emerald-500 { --tw-gradient-from: #13866A; }
+html:not(.dark) .via-teal-400 { --tw-gradient-via: #0F6B52; }
+html:not(.dark) .to-green-500 { --tw-gradient-to: #0B4A3B; }
+
+/* ornamen: pita bintang segi-8 (dipakai di bawah header) */
+.wi-zellige {
+  height: 10px;
+  background-color: #0B4A3B;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='10' viewBox='0 0 20 10'%3E%3Cg fill='%23C99A4B'%3E%3Cpath d='M10 0l2 3 3-1-1 3 3 2-3 2 1 3-3-1-2 3-2-3-3 1 1-3-3-2 3-2-1-3 3 1z' transform='translate(0 -1) scale(.9)'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 20px 10px;
+  border-bottom: 2px solid #C99A4B;
+}
+.wi-arab { font-family: "Amiri", "Scheherazade New", serif; direction: rtl; }
+.wi-mihrab { border-radius: 9999px 9999px 0.9rem 0.9rem / 2.2rem 2.2rem 0.9rem 0.9rem; }
+@keyframes wi-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+html:not(.dark) [class*="bg-white/"] { background-color: rgba(255, 248, 232, 0.92); }
