@@ -77,7 +77,7 @@ export default function DoaZikir() {
   return (
     <div className="space-y-3 pb-24 animate-in fade-in duration-300 w-full max-w-full overflow-x-hidden">
       {/* Top Banner (Matching Quran & Hadith Top Bar Style) */}
-      <div className="bg-[#0f6b52] text-white rounded-2xl border-[1.5px] border-[#121212] shadow-[3px_3px_0px_#121212] p-3 sm:p-4 space-y-3">
+      <div className="bg-gradient-to-br from-[#0E7C9A] to-[#0A4A5E] text-white rounded-2xl border-[1.5px] border-[#08303D] shadow-[3px_3px_0px_#08303D] p-3 sm:p-4 space-y-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5 min-w-0">
             <button
@@ -88,13 +88,13 @@ export default function DoaZikir() {
               <ArrowLeft className="w-5 h-5" />
             </button>
             <div className="w-7 h-7 rounded-full bg-white/15 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 text-emerald-200" />
+              <Sparkles className="w-4 h-4 text-sky-100" />
             </div>
             <div className="min-w-0">
               <h1 className="text-sm sm:text-base font-bold truncate text-white">
                 Doa & Zikir Harian
               </h1>
-              <p className="text-[10px] sm:text-[11px] text-emerald-100/80 truncate">
+              <p className="text-[10px] sm:text-[11px] text-sky-100 truncate">
                 Wirid sesudah salat, doa kuliah, dan kumpulan doa pilihan
               </p>
             </div>
@@ -146,12 +146,12 @@ export default function DoaZikir() {
             aria-selected={activeTab === 'wirid_salat'}
             onClick={() => handleTabChange('wirid_salat')}
             className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
-              activeTab === 'wirid_salat' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
+              activeTab === 'wirid_salat' ? 'text-white' : 'text-sky-100 hover:text-white'
             }`}
           >
             WIRID SALAT
             {activeTab === 'wirid_salat' && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#7FD3E8] rounded-full" />
             )}
           </button>
 
@@ -160,12 +160,12 @@ export default function DoaZikir() {
             aria-selected={activeTab === 'harian'}
             onClick={() => handleTabChange('harian')}
             className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
-              activeTab === 'harian' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
+              activeTab === 'harian' ? 'text-white' : 'text-sky-100 hover:text-white'
             }`}
           >
             HARIAN
             {activeTab === 'harian' && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#7FD3E8] rounded-full" />
             )}
           </button>
 
@@ -174,12 +174,12 @@ export default function DoaZikir() {
             aria-selected={activeTab === 'belajar'}
             onClick={() => handleTabChange('belajar')}
             className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
-              activeTab === 'belajar' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
+              activeTab === 'belajar' ? 'text-white' : 'text-sky-100 hover:text-white'
             }`}
           >
             BELAJAR
             {activeTab === 'belajar' && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#7FD3E8] rounded-full" />
             )}
           </button>
 
@@ -188,12 +188,12 @@ export default function DoaZikir() {
             aria-selected={activeTab === 'all'}
             onClick={() => handleTabChange('all')}
             className={`flex-1 pb-2 text-xs font-bold tracking-wider transition-colors relative uppercase text-center ${
-              activeTab === 'all' ? 'text-white' : 'text-emerald-100/70 hover:text-white'
+              activeTab === 'all' ? 'text-white' : 'text-sky-100 hover:text-white'
             }`}
           >
             SEMUA
             {activeTab === 'all' && (
-              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#D4C4A8] rounded-full" />
+              <div className="absolute bottom-0 left-0 right-0 h-1 bg-[#7FD3E8] rounded-full" />
             )}
           </button>
         </div>
@@ -224,10 +224,10 @@ export default function DoaZikir() {
             return (
               <div
                 key={item.id}
-                className={`rounded-2xl border-[1.5px] border-[#121212] dark:border-slate-700 shadow-[2px_2px_0px_#121212] p-3.5 sm:p-4.5 transition-all ${
+                className={`rounded-2xl border-[1.5px] border-[#0A4A5E] border-l-[7px] border-l-[#1597B3] dark:border-slate-700 shadow-[2px_2px_0px_#08303D] p-3.5 sm:p-4.5 transition-all ${
                   isTargetReached 
-                    ? 'bg-emerald-50/70 dark:bg-emerald-950/40 border-emerald-600' 
-                    : 'bg-white dark:bg-slate-900'
+                    ? 'bg-[#D9F1E6] dark:bg-emerald-950/40 border-emerald-600' 
+                    : 'bg-[#F0F9FB] dark:bg-slate-900'
                 }`}
               >
                 {/* Header item */}
@@ -285,7 +285,7 @@ export default function DoaZikir() {
                 </div>
 
                 {/* Arabic Text Block */}
-                <div className="p-3 sm:p-4 bg-[#FAF7EE] dark:bg-slate-800/70 rounded-xl border border-[#E6DCC8] dark:border-slate-700">
+                <div className="p-3 sm:p-4 bg-[#DFF1F6] dark:bg-slate-800/70 rounded-xl border border-[#9CCFDD] dark:border-slate-700">
                   <p className="text-right font-serif text-lg sm:text-2xl leading-loose sm:leading-loose text-gray-900 dark:text-white select-text" dir="rtl">
                     {item.arabic}
                   </p>
@@ -295,7 +295,7 @@ export default function DoaZikir() {
                 {isExpanded && (
                   <div className="mt-2.5 space-y-1.5 text-xs sm:text-sm">
                     {item.latin && (
-                      <p className="text-[12px] sm:text-[13px] text-emerald-800 dark:text-emerald-300 italic font-medium">
+                      <p className="text-[12px] sm:text-[13px] text-[#0A4A5E] dark:text-sky-300 italic font-medium">
                         {item.latin}
                       </p>
                     )}
@@ -330,10 +330,10 @@ export default function DoaZikir() {
                       </button>
                       <button
                         onClick={() => handleIncrement(item.id, item.targetCount)}
-                        className={`px-4 py-1.5 rounded-xl border-[1.5px] border-[#121212] text-xs font-bold shadow-[2px_2px_0px_#121212] transition-transform active:scale-95 ${
+                        className={`px-4 py-1.5 rounded-xl border-[1.5px] border-[#08303D] text-xs font-bold shadow-[2px_2px_0px_#08303D] transition-transform active:scale-95 ${
                           isTargetReached
-                            ? 'bg-emerald-600 text-white'
-                            : 'bg-emerald-500 hover:bg-emerald-600 text-white'
+                            ? 'bg-[#0A4A5E] text-white'
+                            : 'bg-[#0E7C9A] hover:bg-[#0A6A85] text-white'
                         }`}
                       >
                         Hitung ({count} / {item.targetCount})

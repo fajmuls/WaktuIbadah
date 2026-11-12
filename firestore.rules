@@ -11,9 +11,18 @@ service cloud.firestore {
       return val is string && val.size() > 0 && val.size() <= maxLen;
     }
 
+    function isValidPin(pin) {
+      return pin == null || (pin is string && (pin.size() == 4 || pin == ''));
+    }
+
     // Default safety catch-all
     match /{document=**} {
       allow read, write: if false;
+    }
+
+    // Connection test document
+    match /test/{docId} {
+      allow get: if isValidId(docId);
     }
 
     // Student Profiles (Multi-device sync based on student name and optional PIN)
@@ -23,19 +32,20 @@ service cloud.firestore {
       
       allow create: if isValidId(profileId)
         && request.resource.data.name is string
-        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() >= 1
         && request.resource.data.name.size() <= 100
-        && (!('pin' in request.resource.data) || (request.resource.data.pin is string && (request.resource.data.pin.size() == 4 || request.resource.data.pin == '')));
+        && (!('pin' in request.resource.data) || isValidPin(request.resource.data.pin));
 
       allow update: if isValidId(profileId)
-        && request.resource.data.name is string
-        && request.resource.data.name.size() >= 2
-        && request.resource.data.name.size() <= 100
+        && (!('name' in request.resource.data) || (request.resource.data.name is string && request.resource.data.name.size() >= 1 && request.resource.data.name.size() <= 100))
         && (
           !('pin' in resource.data) || 
           resource.data.pin == '' || 
-          (request.resource.data.pin == resource.data.pin) ||
-          ('pin' in request.resource.data && (request.resource.data.pin.size() == 4 || request.resource.data.pin == ''))
+          resource.data.pin == null ||
+          !('pin' in request.resource.data) ||
+          request.resource.data.pin == null ||
+          request.resource.data.pin == resource.data.pin ||
+          isValidPin(request.resource.data.pin)
         );
 
       allow delete: if isValidId(profileId); // Allowed for admin cleanup

@@ -1,3 +1,4 @@
+import { DOA_HARIAN_TAMBAHAN } from './doa-tambahan';
 export interface PrayerItem {
   id: string;
   category: 'wirid_salat' | 'harian' | 'belajar';
@@ -304,5 +305,6 @@ export const DOA_BELAJAR: PrayerItem[] = [
 export const ALL_DOA_ITEMS: PrayerItem[] = [
   ...WIRID_SESUDAH_SALAT,
   ...DOA_HARIAN,
+  ...DOA_HARIAN_TAMBAHAN,
   ...DOA_BELAJAR
 ];

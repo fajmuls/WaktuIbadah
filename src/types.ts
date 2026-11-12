@@ -270,6 +270,27 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.14.1',
+    releaseDate: '11 November 2026',
+    title: 'Perbaikan Firestore Security Rules (Izin Profil Mahasiswa Nama Singkat/1 Karakter) & Pencegahan Redundant Auto-Sync Loop',
+    highlights: [
+      'Perbaikan Fatal Error Izin Firestore Rules: Memperbaiki aturan izin tulis dan perbarui pada koleksi student_profiles sehingga nama pengguna singkat (1 karakter seperti "d") maupun nama lengkap dapat tersimpan dan tersinkronisasi mulus ke Firestore tanpa galat Missing or insufficient permissions.',
+      'Optimalisasi Validasi PIN dan Dokumen Test: Menstandarkan validasi PIN 4 digit/kosong serta menambahkan izin baca pada dokumen pengujian koneksi (/test/{docId}).',
+      'Pencegahan Infinite Auto-Sync Loop: Menambahkan penjaga kesamaan state (deep equality check) pada setItem storage dan penyelarasan sinkronisasi akun, mencegah pemanggilan syncAllToCloud berulang kali yang membebani jaringan dan kuota Firestore.',
+      'Penyelarasan Skema Intermediate (firebase-blueprint.json): Memperbarui minLength nama mahasiswa menjadi 1 karakter agar konsisten dengan kebutuhan pengujian dan penggunaan riil.'
+    ],
+    soundPackUpdates: [
+      'Audio feedback notifikasi dan sinkronisasi cloud tetap responsif tanpa tumpang tindih'
+    ],
+    uiOverhaul: [
+      'Indikator sinkronisasi cloud stabil tanpa status error berkedip'
+    ],
+    recommendations: [
+      'Uji coba mengetikkan nama singkat atau mengubah data di Pengaturan > Akun, lalu pantau indikator sinkronisasi cloud untuk memastikan data tersimpan lancar tanpa pesan error.',
+      'Buka Admin Dashboard untuk memeriksa bahwa akun profil mahasiswa baru langsung tampil di daftar pengguna terdaftar.'
+    ]
+  },
+  {
     version: '2.13.0',
     releaseDate: '10 November 2026',
     title: 'Perombakan UI Kalender Sage-Zamrud, Kartu Template Rutin Memphis, Pencatatan Timestamp Jam Salat Otomatis/Manual, & Grafik Analitik Tren Ibadah',

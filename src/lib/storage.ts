@@ -31,7 +31,7 @@ const KEYS = {
   TAJWEED_MODE: "wi_tajweed_mode",
 };
 
-export const CURRENT_VERSION = "2.13.0";
+export const CURRENT_VERSION = "2.14.1";
 
 export const DEFAULT_REMINDER_SETTINGS: ReminderSettings = {
   reminderType: 'sound_and_vibrate',
@@ -68,7 +68,12 @@ function triggerAutoSync() {
 
 function setItem<T>(key: string, value: T): void {
   try {
-    localStorage.setItem(key, JSON.stringify(value));
+    const prev = localStorage.getItem(key);
+    const next = JSON.stringify(value);
+    if (prev === next) {
+      return;
+    }
+    localStorage.setItem(key, next);
     if (typeof window !== 'undefined') {
       window.dispatchEvent(new CustomEvent('wi_data_updated', { detail: { key, value } }));
     }
@@ -394,7 +399,7 @@ export const storage = {
   setNotificationVerified: (verified: boolean) => setItem(KEYS.NOTIFICATION_VERIFIED, verified),
 
   // Auto Doa Setelah Salat Modal
-  getAutoDoaModal: () => getItem<boolean>(KEYS.AUTO_DOA_MODAL, true),
+  getAutoDoaModal: () => getItem<boolean>(KEYS.AUTO_DOA_MODAL, false),
   setAutoDoaModal: (enabled: boolean) => setItem(KEYS.AUTO_DOA_MODAL, enabled),
 
   // Indonesian City & Timezone Selection

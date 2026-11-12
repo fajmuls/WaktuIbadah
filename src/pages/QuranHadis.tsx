@@ -87,11 +87,16 @@ export default function QuranHadis() {
   // 1-Tap Direct Bookmark = Hanca Terakhir
   const handleToggleBookmarkHanca = (ayah: AyatItem) => {
     if (!selectedSurah) return;
-    const isCurrentHanca = lastReadAyah?.surahNumber === selectedSurah.nomor && lastReadAyah?.ayahNumber === ayah.nomorAyat;
+    // Terpenanda = ayat ini ada di daftar hanca ATAU menjadi posisi terakhir dibaca
+    const isCurrentHanca =
+      (lastReadAyah?.surahNumber === selectedSurah.nomor && lastReadAyah?.ayahNumber === ayah.nomorAyat) ||
+      storage.getReadingHancas().some(h => h.surahNumber === selectedSurah.nomor && h.ayahNumber === ayah.nomorAyat);
 
     if (isCurrentHanca) {
-      storage.clearLastReadAyah();
-      setLastReadAyah(null);
+      // Hapus dari daftar hanca DAN penanda terakhir (sebelumnya hanya penanda terakhir -> ayat tetap "terpenanda")
+      storage.unbookmarkAyah(selectedSurah.nomor, ayah.nomorAyat);
+      setHancas(storage.getReadingHancas());
+      setLastReadAyah(storage.getLastReadAyah());
       playQuranSound('bookmark_removed');
       vibrateSuccess();
     } else {

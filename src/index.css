@@ -303,4 +303,6 @@ html:not(.dark) .to-green-500 { --tw-gradient-to: #0B4A3B; }
 .wi-arab { font-family: "Amiri", "Scheherazade New", serif; direction: rtl; }
 .wi-mihrab { border-radius: 9999px 9999px 0.9rem 0.9rem / 2.2rem 2.2rem 0.9rem 0.9rem; }
 @keyframes wi-fade-up { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-html:not(.dark) [class*="bg-white/"] { background-color: rgba(255, 248, 232, 0.92); }
+html:not(.dark) .bg-white\/95,
+html:not(.dark) .bg-white\/90,
+html:not(.dark) .bg-white\/80 { background-color: rgba(255, 248, 232, 0.94); }

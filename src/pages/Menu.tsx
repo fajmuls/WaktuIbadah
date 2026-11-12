@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight, ExternalLink } from 'lucide-react';
-import { storage } from '../lib/storage';
+import { storage, CURRENT_VERSION } from '../lib/storage';
 import YouTubeEmbed from '../components/YouTubeEmbed';
 import { YOUTUBE_VIDEO_ID } from '../lib/site';
 
@@ -171,7 +171,7 @@ export default function Menu() {
       color: 'text-[#6EE7B7]' 
     },
     { 
-      label: 'Pengaturan & Versi v2.10.0', 
+      label: `Pengaturan & Versi v${CURRENT_VERSION}`, 
       icon: SettingsMenuSvg, 
       path: '/settings', 
       desc: 'Notifikasi azan, suara qari, tema, & cloud sync', 
@@ -190,10 +190,10 @@ export default function Menu() {
             {user?.name?.charAt(0).toUpperCase() || 'M'}
           </div>
           <div className="min-w-0">
-            <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#121212] truncate">
+            <h1 className="text-sm sm:text-base font-bold tracking-tight text-[#FFF8E8] truncate">
               {user?.name || 'Mahasiswa Muslim'}
             </h1>
-            <p className="text-[10.5px] sm:text-xs font-medium text-[#121212]/80 truncate">
+            <p className="text-[10.5px] sm:text-xs font-medium text-[#E9DDBF] truncate">
               {user?.target || 'Menyeimbangkan Kuliah & Ibadah'}
             </p>
           </div>

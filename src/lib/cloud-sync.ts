@@ -266,8 +266,8 @@ export async function syncAllToCloud(explicitName?: string, explicitPin?: string
   try {
     await setDoc(doc(db, 'student_profiles', profileId), payload, { merge: true });
     
-    // Save last sync timestamp
-    if (user) {
+    // Save last sync timestamp only if user state has changed
+    if (user && (user.name !== studentName.trim() || (!user.pin && currentPin))) {
       storage.setUser({
         ...user,
         name: studentName.trim(),
