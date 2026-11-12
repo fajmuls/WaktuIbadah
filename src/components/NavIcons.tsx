@@ -183,3 +183,26 @@ export const NavMenuIcon: React.FC<IconProps> = ({ className = "w-5 h-5", isActi
     />
   </svg>
 );
+
+// 7. Hadis SVG: Open Scroll / Prophet's Tradition Quotation
+export const NavHadisIcon: React.FC<IconProps> = ({ className = "w-5 h-5", isActive }) => (
+  <svg 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    xmlns="http://www.w3.org/2000/svg" 
+    className={className}
+  >
+    <path 
+      d="M19 4H7.5C6.11929 4 5 5.11929 5 6.5V17.5C5 18.8807 6.11929 20 7.5 20H19V4Z" 
+      stroke="currentColor" 
+      strokeWidth={isActive ? "2.2" : "1.8"} 
+      strokeLinecap="round" 
+      strokeLinejoin="round"
+      fill={isActive ? "currentColor" : "none"}
+      fillOpacity={isActive ? "0.18" : "0"}
+    />
+    <path d="M19 16H7.5C6.67157 16 6 16.6716 6 17.5C6 18.3284 6.67157 19 7.5 19H19" stroke="currentColor" strokeWidth="1.8" />
+    <path d="M9 8H15M9 12H13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+

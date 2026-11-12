@@ -21,6 +21,14 @@ const QuranMenuSvg = () => (
   </svg>
 );
 
+const HadisMenuSvg = () => (
+  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="currentColor">
+    <path d="M19 4H7.5C6.11929 4 5 5.11929 5 6.5V17.5C5 18.8807 6.11929 20 7.5 20H19V4Z" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+    <path d="M19 16H7.5C6.67157 16 6 16.6716 6 17.5C6 18.3284 6.67157 19 7.5 19H19" strokeWidth="1.8" />
+    <path d="M9 8H15M9 12H13" strokeWidth="1.8" strokeLinecap="round" />
+  </svg>
+);
+
 const WidgetMenuSvg = () => (
   <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="currentColor">
     <rect x="3" y="3" width="8" height="8" rx="2" strokeWidth="1.8" />
@@ -115,11 +123,19 @@ export default function Menu() {
       color: 'text-white' 
     },
     { 
-      label: "Al-Qur'an & Hadits", 
+      label: "Al-Qur'an 30 Juz", 
       icon: QuranMenuSvg, 
       path: '/quran', 
       desc: '114 Surat, Juz 1-30, Multi-hanca & Murottal auto-scroll', 
       bg: 'bg-teal-500 text-white', 
+      color: 'text-white' 
+    },
+    { 
+      label: "Kumpulan Hadits Shahih", 
+      icon: HadisMenuSvg, 
+      path: '/hadis', 
+      desc: 'Hadits Arbain, Arbain Nawawi, & Shahih Bukhari dengan teks Arab', 
+      bg: 'bg-emerald-600 text-white', 
       color: 'text-white' 
     },
     { 

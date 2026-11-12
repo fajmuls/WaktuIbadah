@@ -270,6 +270,27 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.15.0',
+    releaseDate: '12 November 2026',
+    title: 'Integrasi Menu Kumpulan Hadis pada Navigation Bar Mobile & Pemisahan Kartu Menu Utama',
+    highlights: [
+      'Penambahan Tab Hadis Mobile: Menu Kumpulan Hadis Shahih kini dapat diakses 1-klik langsung melalui navigation bar di bagian bawah layar HP/smartphone.',
+      'Optimasi Layout Navigation Bar Grid (7 Item): Menyelaraskan proporsi ikon dan label navigasi (Home, Jadwal, Ibadah, Qur\'an, Hadis, Doa, Menu) agar muat sempurna tanpa terpotong di layar HP berukuran kecil maupun besar.',
+      'Pemisahan Kartu Menu Utama: Kartu "Al-Qur\'an 30 Juz" dan "Kumpulan Hadits Shahih" kini hadir sebagai kartu terpisah di halaman Menu utama untuk aksesibilitas maksimal.',
+      'Visual Feedback Active State Memphis: Lencana pill aktif yang responsif dengan bayangan khas Memphis retro pada tab Hadis.'
+    ],
+    soundPackUpdates: [
+      'Audio tap khas WaktuIbadah berbunyi responsif saat berpindah ke tab Hadis di mobile'
+    ],
+    uiOverhaul: [
+      'Bottom navigation bar mobile lebih lengkap dengan 7 tab navigasi utama yang jelas, kontras, dan ramah ibu jari'
+    ],
+    recommendations: [
+      'Buka aplikasi di perangkat HP / smartphone untuk mencoba menekan tab Hadis secara langsung dari navigation bar.',
+      'Buka menu Pengaturan > Patch Notes untuk memverifikasi riwayat pembaruan versi 2.15.0.'
+    ]
+  },
+  {
     version: '2.14.1',
     releaseDate: '11 November 2026',
     title: 'Perbaikan Firestore Security Rules (Izin Profil Mahasiswa Nama Singkat/1 Karakter) & Pencegahan Redundant Auto-Sync Loop',

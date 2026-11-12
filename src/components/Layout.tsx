@@ -5,7 +5,7 @@ import { cn } from '../lib/utils';
 import { QuickAddModal } from './QuickAddModal';
 import { MurottalPlayerWidget } from './MurottalPlayerWidget';
 import { FloatingWidget } from './FloatingWidget';
-import { NavHomeIcon, NavJadwalIcon, NavIbadahIcon, NavDoaIcon, NavQuranIcon, NavMenuIcon } from './NavIcons';
+import { NavHomeIcon, NavJadwalIcon, NavIbadahIcon, NavDoaIcon, NavQuranIcon, NavHadisIcon, NavMenuIcon } from './NavIcons';
 import { playButtonTapSound, playTabSwitchSound } from '../lib/audio';
 import { storage } from '../lib/storage';
 
@@ -60,8 +60,9 @@ export const Layout = () => {
     { label: 'Home', icon: NavHomeIcon, path: '/' },
     { label: 'Jadwal', icon: NavJadwalIcon, path: '/jadwal' },
     { label: 'Ibadah', icon: NavIbadahIcon, path: '/ibadah' },
-    { label: 'Doa', icon: NavDoaIcon, path: '/doa' },
     { label: 'Qur\'an', icon: NavQuranIcon, path: '/quran' },
+    { label: 'Hadis', icon: NavHadisIcon, path: '/hadis' },
+    { label: 'Doa', icon: NavDoaIcon, path: '/doa' },
     { label: 'Menu', icon: NavMenuIcon, path: '/menu' },
   ];
 
@@ -178,8 +179,8 @@ export const Layout = () => {
         </div>
       </main>
 
-      {/* Mobile Bottom Navigation (60px height, equal width items, light Memphis pill active indicator) */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[64px] bg-[#0B4A3B] dark:bg-slate-900 border-t-[3px] border-[#C99A4B] dark:border-slate-800 grid grid-cols-6 items-center px-1 pb-[env(safe-area-inset-bottom,0px)] z-40">
+      {/* Mobile Bottom Navigation (64px height, equal 7 grid items, light Memphis pill active indicator) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 h-[64px] bg-[#0B4A3B] dark:bg-slate-900 border-t-[3px] border-[#C99A4B] dark:border-slate-800 grid grid-cols-7 items-center px-0.5 pb-[env(safe-area-inset-bottom,0px)] z-40">
         {mobileNavItems.map((item) => (
           <NavLink
             key={item.path}
@@ -187,7 +188,7 @@ export const Layout = () => {
             data-nav="true"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center justify-center h-full w-full py-1 transition-all min-w-0",
+                "flex flex-col items-center justify-center h-full w-full py-0.5 transition-all min-w-0",
                 isActive ? "text-[#E6C27A] font-bold" : "text-[#CFE3D6] hover:text-white font-normal"
               )
             }
@@ -195,12 +196,12 @@ export const Layout = () => {
             {({ isActive }) => (
               <>
                 <div className={cn(
-                  "flex items-center justify-center w-8 h-8 rounded-full transition-all",
-                  isActive ? "bg-[#FFF8E8] border-[1.5px] border-[#C99A4B] -translate-y-1 shadow-[0_3px_0_#C99A4B]" : ""
+                  "flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full transition-all",
+                  isActive ? "bg-[#FFF8E8] border-[1.5px] border-[#C99A4B] -translate-y-0.5 shadow-[0_2px_0_#C99A4B]" : ""
                 )}>
-                  <item.icon className={cn("w-5 h-5", isActive ? "text-[#0B4A3B]" : "text-[#E9DDBF]")} isActive={isActive} />
+                  <item.icon className={cn("w-4 h-4 sm:w-5 sm:h-5", isActive ? "text-[#0B4A3B]" : "text-[#E9DDBF]")} isActive={isActive} />
                 </div>
-                <span className={cn("text-[10px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-[#E6C27A]" : "font-medium text-[#CFE3D6]")}>
+                <span className={cn("text-[8.5px] sm:text-[9.5px] tracking-tight mt-0.5 truncate max-w-full px-0.5", isActive ? "font-bold text-[#E6C27A]" : "font-medium text-[#CFE3D6]")}>
                   {item.label}
                 </span>
               </>
