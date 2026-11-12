@@ -270,6 +270,27 @@ export interface PatchNoteItem {
 
 export const APP_PATCH_NOTES: PatchNoteItem[] = [
   {
+    version: '2.16.0',
+    releaseDate: '12 November 2026',
+    title: 'Penambahan 300+ Hadis Shahih, Filter Topik Cepat, Favorit Hadis Khusus, & Generator Poster Memphis',
+    highlights: [
+      'Database 300+ Hadis Shahih Otentik: Memperluas koleksi hadis menjadi 300+ hadis populer lengkap dengan perawi utama (HR. Bukhari, Muslim, Tirmidzi, Abu Dawud, An-Nasa\'i, Ibnu Majah, Ahmad) beserta nomor rujukan spesifik.',
+      'Filter Topik Cepat 1-Klik: Bilah filter horizontal interaktif di bagian atas halaman Hadis untuk menyaring topik cepat (Niat & Keikhlasan, Akhlak, Salat, Ilmu, Puasa, Doa, Sabar, Sedekah, Silaturahmi, dll).',
+      'Fitur Favorit & Bookmark Hadis Khusus: Tombol hati ❤️ pada setiap kartu hadis untuk menyimpan hadis favorit yang langsung tersinkronisasi ke profil pengguna & Firestore.',
+      'Generator Poster Share Card Memphis (Hadis & Al-Qur\'an): Tombol "Bagikan" pada kartu Hadis dan Ayat Al-Qur\'an yang dapat mengubah kutipan menjadi poster aesthetic beresolusi tinggi dengan 4 pilihan tema warna Memphis (Hijau Zamrud, Krem Perkamen, Midnight Slate, Sunset Retro), dapat diunduh sebagai gambar PNG atau disalin teksnya.'
+    ],
+    soundPackUpdates: [
+      'Audio tap khas WaktuIbadah dan getaran haptik saat memfavoritkan hadis & mengunduh poster'
+    ],
+    uiOverhaul: [
+      'Redesain kartu hadis dengan lencana nomor perawi tegas, filter topik cepat, dan generator poster Memphis 1080x1080 canvas'
+    ],
+    recommendations: [
+      'Buka menu Hadis lalu ketuk pill topik seperti "Niat & Keikhlasan" atau "Ilmu & Menuntut Ilmu" untuk mencoba pencarian cepat.',
+      'Ketuk tombol "Bagikan" pada salah satu hadis atau ayat Al-Qur\'an untuk mengunduh poster gambar PNG bergaya Memphis.'
+    ]
+  },
+  {
     version: '2.15.0',
     releaseDate: '12 November 2026',
     title: 'Integrasi Menu Kumpulan Hadis pada Navigation Bar Mobile & Pemisahan Kartu Menu Utama',

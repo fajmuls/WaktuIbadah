@@ -19,6 +19,7 @@ import { IslamicStarBadge } from '../components/IslamicStarBadge';
 import { SurahHeaderFrame } from '../components/SurahHeaderFrame';
 import { HancaBookmarkModal } from '../components/HancaBookmarkModal';
 import { QuranReaderSettingsModal } from '../components/QuranReaderSettingsModal';
+import { SocialShareModal, SocialShareData } from '../components/SocialShareModal';
 import { QURAN_JUZ_LIST, QuranJuzItem } from '../data/quran-juz';
 import { getSurahAyahs, getSurahTafsir } from '../lib/quran-api';
 import { getCachedAudioUrl } from '../lib/murottal-cache';
@@ -53,6 +54,7 @@ export default function QuranHadis() {
   const [isKhatamModalOpen, setIsKhatamModalOpen] = useState(false);
   const [isSearchVisible, setIsSearchVisible] = useState(false);
   const [showExtraMenu, setShowExtraMenu] = useState(false);
+  const [shareData, setShareData] = useState<SocialShareData | null>(null);
 
   const handleTabChange = (tab: 'surah' | 'juz' | 'bookmark' | 'hadis' | 'doa') => {
     setActiveTab(tab);
@@ -1446,6 +1448,25 @@ export default function QuranHadis() {
                           >
                             <Bookmark className={`w-3.5 h-3.5 ${isBookmarkedInHanca ? 'fill-black' : ''}`} />
                           </button>
+
+                          {/* 5. Bagikan Poster Memphis */}
+                          <button
+                            onClick={() => {
+                              playButtonTapSound();
+                              setShareData({
+                                title: `QS. ${selectedSurah.namaLatin}: ${ayah.nomorAyat}`,
+                                arab: ayah.teksArab,
+                                indo: ayah.teksIndonesia,
+                                source: `Al-Qur'an Surat ${selectedSurah.namaLatin} Ayat ${ayah.nomorAyat}`,
+                                topic: `Surat Ke-${selectedSurah.nomor}`,
+                                type: 'quran'
+                              });
+                            }}
+                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-500 hover:text-emerald-700 hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                            title="Bagikan Poster Memphis"
+                          >
+                            <Share2 className="w-3.5 h-3.5" />
+                          </button>
                         </div>
                       </div>
                     );
@@ -1567,6 +1588,13 @@ export default function QuranHadis() {
         isOpen={isLogModalOpen}
         onClose={() => setIsLogModalOpen(false)}
         {...logModalProps}
+      />
+
+      {/* Social Share Card Poster Generator Modal */}
+      <SocialShareModal
+        isOpen={!!shareData}
+        onClose={() => setShareData(null)}
+        data={shareData}
       />
     </div>
   );
